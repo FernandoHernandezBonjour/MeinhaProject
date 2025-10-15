@@ -37,7 +37,7 @@ next-env.d.ts
 
 # Firebase credentials
 firebase-key/
-*.json
+
 
 # IDE
 .vscode/
