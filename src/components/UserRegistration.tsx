@@ -64,79 +64,79 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({ onSuccess, o
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Cadastrar Novo Usuário</h2>
+    <div className="max-w-md mx-auto bg-white/60 backdrop-blur-sm p-8 rounded-2xl shadow-2xl border-4 border-black">
+      <h2 className="text-3xl font-black text-green-600 mb-8 text-center">👤 CADASTRAR NOVA VÍTIMA 👤</h2>
       
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-            Nome de usuário *
+          <label htmlFor="username" className="block text-lg font-bold text-gray-800 mb-2">
+            👤 Nome do novo membro *
           </label>
           <input
             type="text"
             id="username"
             name="username"
             required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            className="mt-1 block w-full px-4 py-3 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-lg font-bold"
             placeholder="nome_usuario"
             value={formData.username}
             onChange={handleChange}
           />
-          <p className="mt-1 text-xs text-gray-500">
-            Apenas letras, números e underscore. Sem espaços.
+          <p className="mt-2 text-sm text-gray-600 font-bold">
+            Só letras, números e underscore. Sem espaços.
           </p>
         </div>
 
         <div>
-          <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-            Função *
+          <label htmlFor="role" className="block text-lg font-bold text-gray-800 mb-2">
+            👑 Que tipo de usuário? *
           </label>
           <select
             id="role"
             name="role"
             required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            className="mt-1 block w-full px-4 py-3 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-lg font-bold"
             value={formData.role}
             onChange={handleChange}
           >
-            <option value="user">Usuário</option>
-            <option value="admin">Administrador</option>
+            <option value="user">👤 Usuário Normal</option>
+            <option value="admin">👑 Administrador (Chefe)</option>
           </select>
         </div>
 
         {error && (
-          <div className="rounded-md bg-red-50 p-4">
-            <div className="text-sm text-red-700">{error}</div>
+          <div className="rounded-xl bg-red-100 border-2 border-red-400 p-4">
+            <div className="text-lg text-red-800 font-bold text-center">❌ {error}</div>
           </div>
         )}
 
-        <div className="flex space-x-3 pt-4">
+        <div className="flex space-x-4 pt-6">
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 bg-gradient-to-r from-green-600 to-green-800 text-white px-6 py-4 rounded-xl hover:from-green-700 hover:to-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed text-xl font-black border-2 border-black shadow-lg"
           >
-            {loading ? 'Cadastrando...' : 'Cadastrar'}
+            {loading ? 'Cadastrando vítima...' : '✅ CADASTRAR'}
           </button>
           
           {onCancel && (
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              className="flex-1 bg-gradient-to-r from-gray-400 to-gray-600 text-white px-6 py-4 rounded-xl hover:from-gray-500 hover:to-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 text-xl font-black border-2 border-black shadow-lg"
             >
-              Cancelar
+              ❌ CANCELAR
             </button>
           )}
         </div>
       </form>
 
-      <div className="mt-4 p-3 bg-yellow-50 rounded-md">
-        <p className="text-sm text-yellow-700">
-          <strong>Senha inicial:</strong> 123456
+      <div className="mt-6 p-4 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl border-2 border-yellow-400">
+        <p className="text-lg text-yellow-800 font-bold">
+          🔑 <strong>Senha inicial:</strong> 123456
         </p>
-        <p className="text-xs text-yellow-600 mt-1">
-          O usuário será obrigado a alterar esta senha no primeiro login.
+        <p className="text-base text-yellow-700 font-bold mt-2">
+          Ele vai ser obrigado a trocar essa senha no primeiro login.
         </p>
       </div>
     </div>

@@ -79,23 +79,23 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Cadastrar Nova Dívida</h2>
+    <div className="max-w-2xl mx-auto bg-white/60 backdrop-blur-sm p-8 rounded-2xl shadow-2xl border-4 border-black">
+      <h2 className="text-3xl font-black text-red-600 mb-8 text-center">💸 CRIAR NOVA DÍVIDA 💸</h2>
       
-      <form action={handleSubmit} className="space-y-4">
+      <form action={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="debtorId" className="block text-sm font-medium text-gray-700">
-            Quem está me devendo? *
+          <label htmlFor="debtorId" className="block text-lg font-bold text-gray-800 mb-2">
+            💸 Quem tá me devendo essa grana? *
           </label>
           <select
             id="debtorId"
             name="debtorId"
             required
             disabled={loading}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="mt-1 block w-full px-4 py-3 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-lg font-bold disabled:bg-gray-100 disabled:cursor-not-allowed"
           >
             <option value="">
-              {loading ? 'Carregando usuários...' : 'Selecione um usuário'}
+              {loading ? 'Carregando as vítimas...' : 'Escolha o caloteiro aí 👇'}
             </option>
             {users.map(user => (
               <option key={user.id} value={user.id}>
@@ -106,8 +106,8 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
         </div>
 
         <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
-            Valor emprestado (R$) *
+          <label htmlFor="amount" className="block text-lg font-bold text-gray-800 mb-2">
+            💰 Quanto ele(a) me deve? (R$) *
           </label>
           <input
             type="number"
@@ -116,58 +116,58 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
             step="0.01"
             min="0.01"
             required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            className="mt-1 block w-full px-4 py-3 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-lg font-bold"
             placeholder="0,00"
           />
         </div>
 
         <div>
-          <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700">
-            Data de promessa de pagamento *
+          <label htmlFor="dueDate" className="block text-lg font-bold text-gray-800 mb-2">
+            📅 Quando ele(a) prometeu pagar? *
           </label>
           <input
             type="date"
             id="dueDate"
             name="dueDate"
             required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            className="mt-1 block w-full px-4 py-3 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-lg font-bold"
           />
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-            Descrição (opcional)
+          <label htmlFor="description" className="block text-lg font-bold text-gray-800 mb-2">
+            📝 Detalhes da dívida (opcional)
           </label>
           <textarea
             id="description"
             name="description"
             rows={3}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-            placeholder="Detalhes sobre o empréstimo..."
+            className="mt-1 block w-full px-4 py-3 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-lg font-bold"
+            placeholder="Conta o que rolou... (ex: Emprestou 50 reais pra pizza, mas não pagou...)"
           />
         </div>
 
         {error && (
-          <div className="rounded-md bg-red-50 p-4">
-            <div className="text-sm text-red-700">{error}</div>
+          <div className="rounded-xl bg-red-100 border-2 border-red-400 p-4">
+            <div className="text-lg text-red-800 font-bold text-center">❌ {error}</div>
           </div>
         )}
 
-        <div className="flex space-x-3 pt-4">
+        <div className="flex space-x-4 pt-6">
           <button
             type="submit"
-            className="flex-1 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="flex-1 bg-gradient-to-r from-red-600 to-orange-600 text-white px-6 py-4 rounded-xl hover:from-red-700 hover:to-orange-700 focus:outline-none focus:ring-2 focus:ring-red-500 text-xl font-black border-2 border-black shadow-lg"
           >
-            Cadastrar Dívida
+            💸 CRIAR DÍVIDA
           </button>
           
           {onCancel && (
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              className="flex-1 bg-gradient-to-r from-gray-400 to-gray-600 text-white px-6 py-4 rounded-xl hover:from-gray-500 hover:to-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 text-xl font-black border-2 border-black shadow-lg"
             >
-              Cancelar
+              ❌ CANCELAR
             </button>
           )}
         </div>

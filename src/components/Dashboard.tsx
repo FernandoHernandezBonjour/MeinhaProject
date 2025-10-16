@@ -82,24 +82,43 @@ export const Dashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+      <div 
+        className="min-h-screen flex items-center justify-center bg-cover bg-center bg-fixed"
+        style={{
+          backgroundImage: 'url(/images/back.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        <div className="text-center bg-white/60 backdrop-blur-sm p-8 rounded-2xl border-4 border-black shadow-2xl">
+          <div className="animate-spin rounded-full h-32 w-32 border-8 border-red-600 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-2xl font-black text-red-600">Carregando as dívidas...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div 
+      className="min-h-screen bg-cover bg-center bg-fixed"
+      style={{
+        backgroundImage: 'url(/images/back.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-gradient-to-r from-red-600/60 to-orange-600/60 backdrop-blur-sm shadow-lg border-b-4 border-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Sistema de Dívidas
+              <h1 className="text-4xl font-black text-white drop-shadow-lg">
+                🚨 CALOTEIROS DO GRUPO
               </h1>
-              <p className="text-sm text-gray-600">
-                Bem-vindo, {user?.name || user?.username}
+              <p className="text-lg text-yellow-200 font-bold">
+                E aí, {user?.name || user?.username}? Vamos ver quem tá devendo!
               </p>
             </div>
             
@@ -107,24 +126,24 @@ export const Dashboard: React.FC = () => {
               {user?.role === 'admin' && (
                 <button
                   onClick={() => setShowUserForm(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 font-bold text-lg shadow-lg border-2 border-black"
                 >
-                  Cadastrar Usuário
+                  👤 CADASTRAR VÍTIMA
                 </button>
               )}
               
               <button
                 onClick={() => setShowDebtForm(true)}
-                className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="bg-red-700 text-white px-6 py-3 rounded-lg hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 font-bold text-lg shadow-lg border-2 border-black"
               >
-                Nova Dívida
+                💸 NOVA DÍVIDA
               </button>
               
               <button
                 onClick={logout}
-                className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                className="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 font-bold text-lg shadow-lg border-2 border-black"
               >
-                Sair
+                🚪 VAZAR
               </button>
             </div>
           </div>
@@ -137,13 +156,13 @@ export const Dashboard: React.FC = () => {
         <DashboardCharts debts={debts} users={users} />
 
         {/* Debts List */}
-        <div className="bg-white rounded-lg shadow-md">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Dívidas em Aberto
+        <div className="bg-white/60 backdrop-blur-sm rounded-xl shadow-2xl border-4 border-black">
+          <div className="px-6 py-4 border-b-4 border-black bg-gradient-to-r from-red-500/60 to-orange-500/60 backdrop-blur-sm">
+            <h2 className="text-2xl font-black text-white">
+              💀 DÍVIDAS EM ABERTO - QUEM NÃO PAGA VIRA CALOTEIRO 💀
             </h2>
-            <p className="text-sm text-gray-600">
-              Ordenadas por data de vencimento (mais antigas primeiro)
+            <p className="text-lg text-yellow-200 font-bold">
+              Ordenadas do mais caloteiro pro menos caloteiro (mais antigas primeiro)
             </p>
           </div>
           
@@ -170,23 +189,24 @@ export const Dashboard: React.FC = () => {
               </div>
             ) : (
               <div className="text-center py-12">
-                <div className="mx-auto h-12 w-12 text-gray-400">
-                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+                <div className="mx-auto h-24 w-24 text-green-500 text-6xl">
+                  🎉
                 </div>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">
-                  Nenhuma dívida em aberto
+                <h3 className="mt-4 text-3xl font-black text-green-600">
+                  NINGUÉM ESTÁ DEVENDO!
                 </h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Cadastre uma nova dívida para começar.
+                <p className="mt-2 text-xl text-gray-700 font-bold">
+                  Que milagre! Todos pagaram suas contas! 
                 </p>
-                <div className="mt-6">
+                <p className="mt-1 text-lg text-gray-600">
+                  Mas se quiser criar uma nova dívida pra alguém, é só clicar aí embaixo 👇
+                </p>
+                <div className="mt-8">
                   <button
                     onClick={() => setShowDebtForm(true)}
-                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                    className="inline-flex items-center px-8 py-4 border-2 border-black shadow-lg text-lg font-black rounded-xl text-white bg-red-600 hover:bg-red-700"
                   >
-                    Nova Dívida
+                    💸 CRIAR NOVA DÍVIDA
                   </button>
                 </div>
               </div>
@@ -197,8 +217,8 @@ export const Dashboard: React.FC = () => {
 
       {/* Modals */}
       {showDebtForm && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div className="fixed inset-0 bg-black bg-opacity-75 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto w-11/12 md:w-3/4 lg:w-1/2">
             <DebtFormServer
               onSuccess={handleDebtCreated}
               onCancel={() => setShowDebtForm(false)}
@@ -208,8 +228,8 @@ export const Dashboard: React.FC = () => {
       )}
 
       {showUserForm && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white">
+        <div className="fixed inset-0 bg-black bg-opacity-75 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto w-11/12 md:w-1/2 lg:w-1/3">
             <UserRegistration
               onSuccess={handleUserCreated}
               onCancel={() => setShowUserForm(false)}
