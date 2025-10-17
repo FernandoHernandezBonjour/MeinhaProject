@@ -21,6 +21,7 @@ export const Dashboard: React.FC = () => {
   const [showProfileForm, setShowProfileForm] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [bgImage] = useState(() => Math.random() < 0.1 ? '/images/negao_da_picona.jpg' : '/images/back.jpg');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -116,7 +117,6 @@ export const Dashboard: React.FC = () => {
     );
   }
 
-  const bgImage = Math.random() < 0.1 ? '/images/negao_da_picona.jpg' : '/images/back.jpg';
   return (
     <div
       className="min-h-screen bg-cover bg-center bg-fixed"

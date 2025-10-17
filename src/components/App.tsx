@@ -10,9 +10,9 @@ import { Dashboard } from './Dashboard';
 export const App: React.FC = () => {
   const { user, loading } = useAuth();
   const [showProfileCompletion, setShowProfileCompletion] = useState(false);
+  const [bgImage] = useState(() => Math.random() < 0.1 ? '/images/negao_da_picona.jpg' : '/images/back.jpg');
 
   if (loading) {
-      const bgImage = Math.random() < 0.1 ? '/images/negao_da_picona.jpg' : '/images/back.jpg';
       return (
         <div
           className="min-h-screen flex items-center justify-center bg-cover bg-center bg-fixed"

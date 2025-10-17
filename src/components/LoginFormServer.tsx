@@ -7,6 +7,7 @@ import { loginAction } from '@/lib/actions/auth';
 export const LoginFormServer: React.FC = () => {
   const { updateUser } = useAuth();
   const [error, setError] = useState<string>('');
+  const [bgImage] = useState(() => Math.random() < 0.1 ? '/images/negao_da_picona.jpg' : '/images/back.jpg');
 
   const handleSubmit = async (formData: FormData) => {
     setError('');
@@ -24,8 +25,6 @@ export const LoginFormServer: React.FC = () => {
       setError(error instanceof Error ? error.message : 'Erro ao fazer login');
     }
   };
-
-  const bgImage = Math.random() < 0.1 ? '/images/negao_da_picona.jpg' : '/images/back.jpg';
   return (
     <div
       className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-cover bg-center bg-fixed"

@@ -188,6 +188,13 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
             <span className="text-lg">{getOverdueTime(debt.dueDate)}</span>
           </div>
         )}
+
+        {creditor.pixKey && (
+          <div className="flex justify-between bg-green-100 p-3 rounded-lg border-2 border-green-300">
+            <span className="font-bold text-green-800">💳 Chave PIX do credor:</span>
+            <span className="font-black text-green-900 break-all">{creditor.pixKey}</span>
+          </div>
+        )}
       </div>
 
       {debt.description && (
