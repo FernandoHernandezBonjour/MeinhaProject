@@ -3,6 +3,7 @@
 import { cookies } from 'next/headers';
 import { verifyToken } from '../auth-server';
 import { getOpenDebts, getAllUsers, createDebt, getDebt, updateDebt, deleteDebt } from '../firestore-server';
+import { uploadPhotoAction } from './upload';
 import { Debt, User } from '@/types';
 
 async function getAuthenticatedUser() {
@@ -75,6 +76,7 @@ export async function createDebtAction(formData: FormData) {
     const amount = parseFloat(formData.get('amount') as string);
     const dueDate = formData.get('dueDate') as string;
     const description = formData.get('description') as string;
+    const attachment = formData.get('attachment') as File;
 
     if (!debtorId || !amount || !dueDate) {
       return { error: 'Devedor, valor e data de vencimento são obrigatórios' };
@@ -101,6 +103,37 @@ export async function createDebtAction(formData: FormData) {
     // Só adiciona description se não estiver vazio
     if (description && description.trim() !== '') {
       debtData.description = description.trim();
+    }
+
+    // Processar anexo se fornecido
+    if (attachment && attachment.size > 0) {
+      // Validar tipo de arquivo
+      if (!attachment.type.startsWith('image/')) {
+        return { error: 'Apenas arquivos de imagem são permitidos' };
+      }
+
+      // Validar tamanho (máximo 5MB)
+      if (attachment.size > 5 * 1024 * 1024) {
+        return { error: 'A imagem deve ter no máximo 5MB' };
+      }
+
+      try {
+        const uploadFormData = new FormData();
+        uploadFormData.append('photo', attachment);
+        
+        const uploadResult = await uploadPhotoAction(uploadFormData);
+        
+        if (uploadResult.error) {
+          return { error: uploadResult.error };
+        }
+        
+        if (uploadResult.success && uploadResult.photoURL) {
+          debtData.attachment = uploadResult.photoURL;
+        }
+      } catch (error) {
+        console.error('Erro no upload do anexo:', error);
+        return { error: 'Erro ao fazer upload do anexo' };
+      }
     }
 
     const debtId = await createDebt(debtData);

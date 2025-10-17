@@ -63,9 +63,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
   const colors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6'];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 relative z-0">
       {/* Maiores Credores */}
-      <div className="bg-white/60 backdrop-blur-sm p-6 rounded-xl shadow-2xl border-4 border-green-500">
+      <div className="bg-white/60 backdrop-blur-sm p-6 rounded-xl shadow-2xl border-4 border-green-500 relative z-0">
         <h3 className="text-2xl font-black text-green-600 mb-6 text-center">
           💰 MAIORES CREDORES - QUEM TEM DINHEIRO 💰
         </h3>
@@ -109,7 +109,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
       </div>
 
       {/* Maiores Devedores */}
-      <div className="bg-white/60 backdrop-blur-sm p-6 rounded-xl shadow-2xl border-4 border-red-500">
+      <div className="bg-white/60 backdrop-blur-sm p-6 rounded-xl shadow-2xl border-4 border-red-500 relative z-0">
         <h3 className="text-2xl font-black text-red-600 mb-6 text-center">
           💀 MAIORES CALOTEIROS - QUEM NÃO PAGA 💀
         </h3>
@@ -153,7 +153,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
       </div>
 
       {/* Resumo Geral */}
-      <div className="lg:col-span-2 bg-white/60 backdrop-blur-sm p-6 rounded-xl shadow-2xl border-4 border-purple-500">
+      <div className="lg:col-span-2 bg-white/60 backdrop-blur-sm p-6 rounded-xl shadow-2xl border-4 border-purple-500 relative z-0">
         <h3 className="text-2xl font-black text-purple-600 mb-6 text-center">
           📊 RESUMO GERAL - A SITUAÇÃO TÁ ASSIM 📊
         </h3>

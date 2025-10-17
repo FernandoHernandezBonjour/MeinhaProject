@@ -45,20 +45,19 @@ export const authenticateUser = async (username: string, password: string): Prom
       return null;
     }
 
-    // Se a senha for a padrão, verificar sem hash
-    if (password === DEFAULT_PASSWORD && !user.passwordChanged) {
-      return user;
-    }
-
-    // Para senhas alteradas, precisaríamos implementar o hash
-    // Por simplicidade, vamos assumir que a senha padrão é usada para novos usuários
-    if (password === DEFAULT_PASSWORD && user.passwordChanged) {
+    // Se o usuário não tem senha definida, usar senha padrão
+    if (!user.hashedPassword) {
+      if (password === DEFAULT_PASSWORD) {
+        return user;
+      }
       return null;
     }
 
-    // Aqui você implementaria a verificação de hash para senhas alteradas
-    // const isValid = await comparePassword(password, user.hashedPassword);
-    // if (!isValid) return null;
+    // Verificar senha com hash
+    const isValid = await comparePassword(password, user.hashedPassword);
+    if (!isValid) {
+      return null;
+    }
 
     return user;
   } catch (error) {
@@ -82,6 +81,7 @@ export const registerUser = async (userData: {
       username: userData.username.toLowerCase(),
       role: userData.role,
       passwordChanged: false,
+      hashedPassword: null, // Usuário novo, sem senha definida
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -96,12 +96,11 @@ export const registerUser = async (userData: {
 
 export const updateUserPassword = async (userId: string, newPassword: string): Promise<void> => {
   try {
-    // Aqui você hasharia a nova senha
-    // const hashedPassword = await hashPassword(newPassword);
+    const hashedPassword = await hashPassword(newPassword);
     
     await updateUser(userId, {
       passwordChanged: true,
-      // hashedPassword: hashedPassword,
+      hashedPassword: hashedPassword,
     });
   } catch (error) {
     console.error('Erro ao atualizar senha:', error);

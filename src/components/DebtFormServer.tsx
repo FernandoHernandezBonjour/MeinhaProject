@@ -15,6 +15,8 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [success, setSuccess] = useState<string>('');
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -45,6 +47,8 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
 
   const handleSubmit = async (formData: FormData) => {
     setError('');
+    setSuccess('');
+    setSubmitting(true);
 
     const debtorId = formData.get('debtorId') as string;
     const amount = formData.get('amount') as string;
@@ -52,16 +56,19 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
 
     if (!debtorId) {
       setError('Selecione quem está devendo');
+      setSubmitting(false);
       return;
     }
 
     if (!amount || parseFloat(amount) <= 0) {
       setError('O valor deve ser maior que zero');
+      setSubmitting(false);
       return;
     }
 
     if (!dueDate) {
       setError('Selecione a data de promessa de pagamento');
+      setSubmitting(false);
       return;
     }
 
@@ -71,10 +78,15 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
       if (result.error) {
         setError(result.error);
       } else if (result.success) {
-        onSuccess?.();
+        setSuccess('Dívida criada com sucesso! 💸');
+        setTimeout(() => {
+          onSuccess?.();
+        }, 2000);
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Erro ao cadastrar dívida');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -147,18 +159,41 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
           />
         </div>
 
+        <div>
+          <label htmlFor="attachment" className="block text-lg font-bold text-gray-800 mb-2">
+            📎 Anexar imagem (opcional)
+          </label>
+          <input
+            type="file"
+            id="attachment"
+            name="attachment"
+            accept="image/*"
+            className="mt-1 block w-full px-4 py-3 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-lg font-bold file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-red-100 file:text-red-700 hover:file:bg-red-200"
+          />
+          <p className="mt-2 text-sm text-gray-600 font-bold">
+            📸 Pode ser print, foto do recibo, comprovante, etc. (PNG, JPG, GIF - máx. 5MB)
+          </p>
+        </div>
+
         {error && (
           <div className="rounded-xl bg-red-100 border-2 border-red-400 p-4">
             <div className="text-lg text-red-800 font-bold text-center">❌ {error}</div>
           </div>
         )}
 
+        {success && (
+          <div className="rounded-xl bg-green-100 border-2 border-green-400 p-4">
+            <div className="text-lg text-green-800 font-bold text-center">✅ {success}</div>
+          </div>
+        )}
+
         <div className="flex space-x-4 pt-6">
           <button
             type="submit"
-            className="flex-1 bg-gradient-to-r from-red-600 to-orange-600 text-white px-6 py-4 rounded-xl hover:from-red-700 hover:to-orange-700 focus:outline-none focus:ring-2 focus:ring-red-500 text-xl font-black border-2 border-black shadow-lg"
+            disabled={submitting}
+            className="flex-1 bg-gradient-to-r from-red-600 to-orange-600 text-white px-6 py-4 rounded-xl hover:from-red-700 hover:to-orange-700 focus:outline-none focus:ring-2 focus:ring-red-500 text-xl font-black border-2 border-black shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            💸 CRIAR DÍVIDA
+            {submitting ? '💸 CRIANDO DÍVIDA...' : '💸 CRIAR DÍVIDA'}
           </button>
           
           {onCancel && (

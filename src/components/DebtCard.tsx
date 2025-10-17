@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Debt, User } from '@/types';
-import { markDebtAsPaidAction } from '@/lib/actions/debts';
+import { markDebtAsPaidAction, deleteDebtAction } from '@/lib/actions/debts';
 
 interface DebtCardProps {
   debt: Debt;
@@ -17,6 +17,7 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
   const isOwner = currentUser.id === debt.creditorId;
   const isAdmin = currentUser.role === 'admin';
   const canEdit = isOwner || isAdmin;
+  const canDelete = isAdmin || (isOwner && debt.status === 'OPEN');
 
   const getTimeAgo = (date: Date): string => {
     const now = new Date();
@@ -69,6 +70,27 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
     }
   };
 
+  const handleDelete = async () => {
+    if (!canDelete) return;
+    
+    if (!confirm('Tem certeza que quer excluir essa dívida? Essa ação não pode ser desfeita!')) {
+      return;
+    }
+
+    try {
+      const result = await deleteDebtAction(debt.id);
+      if (result.success) {
+        onUpdate?.();
+      } else {
+        console.error('Erro ao excluir dívida:', result.error);
+        alert('Erro ao excluir dívida: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Erro ao excluir dívida:', error);
+      alert('Erro ao excluir dívida');
+    }
+  };
+
   const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -99,9 +121,45 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
           <h3 className="text-3xl font-black text-red-600 mb-2">
             {formatCurrency(debt.amount)}
           </h3>
-          <p className="text-lg text-gray-800 font-bold">
-            <span className="text-red-600">💸 {debtor.name || debtor.username}</span> deve para <span className="text-green-600">💰 {creditor.name || creditor.username}</span>
-          </p>
+          <div className="flex items-center space-x-6">
+            {/* Devedor */}
+            <div className="flex flex-col items-center space-y-1">
+              {debtor.photoURL ? (
+                <img 
+                  src={debtor.photoURL} 
+                  alt={`Foto de ${debtor.name || debtor.username}`}
+                  className="w-12 h-12 rounded-full border-2 border-red-500 shadow-lg object-cover"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full border-2 border-gray-400 shadow-lg bg-gray-200 flex items-center justify-center">
+                  <span className="text-xs font-bold text-gray-600 text-center leading-tight">corno<br/>sem foto</span>
+                </div>
+              )}
+              <span className="text-sm text-red-600 font-bold text-center">
+                💸 {debtor.name || debtor.username}
+              </span>
+            </div>
+            
+            <span className="text-lg text-gray-600 font-bold">deve para</span>
+            
+            {/* Credor */}
+            <div className="flex flex-col items-center space-y-1">
+              {creditor.photoURL ? (
+                <img 
+                  src={creditor.photoURL} 
+                  alt={`Foto de ${creditor.name || creditor.username}`}
+                  className="w-12 h-12 rounded-full border-2 border-green-500 shadow-lg object-cover"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full border-2 border-gray-400 shadow-lg bg-gray-200 flex items-center justify-center">
+                  <span className="text-xs font-bold text-gray-600 text-center leading-tight">corno<br/>sem foto</span>
+                </div>
+              )}
+              <span className="text-sm text-green-600 font-bold text-center">
+                💰 {creditor.name || creditor.username}
+              </span>
+            </div>
+          </div>
         </div>
         
         {debt.status === 'PAID' && (
@@ -138,6 +196,18 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
         </div>
       )}
 
+      {debt.attachment && (
+        <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-300">
+          <p className="text-base text-blue-800 font-bold mb-3">📎 Anexo:</p>
+          <img 
+            src={debt.attachment} 
+            alt="Anexo da dívida" 
+            className="max-w-full h-auto rounded-lg shadow-lg border-2 border-blue-400 cursor-pointer hover:scale-105 transition-transform"
+            onClick={() => window.open(debt.attachment, '_blank')}
+          />
+        </div>
+      )}
+
       {canEdit && debt.status === 'OPEN' && (
         <div className="mt-6 pt-4 border-t-2 border-gray-300">
           <button
@@ -145,6 +215,17 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
             className="bg-gradient-to-r from-green-600 to-green-800 text-white px-6 py-3 rounded-xl hover:from-green-700 hover:to-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 text-lg font-black border-2 border-black shadow-lg w-full"
           >
             ✅ PAGAR ESSA MERDA
+          </button>
+        </div>
+      )}
+
+      {canDelete && (
+        <div className="mt-4 pt-4 border-t-2 border-gray-300">
+          <button
+            onClick={handleDelete}
+            className="bg-gradient-to-r from-red-600 to-red-800 text-white px-6 py-3 rounded-xl hover:from-red-700 hover:to-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 text-lg font-black border-2 border-black shadow-lg w-full"
+          >
+            🗑️ EXCLUIR ESSA MERDA
           </button>
         </div>
       )}

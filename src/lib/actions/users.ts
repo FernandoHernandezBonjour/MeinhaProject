@@ -3,6 +3,7 @@
 import { cookies } from 'next/headers';
 import { verifyToken } from '../auth-server';
 import { registerUser, updateUserPassword, updateUserProfile } from '../auth-server';
+import { uploadPhotoAction } from './upload';
 import { User } from '@/types';
 
 async function getAuthenticatedUser() {
@@ -124,6 +125,70 @@ export async function updateProfileAction(formData: FormData) {
 
     return {
       success: true,
+      message: 'Perfil atualizado com sucesso',
+    };
+  } catch (error) {
+    console.error('Erro ao atualizar perfil:', error);
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+export async function updateUserProfileAction(formData: FormData) {
+  try {
+    const user = await getAuthenticatedUser();
+
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const pixKey = formData.get('pixKey') as string;
+    const photo = formData.get('photo') as File;
+
+    if (!name || name.trim() === '') {
+      return { error: 'Nome é obrigatório' };
+    }
+
+    // Validar email se fornecido
+    if (email && email.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return { error: 'Email inválido' };
+    }
+
+    const profileData: any = {
+      name: name.trim(),
+    };
+    
+    if (email && email.trim() !== '') {
+      profileData.email = email.trim();
+    }
+    
+    if (pixKey && pixKey.trim() !== '') {
+      profileData.pixKey = pixKey.trim();
+    }
+
+    // Se há uma foto para upload
+    if (photo && photo.size > 0) {
+      try {
+        const uploadFormData = new FormData();
+        uploadFormData.append('photo', photo);
+        
+        const uploadResult = await uploadPhotoAction(uploadFormData);
+        
+        if (uploadResult.error) {
+          return { error: uploadResult.error };
+        }
+        
+        if (uploadResult.success && uploadResult.photoURL) {
+          profileData.photoURL = uploadResult.photoURL;
+        }
+      } catch (error) {
+        console.error('Erro no upload da foto:', error);
+        return { error: 'Erro ao fazer upload da foto' };
+      }
+    }
+
+    const updatedUser = await updateUserProfile(user.userId, profileData);
+
+    return {
+      success: true,
+      user: updatedUser,
       message: 'Perfil atualizado com sucesso',
     };
   } catch (error) {
