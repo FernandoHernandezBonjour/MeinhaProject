@@ -46,7 +46,7 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ onSuccess, onC
         formDataToSend.append('photo', selectedFile);
       }
       
-      const result = await updateUserProfileAction(formDataToSend);
+      const result: any = await updateUserProfileAction(formDataToSend);
       
       if (result.error) {
         setError(result.error);

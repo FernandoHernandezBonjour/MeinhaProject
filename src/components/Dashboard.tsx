@@ -116,11 +116,12 @@ export const Dashboard: React.FC = () => {
     );
   }
 
+  const bgImage = Math.random() < 0.1 ? '/images/negao_da_picona.jpg' : '/images/back.jpg';
   return (
-    <div 
+    <div
       className="min-h-screen bg-cover bg-center bg-fixed"
       style={{
-        backgroundImage: 'url(/images/back.jpg)',
+        backgroundImage: `url(${bgImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed'
@@ -386,7 +387,7 @@ export const Dashboard: React.FC = () => {
             <PasswordChangeForm
               onSuccess={() => setShowPasswordForm(false)}
               onCancel={() => setShowPasswordForm(false)}
-              forced={user && (user.hashedPassword === null || user.hashedPassword === undefined)}
+              forced={!!user && (user.hashedPassword == null)}
             />
           </div>
         </div>

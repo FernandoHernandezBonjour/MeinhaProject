@@ -31,11 +31,11 @@ async function cleanupOldPhotos(userId: string, currentFileName: string) {
 
     // Deletar fotos antigas (manter apenas a mais recente)
     const filesToDelete = files
-      .filter(file => file.name !== currentFileName)
+      .filter((file: any) => file.name !== currentFileName)
       .slice(0, -1); // Manter a mais recente
 
     await Promise.all(
-      filesToDelete.map(file => file.delete())
+      filesToDelete.map((file: any) => file.delete())
     );
 
     console.log(`Limpeza concluída: ${filesToDelete.length} fotos antigas removidas`);

@@ -7,6 +7,7 @@ export interface User {
   photoURL?: string;
   role: 'admin' | 'user';
   passwordChanged: boolean;
+  hashedPassword?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
