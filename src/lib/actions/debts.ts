@@ -2,7 +2,7 @@
 
 import { cookies } from 'next/headers';
 import { verifyToken } from '../auth-server';
-import { getOpenDebts, getAllUsers, createDebt, getDebt, updateDebt, deleteDebt } from '../firestore-server';
+import { getOpenDebts, getPaidDebts, getAllUsers, createDebt, getDebt, updateDebt, deleteDebt } from '../firestore-server';
 import { uploadPhotoAction } from './upload';
 import { Debt, User } from '@/types';
 
@@ -39,6 +39,31 @@ export async function getDebtsAction() {
     };
   } catch (error) {
     console.error('Erro ao buscar dívidas:', error);
+    return {
+      success: false,
+      error: 'Erro interno do servidor',
+      debts: [],
+      users: [],
+    };
+  }
+}
+
+export async function getPaidDebtsAction() {
+  try {
+    await getAuthenticatedUser();
+
+    const [debts, users] = await Promise.all([
+      getPaidDebts(),
+      getAllUsers()
+    ]);
+
+    return {
+      success: true,
+      debts,
+      users,
+    };
+  } catch (error) {
+    console.error('Erro ao buscar dívidas pagas:', error);
     return {
       success: false,
       error: 'Erro interno do servidor',

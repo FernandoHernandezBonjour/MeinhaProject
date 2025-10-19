@@ -48,8 +48,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = async (): Promise<void> => {
-    // Logout será feito via Server Actions
-    setUser(null);
+    try {
+      // Fazer logout via server action
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Erro no logout:', error);
+    } finally {
+      // Sempre limpar o estado local
+      setUser(null);
+    }
   };
 
   const registerUserAccount = async (userData: Omit<User, 'id' | 'createdAt' | 'updatedAt' | 'passwordChanged'>): Promise<void> => {

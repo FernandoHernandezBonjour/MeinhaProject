@@ -158,6 +158,26 @@ export const getOpenDebts = async (): Promise<Debt[]> => {
   });
 };
 
+export const getPaidDebts = async (): Promise<Debt[]> => {
+  checkFirebase();
+  const querySnapshot = await db.collection(DEBTS_COLLECTION)
+    .where('status', '==', 'PAID')
+    .orderBy('updatedAt', 'desc')
+    .get();
+
+  
+  return querySnapshot.docs.map((doc: any) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      dueDate: data?.dueDate.toDate(),
+      createdAt: data?.createdAt.toDate(),
+      updatedAt: data?.updatedAt.toDate(),
+    } as Debt;
+  });
+};
+
 export const updateDebt = async (id: string, debtData: Partial<Debt>): Promise<void> => {
   checkFirebase();
   await db.collection(DEBTS_COLLECTION).doc(id).update({

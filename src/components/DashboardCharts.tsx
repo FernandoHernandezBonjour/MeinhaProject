@@ -32,9 +32,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);
 
-  // Calcular maiores devedores (quem mais deve)
-  const debtorTotals = debts.reduce((acc, debt) => {
-    if (debt.status === 'OPEN') {
+  // Calcular maiores caloteiros (quem tem dívidas VENCIDAS)
+  const overdueDebtorTotals = debts.reduce((acc, debt) => {
+    if (debt.status === 'OPEN' && new Date(debt.dueDate) < new Date()) {
       const debtor = users.find(u => u.id === debt.debtorId);
       if (debtor) {
         const key = debtor.name || debtor.username;
@@ -44,14 +44,32 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
     return acc;
   }, {} as Record<string, number>);
 
-  const topDebtors: ChartData[] = Object.entries(debtorTotals)
+  const topOverdueDebtors: ChartData[] = Object.entries(overdueDebtorTotals)
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 5);
+
+  // Calcular futuros possíveis caloteiros (quem tem dívidas em aberto mas não vencidas)
+  const futureDebtorTotals = debts.reduce((acc, debt) => {
+    if (debt.status === 'OPEN' && new Date(debt.dueDate) >= new Date()) {
+      const debtor = users.find(u => u.id === debt.debtorId);
+      if (debtor) {
+        const key = debtor.name || debtor.username;
+        acc[key] = (acc[key] || 0) + debt.amount;
+      }
+    }
+    return acc;
+  }, {} as Record<string, number>);
+
+  const topFutureDebtors: ChartData[] = Object.entries(futureDebtorTotals)
     .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);
 
   // Calcular totais
   const totalToReceive = Object.values(creditorTotals).reduce((sum, value) => sum + value, 0);
-  const totalToPay = Object.values(debtorTotals).reduce((sum, value) => sum + value, 0);
+  const totalOverdue = Object.values(overdueDebtorTotals).reduce((sum, value) => sum + value, 0);
+  const totalFuture = Object.values(futureDebtorTotals).reduce((sum, value) => sum + value, 0);
 
   const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('pt-BR', {
@@ -63,7 +81,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
   const colors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6'];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 relative z-0">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 relative z-0">
       {/* Maiores Credores */}
       <div className="bg-white/60 backdrop-blur-sm p-6 rounded-xl shadow-2xl border-4 border-green-500 relative z-0">
         <h3 className="text-2xl font-black text-green-600 mb-6 text-center">
@@ -108,23 +126,23 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
         )}
       </div>
 
-      {/* Maiores Devedores */}
+      {/* Maiores Caloteiros (Dívidas Vencidas) */}
       <div className="bg-white/60 backdrop-blur-sm p-6 rounded-xl shadow-2xl border-4 border-red-500 relative z-0">
         <h3 className="text-2xl font-black text-red-600 mb-6 text-center">
           💀 MAIORES CALOTEIROS - QUEM NÃO PAGA 💀
         </h3>
         
-        {topDebtors.length > 0 ? (
+        {topOverdueDebtors.length > 0 ? (
           <div>
             <div className="mb-6 text-center bg-red-100 p-4 rounded-xl border-2 border-red-300">
               <p className="text-3xl font-black text-red-700">
-                {formatCurrency(totalToPay)}
+                {formatCurrency(totalOverdue)}
               </p>
-              <p className="text-lg font-bold text-red-600">Total que não foi pago</p>
+              <p className="text-lg font-bold text-red-600">Total em atraso</p>
             </div>
             
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={topDebtors}>
+              <BarChart data={topOverdueDebtors}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="name" 
@@ -147,13 +165,57 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
         ) : (
           <div className="text-center py-8">
             <div className="text-6xl mb-4">🎉</div>
-            <p className="text-xl font-bold text-green-600">Que milagre! Ninguém tá devendo!</p>
+            <p className="text-xl font-bold text-green-600">Que milagre! Ninguém tá atrasado!</p>
+          </div>
+        )}
+      </div>
+
+      {/* Futuros Possíveis Caloteiros */}
+      <div className="bg-white/60 backdrop-blur-sm p-6 rounded-xl shadow-2xl border-4 border-orange-500 relative z-0">
+        <h3 className="text-2xl font-black text-orange-600 mb-6 text-center">
+          ⚠️ FUTUROS POSSÍVEIS CALOTEIROS ⚠️
+        </h3>
+        
+        {topFutureDebtors.length > 0 ? (
+          <div>
+            <div className="mb-6 text-center bg-orange-100 p-4 rounded-xl border-2 border-orange-300">
+              <p className="text-3xl font-black text-orange-700">
+                {formatCurrency(totalFuture)}
+              </p>
+              <p className="text-lg font-bold text-orange-600">Total em aberto</p>
+            </div>
+            
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={topFutureDebtors}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="name" 
+                  tick={{ fontSize: 12 }}
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis 
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={formatCurrency}
+                />
+                <Tooltip 
+                  formatter={(value: number) => [formatCurrency(value), 'Valor']}
+                />
+                <Bar dataKey="value" fill="#F59E0B" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <div className="text-6xl mb-4">😢</div>
+            <p className="text-xl font-bold text-gray-600">Ninguém tem dívida em aberto!</p>
           </div>
         )}
       </div>
 
       {/* Resumo Geral */}
-      <div className="lg:col-span-2 bg-white/60 backdrop-blur-sm p-6 rounded-xl shadow-2xl border-4 border-purple-500 relative z-0">
+      <div className="lg:col-span-3 bg-white/60 backdrop-blur-sm p-6 rounded-xl shadow-2xl border-4 border-purple-500 relative z-0">
         <h3 className="text-2xl font-black text-purple-600 mb-6 text-center">
           📊 RESUMO GERAL - A SITUAÇÃO TÁ ASSIM 📊
         </h3>
