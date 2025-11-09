@@ -3,6 +3,8 @@ import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth-server';
 import { getUserById } from '@/lib/firestore-server';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const cookieStore = await cookies();
