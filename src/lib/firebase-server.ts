@@ -3,9 +3,15 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 
 // Initialize Firebase Admin SDK (server-side only)
+const projectId = process.env.FIREBASE_PROJECT_ID;
+const inferredBucket =
+  process.env.FIREBASE_STORAGE_BUCKET ||
+  (projectId ? `${projectId}.firebasestorage.app` : undefined) ||
+  (projectId ? `${projectId}.appspot.com` : undefined);
+
 const firebaseConfig = {
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'meinha-baf3e.firebasestorage.app',
+  projectId,
+  storageBucket: inferredBucket,
   credential: cert({
     projectId: process.env.FIREBASE_PROJECT_ID,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,

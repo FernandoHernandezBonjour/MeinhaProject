@@ -22,9 +22,9 @@ async function getAuthenticatedUser() {
 }
 
 // Função auxiliar para limpar fotos antigas (opcional)
-async function cleanupOldPhotos(userId: string, currentFileName: string) {
+async function cleanupOldPhotos(userId: string, currentFileName: string, bucketName: string) {
   try {
-    const bucket = storage.bucket('meinha-baf3e.firebasestorage.app');
+    const bucket = storage.bucket(bucketName);
     const [files] = await bucket.getFiles({
       prefix: `users/${userId}/photo_`,
     });
@@ -49,6 +49,17 @@ export async function uploadPhotoAction(formData: FormData) {
   try {
     const user = await getAuthenticatedUser();
     const file = formData.get('photo') as File;
+  const bucketName =
+      process.env.FIREBASE_STORAGE_BUCKET ||
+      storage?.app?.options?.storageBucket ||
+      (process.env.FIREBASE_PROJECT_ID
+        ? `${process.env.FIREBASE_PROJECT_ID}.firebasestorage.app`
+        : undefined);
+
+    if (!bucketName) {
+      console.error('Bucket do Firebase Storage não configurado');
+      return { error: 'Serviço de armazenamento não configurado' };
+    }
 
     if (!file) {
       return { error: 'Nenhum arquivo foi enviado' };
@@ -74,7 +85,7 @@ export async function uploadPhotoAction(formData: FormData) {
     const fileName = `users/${user.userId}/photo_${timestamp}.${fileExtension}`;
 
     // Upload para Firebase Storage
-    const bucket = storage.bucket('meinha-baf3e.firebasestorage.app');
+    const bucket = storage.bucket(bucketName);
     const fileRef = bucket.file(fileName);
     
     // Upload do arquivo
@@ -95,7 +106,7 @@ export async function uploadPhotoAction(formData: FormData) {
     const downloadURL = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
 
     // Limpar fotos antigas em background (não bloqueia o upload)
-    cleanupOldPhotos(user.userId, fileName).catch(console.error);
+    cleanupOldPhotos(user.userId, fileName, bucketName).catch(console.error);
 
     return {
       success: true,

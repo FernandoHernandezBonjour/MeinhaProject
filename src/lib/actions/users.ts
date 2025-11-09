@@ -1,8 +1,10 @@
 'use server';
 
 import { cookies } from 'next/headers';
+import { randomBytes } from 'crypto';
 import { verifyToken } from '../auth-server';
-import { registerUser, updateUserPassword, updateUserProfile } from '../auth-server';
+import { registerUser, updateUserPassword, updateUserProfile, hashPassword } from '../auth-server';
+import { getAllUsers, getUser, updateUser } from '../firestore-server';
 import { uploadPhotoAction } from './upload';
 import { User } from '@/types';
 
@@ -71,6 +73,82 @@ export async function registerUserAction(formData: FormData) {
       }
     }
 
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+export async function getUsersAction() {
+  try {
+    await requireAdmin();
+
+    const users = await getAllUsers();
+
+    return {
+      success: true,
+      users: users.map((user) => ({
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        email: user.email,
+        name: user.name,
+        passwordChanged: user.passwordChanged,
+        forcePasswordReset: user.forcePasswordReset ?? !user.passwordChanged,
+        skipCurrentPassword: user.skipCurrentPassword ?? false,
+        updatedAt: user.updatedAt,
+      })),
+    };
+  } catch (error) {
+    console.error('Erro ao buscar usuários:', error);
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+function generateTemporaryPassword(length = 10) {
+  const charset = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$%';
+  const bytes = randomBytes(length);
+  let password = '';
+
+  for (let i = 0; i < length; i += 1) {
+    password += charset[bytes[i] % charset.length];
+  }
+
+  return password;
+}
+
+export async function resetUserPasswordAction(formData: FormData) {
+  try {
+    await requireAdmin();
+
+    const userId = formData.get('userId') as string;
+
+    if (!userId) {
+      return { error: 'ID do usuário é obrigatório' };
+    }
+
+    const user = await getUser(userId);
+
+    if (!user) {
+      return { error: 'Usuário não encontrado' };
+    }
+
+    const temporaryPassword = generateTemporaryPassword();
+    const hashedPassword = await hashPassword(temporaryPassword);
+
+    await updateUser(userId, {
+      hashedPassword,
+      passwordChanged: false,
+      forcePasswordReset: true,
+      skipCurrentPassword: true,
+    });
+
+    return {
+      success: true,
+      userId,
+      username: user.username,
+      temporaryPassword,
+    };
+  } catch (error) {
+    console.error('Erro ao redefinir senha:', error);
     return { error: 'Erro interno do servidor' };
   }
 }

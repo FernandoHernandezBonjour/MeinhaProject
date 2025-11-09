@@ -2,7 +2,17 @@
 
 import { cookies } from 'next/headers';
 import { verifyToken } from '../auth-server';
-import { getOpenDebts, getPaidDebts, getAllUsers, createDebt, getDebt, updateDebt, deleteDebt } from '../firestore-server';
+import {
+  getOpenDebts,
+  getPaidDebts,
+  getAllUsers,
+  createDebt,
+  getDebt,
+  updateDebt,
+  deleteDebt,
+  createNotification,
+  getUser,
+} from '../firestore-server';
 import { uploadPhotoAction } from './upload';
 import { Debt, User } from '@/types';
 
@@ -96,6 +106,7 @@ export async function getUsersAction() {
 export async function createDebtAction(formData: FormData) {
   try {
     const user = await getAuthenticatedUser();
+    const actor = await getUser(user.userId);
 
     const debtorId = formData.get('debtorId') as string;
     const amount = parseFloat(formData.get('amount') as string);
@@ -163,6 +174,21 @@ export async function createDebtAction(formData: FormData) {
 
     const debtId = await createDebt(debtData);
 
+    const debtor = await getUser(debtorId);
+
+    if (debtor) {
+      await createNotification({
+        userId: debtor.id,
+        type: 'debt_created',
+        title: 'Nova dívida criada',
+        message: `${actor?.username ?? 'Um usuário'} registrou uma dívida de R$ ${amount.toFixed(
+          2,
+        )} para você.`,
+        read: false,
+        createdAt: new Date(),
+      });
+    }
+
     return {
       success: true,
       debtId,
@@ -177,6 +203,7 @@ export async function createDebtAction(formData: FormData) {
 export async function updateDebtAction(debtId: string, formData: FormData) {
   try {
     const user = await getAuthenticatedUser();
+    const actor = await getUser(user.userId);
 
     const debt = await getDebt(debtId);
 
@@ -206,6 +233,25 @@ export async function updateDebtAction(debtId: string, formData: FormData) {
 
     await updateDebt(debtId, updateData);
 
+    const updatedAmount = typeof updateData.amount === 'number' ? updateData.amount : debt.amount;
+    const recipients = [debt.creditorId, debt.debtorId].filter((id) => id !== user.userId);
+    await Promise.all(
+      recipients.map(async (recipientId) => {
+        const recipient = await getUser(recipientId);
+        if (!recipient) return;
+        await createNotification({
+          userId: recipient.id,
+          type: 'debt_updated',
+          title: 'Dívida atualizada',
+          message: `${actor?.username ?? 'Um usuário'} atualizou a dívida. Valor atual: R$ ${updatedAmount.toFixed(
+            2,
+          )}.`,
+          read: false,
+          createdAt: new Date(),
+        });
+      }),
+    );
+
     return {
       success: true,
       message: 'Dívida atualizada com sucesso',
@@ -219,6 +265,7 @@ export async function updateDebtAction(debtId: string, formData: FormData) {
 export async function markDebtAsPaidAction(debtId: string) {
   try {
     const user = await getAuthenticatedUser();
+    const actor = await getUser(user.userId);
 
     const debt = await getDebt(debtId);
 
@@ -235,6 +282,24 @@ export async function markDebtAsPaidAction(debtId: string) {
 
     await updateDebt(debtId, { status: 'PAID' });
 
+    const recipients = [debt.creditorId, debt.debtorId].filter((id) => id !== user.userId);
+    await Promise.all(
+      recipients.map(async (recipientId) => {
+        const recipient = await getUser(recipientId);
+        if (!recipient) return;
+        await createNotification({
+          userId: recipient.id,
+          type: 'debt_paid',
+          title: 'Dívida marcada como paga',
+          message: `${actor?.username ?? 'Um usuário'} marcou a dívida de R$ ${debt.amount.toFixed(
+            2,
+          )} como paga.`,
+          read: false,
+          createdAt: new Date(),
+        });
+      }),
+    );
+
     return {
       success: true,
       message: 'Dívida marcada como paga',
@@ -248,6 +313,7 @@ export async function markDebtAsPaidAction(debtId: string) {
 export async function deleteDebtAction(debtId: string) {
   try {
     const user = await getAuthenticatedUser();
+    const actor = await getUser(user.userId);
 
     const debt = await getDebt(debtId);
 
@@ -263,6 +329,24 @@ export async function deleteDebtAction(debtId: string) {
     }
 
     await deleteDebt(debtId);
+
+    const recipients = [debt.creditorId, debt.debtorId].filter((id) => id !== user.userId);
+    await Promise.all(
+      recipients.map(async (recipientId) => {
+        const recipient = await getUser(recipientId);
+        if (!recipient) return;
+        await createNotification({
+          userId: recipient.id,
+          type: 'debt_deleted',
+          title: 'Dívida removida',
+          message: `${actor?.username ?? 'Um usuário'} removeu uma dívida de R$ ${debt.amount.toFixed(
+            2,
+          )}.`,
+          read: false,
+          createdAt: new Date(),
+        });
+      }),
+    );
 
     return {
       success: true,

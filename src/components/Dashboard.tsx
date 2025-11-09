@@ -341,8 +341,149 @@ export const Dashboard: React.FC = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Sirene do Calote */}
+        {(() => {
+          const overdueDebts = debts.filter(debt => 
+            debt.status === 'OPEN' && new Date(debt.dueDate) < new Date()
+          );
+          
+          if (overdueDebts.length > 0) {
+            return (
+              <div className="bg-red-600 text-white rounded-2xl p-6 shadow-2xl border-4 border-black mb-8 animate-pulse">
+                <div className="text-center">
+                  <div className="text-6xl mb-4">⚠️</div>
+                  <h2 className="text-3xl font-black mb-2">
+                    PAGA ESSA MERDA LOGO!
+                  </h2>
+                  <p className="text-xl text-red-200">
+                    {overdueDebts.length} dívida(s) vencida(s) - Pare de enrolar!
+                  </p>
+                </div>
+              </div>
+            );
+          }
+          return null;
+        })()}
+
         {/* Charts */}
         <DashboardCharts debts={debts} users={users} />
+
+        {/* Relatório Auditoria Meinha (CPI) */}
+        <div className="bg-white/60 backdrop-blur-sm rounded-xl shadow-2xl border-4 border-yellow-500 mb-8">
+          <div className="px-6 py-4 border-b-4 border-yellow-500 bg-gradient-to-r from-yellow-600/60 to-orange-600/60 backdrop-blur-sm">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-black text-white">
+                📊 RELATÓRIO AUDITORIA MEINHA (CPI)
+              </h2>
+              <button
+                onClick={() => {
+                  // Aqui seria a lógica para gerar o PDF
+                  console.log('Gerando relatório de auditoria...');
+                }}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 font-bold text-sm shadow-lg border-2 border-black"
+              >
+                📄 GERAR PDF
+              </button>
+            </div>
+            <p className="text-lg text-yellow-200 font-bold">
+              Relatório completo da situação financeira do grupo
+            </p>
+          </div>
+          
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div className="text-center bg-red-100 p-4 rounded-xl border-2 border-red-300">
+                <div className="text-3xl font-black text-red-600">
+                  {debts.length}
+                </div>
+                <div className="text-sm font-bold text-red-800">
+                  Dívidas Ativas
+                </div>
+              </div>
+              
+              <div className="text-center bg-blue-100 p-4 rounded-xl border-2 border-blue-300">
+                <div className="text-3xl font-black text-blue-600">
+                  {users.length}
+                </div>
+                <div className="text-sm font-bold text-blue-800">
+                  Total de Usuários
+                </div>
+              </div>
+              
+              <div className="text-center bg-green-100 p-4 rounded-xl border-2 border-green-300">
+                <div className="text-3xl font-black text-green-600">
+                  {formatCurrency(debts.reduce((sum, debt) => sum + debt.amount, 0))}
+                </div>
+                <div className="text-sm font-bold text-green-800">
+                  Valor Total
+                </div>
+              </div>
+              
+              <div className="text-center bg-orange-100 p-4 rounded-xl border-2 border-orange-300">
+                <div className="text-3xl font-black text-orange-600">
+                  {debts.filter(debt => 
+                    debt.status === 'OPEN' && new Date(debt.dueDate) < new Date()
+                  ).length}
+                </div>
+                <div className="text-sm font-bold text-orange-800">
+                  Em Atraso
+                </div>
+              </div>
+            </div>
+
+            {/* Ranking dos Devedores */}
+            <div className="mb-6">
+              <h3 className="text-xl font-black text-gray-800 mb-4">
+                🏆 Ranking dos Devedores
+              </h3>
+              <div className="space-y-2">
+                {(() => {
+                  const debtorTotals = debts.reduce((acc, debt) => {
+                    if (debt.status === 'OPEN') {
+                      acc[debt.debtorId] = (acc[debt.debtorId] || 0) + debt.amount;
+                    }
+                    return acc;
+                  }, {} as Record<string, number>);
+
+                  const sortedDebtors = Object.entries(debtorTotals)
+                    .map(([userId, total]) => {
+                      const user = users.find(u => u.id === userId);
+                      return { user, total };
+                    })
+                    .filter(item => item.user)
+                    .sort((a, b) => b.total - a.total)
+                    .slice(0, 5);
+
+                  return sortedDebtors.map((item, index) => (
+                    <div
+                      key={item.user!.id}
+                      className="flex justify-between items-center p-3 bg-gray-100 rounded-lg border-2 border-gray-300"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <span className="text-2xl font-black text-gray-600">
+                          #{index + 1}
+                        </span>
+                        <span className="font-bold text-gray-800">
+                          {item.user!.name || item.user!.username}
+                        </span>
+                      </div>
+                      <span className="text-lg font-black text-red-600">
+                        {formatCurrency(item.total)}
+                      </span>
+                    </div>
+                  ));
+                })()}
+              </div>
+            </div>
+
+            {/* Conclusão */}
+            <div className="bg-yellow-100 p-4 rounded-xl border-2 border-yellow-400 text-center">
+              <p className="text-lg font-black text-yellow-800">
+                "Conclusão: a vergonha continua."
+              </p>
+            </div>
+          </div>
+        </div>
 
         {/* Minhas Dívidas */}
         <div className="bg-white/60 backdrop-blur-sm rounded-xl shadow-2xl border-4 border-purple-500 mb-8">

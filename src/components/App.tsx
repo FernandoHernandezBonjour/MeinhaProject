@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { LoginFormServer } from './LoginFormServer';
 import { PasswordChangeForm } from './PasswordChangeForm';
 import { ProfileCompletionForm } from './ProfileCompletionForm';
-import { Dashboard } from './Dashboard';
+import { HubLayout } from './HubLayout';
 
 export const App: React.FC = () => {
   const { user, loading } = useAuth();
@@ -37,12 +37,19 @@ export const App: React.FC = () => {
   }
 
   // Se o usuário não alterou a senha, mostrar tela de alteração obrigatória
-  if (!user.passwordChanged) {
+  if (!user.passwordChanged || user.forcePasswordReset) {
+    const forced = user.forcePasswordReset ?? true;
+    const skipCurrentPassword = Boolean(user.skipCurrentPassword);
+
     return (
       <PasswordChangeForm
+        forced={forced}
+        skipCurrentPassword={skipCurrentPassword}
         onSuccess={() => {
-          // Após alterar a senha, perguntar se quer completar o perfil
-          setShowProfileCompletion(true);
+          if (!skipCurrentPassword) {
+            // Após alterar a senha, perguntar se quer completar o perfil
+            setShowProfileCompletion(true);
+          }
         }}
       />
     );
@@ -58,6 +65,6 @@ export const App: React.FC = () => {
     );
   }
 
-  // Usuário logado e com senha alterada, mostrar dashboard
-  return <Dashboard />;
+  // Usuário logado e com senha alterada, mostrar hub
+  return <HubLayout />;
 };

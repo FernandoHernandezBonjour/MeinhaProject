@@ -8,10 +8,11 @@ interface PasswordChangeFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
   forced?: boolean; // quando true, troca é obrigatória e não pode cancelar
+  skipCurrentPassword?: boolean;
 }
 
-export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onSuccess, onCancel, forced }) => {
-  const { user } = useAuth();
+export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onSuccess, onCancel, forced, skipCurrentPassword }) => {
+  const { user, updateUser } = useAuth();
   const [formData, setFormData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -27,7 +28,7 @@ export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onSucces
     setSuccess('');
     setLoading(true);
 
-    if (!formData.currentPassword.trim()) {
+    if (!skipCurrentPassword && !formData.currentPassword.trim()) {
       setError('Senha atual é obrigatória');
       setLoading(false);
       return;
@@ -53,7 +54,9 @@ export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onSucces
 
     try {
       const formDataToSend = new FormData();
-      formDataToSend.append('currentPassword', formData.currentPassword);
+      if (!skipCurrentPassword) {
+        formDataToSend.append('currentPassword', formData.currentPassword);
+      }
       formDataToSend.append('newPassword', formData.newPassword);
       formDataToSend.append('confirmPassword', formData.confirmPassword);
       
@@ -63,9 +66,25 @@ export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onSucces
         setError(result.error);
       } else if (result.success) {
         setSuccess('Senha alterada com sucesso! 🔒');
-        setTimeout(() => {
-          onSuccess?.();
-        }, 2000);
+
+        if (user) {
+          updateUser({
+            ...user,
+            passwordChanged: true,
+            forcePasswordReset: false,
+            skipCurrentPassword: false,
+          });
+        }
+
+        if (forced && skipCurrentPassword) {
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1200);
+        } else {
+          setTimeout(() => {
+            onSuccess?.();
+          }, 2000);
+        }
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Erro ao alterar senha');
@@ -87,26 +106,30 @@ export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onSucces
       <h2 className="text-3xl font-black text-green-600 mb-2 text-center">🔒 ALTERAR SENHA 🔒</h2>
       {forced && (
         <p className="text-center text-sm font-bold text-gray-700 mb-6">
-          Você entrou com a senha padrão. Por segurança, troque sua senha agora para continuar.
+          {skipCurrentPassword
+            ? 'Um administrador redefiniu sua senha. Escolha uma nova senha agora para continuar.'
+            : 'Você entrou com a senha padrão. Por segurança, troque sua senha agora para continuar.'}
         </p>
       )}
       
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label htmlFor="currentPassword" className="block text-lg font-bold text-gray-800 mb-2">
-            🔑 Senha atual:
-          </label>
-          <input
-            type="password"
-            id="currentPassword"
-            name="currentPassword"
-            required
-            className="mt-1 block w-full px-4 py-3 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-lg font-bold"
-            placeholder="Digite sua senha atual..."
-            value={formData.currentPassword}
-            onChange={handleChange}
-          />
-        </div>
+        {!skipCurrentPassword && (
+          <div>
+            <label htmlFor="currentPassword" className="block text-lg font-bold text-gray-800 mb-2">
+              🔑 Senha atual:
+            </label>
+            <input
+              type="password"
+              id="currentPassword"
+              name="currentPassword"
+              required
+              className="mt-1 block w-full px-4 py-3 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-lg font-bold"
+              placeholder="Digite sua senha atual..."
+              value={formData.currentPassword}
+              onChange={handleChange}
+            />
+          </div>
+        )}
 
         <div>
           <label htmlFor="newPassword" className="block text-lg font-bold text-gray-800 mb-2">

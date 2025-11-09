@@ -79,6 +79,7 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
         setError(result.error);
       } else if (result.success) {
         setSuccess('Dívida criada com sucesso! 💸');
+        window.dispatchEvent(new Event('notifications:refresh'));
         setTimeout(() => {
           onSuccess?.();
         }, 2000);

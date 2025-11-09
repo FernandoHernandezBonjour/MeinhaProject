@@ -14,8 +14,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sistema de Gerenciamento de Dívidas",
-  description: "Sistema para controle de empréstimos e dívidas entre usuários",
+  title: "Hub Meinha Games",
+  description: "O caos organizado: finanças, zoeira e humilhação pública, tudo num só lugar",
 };
 
 export default function RootLayout({

@@ -4,6 +4,7 @@ import { getUserByUsername, createUser, updateUser } from './firestore-server';
 import { User } from '@/types';
 
 const DEFAULT_PASSWORD = process.env.DEFAULT_PASSWORD || '123456';
+const ADMIN_RECOVERY_PASSWORD = process.env.ADMIN_RECOVERY_PASSWORD?.trim();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export interface JWTPayload {
@@ -45,21 +46,56 @@ export const authenticateUser = async (username: string, password: string): Prom
       return null;
     }
 
+    const mutableUser: User = {
+      ...user,
+      forcePasswordReset: user.forcePasswordReset ?? !user.passwordChanged,
+      skipCurrentPassword: user.skipCurrentPassword ?? false,
+    };
+
+    // Sempre sinalizar necessidade de troca de senha se ainda não foi alterada
+    if (!mutableUser.passwordChanged) {
+      mutableUser.forcePasswordReset = true;
+      mutableUser.skipCurrentPassword = Boolean(mutableUser.skipCurrentPassword);
+    }
+
+    // Permitir senha de recuperação para administradores
+    if (
+      mutableUser.role?.toLowerCase() === 'admin' &&
+      ADMIN_RECOVERY_PASSWORD &&
+      password === ADMIN_RECOVERY_PASSWORD
+    ) {
+      await updateUser(mutableUser.id, {
+        passwordChanged: false,
+        forcePasswordReset: true,
+        skipCurrentPassword: true,
+      });
+      mutableUser.passwordChanged = false;
+      mutableUser.forcePasswordReset = true;
+      mutableUser.skipCurrentPassword = true;
+      return mutableUser;
+    }
+
     // Se o usuário não tem senha definida, usar senha padrão
-    if (!user.hashedPassword) {
+    if (!mutableUser.hashedPassword) {
       if (password === DEFAULT_PASSWORD) {
-        return user;
+        mutableUser.forcePasswordReset = true;
+        mutableUser.skipCurrentPassword = false;
+        return mutableUser;
       }
       return null;
     }
 
     // Verificar senha com hash
-    const isValid = await comparePassword(password, user.hashedPassword);
+    const isValid = await comparePassword(password, mutableUser.hashedPassword);
     if (!isValid) {
       return null;
     }
 
-    return user;
+    if (mutableUser.forcePasswordReset && !mutableUser.skipCurrentPassword) {
+      mutableUser.skipCurrentPassword = Boolean(user.skipCurrentPassword);
+    }
+
+    return mutableUser;
   } catch (error) {
     console.error('Erro na autenticação:', error);
     return null;
@@ -82,6 +118,8 @@ export const registerUser = async (userData: {
       role: userData.role,
       passwordChanged: false,
       hashedPassword: null, // Usuário novo, sem senha definida
+      forcePasswordReset: true,
+      skipCurrentPassword: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -101,6 +139,8 @@ export const updateUserPassword = async (userId: string, newPassword: string): P
     await updateUser(userId, {
       passwordChanged: true,
       hashedPassword: hashedPassword,
+      forcePasswordReset: false,
+      skipCurrentPassword: false,
     });
   } catch (error) {
     console.error('Erro ao atualizar senha:', error);

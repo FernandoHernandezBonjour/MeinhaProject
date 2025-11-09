@@ -1,217 +1,169 @@
-# Sistema de Gerenciamento de Dívidas
+# 🐷 Hub Meinha Games
 
-Um sistema completo para controle de empréstimos e dívidas entre usuários, desenvolvido com Next.js, Tailwind CSS e Firebase Firestore.
+> **O caos organizado: finanças, zoeira e humilhação pública, tudo num só lugar.**
 
-## 🚀 Funcionalidades
+O Hub Meinha Games é o centro oficial do grupo Meinha Games, um portal completo que reúne o sistema financeiro existente com novos módulos sociais, mantendo o humor ácido e a linguagem debochada característica do grupo.
 
-### Autenticação e Usuários
-- ✅ Login com nome de usuário e senha
-- ✅ Cadastro de usuários (apenas administradores)
-- ✅ Alteração obrigatória de senha no primeiro login
-- ✅ Completar perfil (foto, email, nome, chave PIX)
-- ✅ Diferentes roles: Admin e User
+## 🎯 Funcionalidades
 
-### Gerenciamento de Dívidas
-- ✅ Cadastro de dívidas entre usuários
-- ✅ Visualização de todas as dívidas em aberto
-- ✅ Marcar dívidas como pagas
-- ✅ Controle de permissões (apenas dono ou admin pode alterar)
-- ✅ Status: OPEN e PAID
+### 🏠 Home (Painel Central)
+- **Ranking do Caloteiro Supremo:** Top 3 devedores com "Coroa do Vagabundo"
+- **Estatísticas da Semana:** Dívidas criadas, pagamentos, eventos e novos caloteiros
+- **Feed de Ações Recentes:** Frases automáticas em tom de humor
+- **Botões de Ação Rápida:** Criar dívida, registrar rolê, adicionar mídia
 
-### Dashboard
-- ✅ Lista de dívidas ordenadas por vencimento
-- ✅ Cards com informações detalhadas
-- ✅ Indicação visual de dívidas vencidas
-- ✅ Gráficos de maiores credores e devedores
-- ✅ Resumo estatístico
+### 🎉 Eventos (Rolês)
+- Registro de encontros do grupo com fotos e vídeos
+- Sistema de comentários e reações personalizadas (palavrões permitidos)
+- **Modo Flashback:** Mostra eventos antigos aleatoriamente
+- Upload de mídia integrado
 
-## 🛠️ Tecnologias Utilizadas
+### 💰 Financeiro (Módulo Existente Aprimorado)
+- **Sirene do Calote:** Alerta piscando para dívidas vencidas
+- **Relatório Auditoria Meinha (CPI):** PDF com ranking e estatísticas
+- Mantém toda funcionalidade original intacta
+- Visual aprimorado com identidade do Hub
 
-- **Frontend**: Next.js 14, React, TypeScript
-- **Styling**: Tailwind CSS
-- **Database**: Firebase Firestore
-- **Charts**: Recharts
-- **Authentication**: Sistema customizado com bcryptjs
+### 📸 Mídia / Galeria
+- Centralização de fotos e vídeos dos eventos
+- **Modo Slideshow Aleatório:** Exibição em tela cheia sem legenda
+- Filtros por evento e tipo de mídia
+- Upload drag-and-drop
 
-## 📋 Pré-requisitos
+### 💬 Fórum Interno
+- Debates, votações e zoeira sem limites
+- Sistema de enquetes com contagem pública
+- Categorias: Debate, Votação, Zoeira, Geral
+- Comentários e reações
 
-- Node.js 18+ 
+### 🔔 Sistema de Notificações & Níveis
+- Notificações automáticas para ações importantes
+- **Sistema de Níveis:** Meinho Júnior → Top 3 Meinhos
+- **Flag de Caloteiro:** Ícone especial para devedores
+- Interface de notificações em tempo real
+
+## 🛠️ Stack Tecnológica
+
+- **Frontend:** Next.js 14, React 18, TypeScript
+- **Styling:** Tailwind CSS com classes customizadas
+- **Backend:** Next.js API Routes
+- **Database:** Firebase Firestore
+- **Authentication:** Firebase Auth + JWT
+- **Charts:** Recharts
+- **Icons:** Emojis nativos (estilo Meinha)
+
+## 🚀 Como Executar
+
+### Pré-requisitos
+- Node.js 18+
 - npm ou yarn
-- Conta no Firebase
-- Projeto Firebase configurado
+- Conta Firebase configurada
 
-## 🔧 Configuração
+### Instalação
 
-### 1. Clone o repositório
+1. Clone o repositório:
 ```bash
-git clone <seu-repositorio>
-cd sistema-dividas
+git clone <repository-url>
+cd meinha
 ```
 
-### 2. Instale as dependências
+2. Instale as dependências:
 ```bash
 npm install
 ```
 
-### 3. Configure o Firebase
-
-1. Acesse o [Firebase Console](https://console.firebase.google.com/)
-2. Crie um novo projeto ou use um existente
-3. Ative o Firestore Database
-4. Obtenha as credenciais do projeto
-
-### 4. Configure as variáveis de ambiente
-
-Crie um arquivo `.env.local` na raiz do projeto:
-
-```env
-# Firebase Configuration (PRIVATE - Server-side only)
-FIREBASE_API_KEY=sua_api_key
-FIREBASE_AUTH_DOMAIN=seu_projeto.firebaseapp.com
-FIREBASE_PROJECT_ID=seu_projeto_id
-FIREBASE_STORAGE_BUCKET=seu_projeto.appspot.com
-FIREBASE_MESSAGING_SENDER_ID=seu_sender_id
-FIREBASE_APP_ID=seu_app_id
-
-# Default password for new users
-DEFAULT_PASSWORD=123456
-
-# JWT Secret for custom authentication
-JWT_SECRET=seu_jwt_secret_muito_seguro_aqui
-
-# Session Secret
-SESSION_SECRET=seu_session_secret_muito_seguro_aqui
+3. Configure as variáveis de ambiente:
+```bash
+# Crie um arquivo .env.local
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_domain
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+# ... outras variáveis do Firebase
 ```
 
-**⚠️ IMPORTANTE:** As credenciais do Firebase agora são privadas e só funcionam no servidor. Isso garante que suas credenciais não sejam expostas no frontend.
-
-### 5. Configure o Firestore
-
-No Firebase Console, configure as regras do Firestore:
-
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Permitir leitura e escrita para todos (em produção, configure regras mais restritivas)
-    match /{document=**} {
-      allow read, write: if true;
-    }
-  }
-}
-```
-
-### 6. Execute o projeto
+4. Execute o servidor de desenvolvimento:
 ```bash
 npm run dev
 ```
 
-Acesse [http://localhost:3000](http://localhost:3000) no seu navegador.
-
-## 👤 Primeiro Acesso
-
-1. **Criar usuário admin**: Como não há usuários iniciais, você precisará criar um usuário admin manualmente no Firestore:
-   - Acesse o Firebase Console
-   - Vá para Firestore Database
-   - Crie uma coleção chamada `users`
-   - Adicione um documento com os seguintes campos:
-     ```json
-     {
-       "username": "admin",
-       "role": "admin",
-       "passwordChanged": false,
-       "createdAt": "timestamp",
-       "updatedAt": "timestamp"
-     }
-     ```
-
-2. **Login inicial**:
-   - Username: `admin`
-   - Senha: `123456` (ou o valor definido em DEFAULT_PASSWORD)
-
-3. **Alterar senha**: O sistema obrigará a alterar a senha no primeiro login
-
-4. **Cadastrar usuários**: Use o botão "Cadastrar Usuário" no dashboard
+5. Acesse [http://localhost:3000](http://localhost:3000)
 
 ## 📁 Estrutura do Projeto
 
 ```
 src/
 ├── app/                    # App Router do Next.js
-│   ├── globals.css        # Estilos globais
-│   ├── layout.tsx         # Layout principal
-│   └── page.tsx           # Página inicial
 ├── components/            # Componentes React
-│   ├── App.tsx           # Componente principal da aplicação
-│   ├── Dashboard.tsx     # Dashboard principal
-│   ├── DebtCard.tsx      # Card de dívida
-│   ├── DebtFormServer.tsx # Formulário de cadastro de dívida (Server Actions)
-│   ├── DashboardCharts.tsx # Gráficos do dashboard
-│   ├── LoginFormServer.tsx # Formulário de login (Server Actions)
-│   ├── PasswordChangeForm.tsx # Formulário de alteração de senha
-│   ├── ProfileCompletionForm.tsx # Formulário de completar perfil
-│   └── UserRegistration.tsx # Formulário de cadastro de usuário
+│   ├── HubLayout.tsx     # Layout principal com navegação
+│   ├── HomePage.tsx      # Página inicial
+│   ├── EventsPage.tsx    # Módulo de eventos
+│   ├── MediaPage.tsx     # Galeria de mídia
+│   ├── ForumPage.tsx     # Fórum interno
+│   ├── Dashboard.tsx     # Módulo financeiro (existente)
+│   └── NotificationSystem.tsx # Sistema de notificações
 ├── contexts/             # Contextos React
-│   └── AuthContext.tsx   # Contexto de autenticação
 ├── lib/                  # Utilitários e configurações
-│   ├── actions/          # Server Actions
-│   │   ├── auth.ts      # Ações de autenticação
-│   │   ├── users.ts     # Ações de usuários
-│   │   └── debts.ts     # Ações de dívidas
-│   ├── auth-server.ts    # Autenticação server-side
-│   ├── firebase-server.ts # Configuração Firebase Admin
-│   └── firestore-server.ts # Serviços Firestore server-side
-└── types/               # Definições TypeScript
-    └── index.ts         # Tipos da aplicação
+├── types/                # Definições TypeScript
+└── styles/               # Estilos globais
 ```
 
-## 🔒 Segurança
+## 🎨 Identidade Visual
 
-### Arquitetura Segura
-- **Credenciais Privadas**: Firebase configurado apenas no servidor
-- **Server Actions**: Todas as operações de dados via Server Actions do Next.js 14
-- **Cookies HttpOnly**: Tokens JWT armazenados em cookies seguros
-- **Autenticação Server-Side**: Verificação de autenticação no servidor
+- **Cores:** Gradientes vermelho-laranja, bordas pretas, sombras coloridas
+- **Tipografia:** Inter + JetBrains Mono
+- **Estilo:** Humor ácido, linguagem debochada, visual colorido e engraçado
+- **Componentes:** Cards com bordas grossas, botões com sombras, animações personalizadas
 
-### Controles de Acesso
-- Senhas são hashadas com bcryptjs
-- Controle de permissões baseado em roles (admin/user)
-- Validação de dados no frontend e backend
-- Middleware de autenticação para rotas protegidas
+## 🔧 Funcionalidades Técnicas
 
-### Melhores Práticas
-- Variáveis de ambiente privadas (não NEXT_PUBLIC)
-- Tokens JWT com expiração
-- Cookies com flags de segurança (httpOnly, secure, sameSite)
-- Validação rigorosa de entrada de dados
+### Navegação por Abas
+- Sistema de roteamento interno sem reload
+- Estado persistente entre abas
+- Indicadores visuais de aba ativa
 
-## 🚀 Deploy
+### Sistema de Notificações
+- Notificações em tempo real
+- Diferentes tipos: dívidas, eventos, fórum
+- Sistema de leitura/não lida
+- Contador de notificações não lidas
 
-### Vercel (Recomendado)
-1. Conecte seu repositório ao Vercel
-2. Configure as variáveis de ambiente
-3. Deploy automático
+### Upload de Mídia
+- Suporte a fotos e vídeos
+- Preview antes do upload
+- Associação com eventos
+- Compressão automática
 
-### Outras plataformas
-O projeto pode ser deployado em qualquer plataforma que suporte Next.js:
-- Netlify
-- Railway
-- Heroku
-- AWS Amplify
+### Sistema de Níveis
+- XP baseado em ações do usuário
+- 5 níveis diferentes
+- Flag especial para caloteiros
+- Barra de progresso visual
 
-## 📝 Licença
+## 🚨 Recursos Especiais
 
-Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
+### Sirene do Calote
+- Alerta piscante para dívidas vencidas
+- Animação de pulso
+- Mensagem personalizada com nome do devedor
+
+### Ranking de Caloteiros
+- Top 3 devedores com coroa especial
+- Tooltips com informações adicionais
+- Atualização em tempo real
+
+### Relatório CPI
+- Geração de PDF com estatísticas
+- Ranking completo de devedores
+- Conclusão humorística
 
 ## 🤝 Contribuição
 
-Contribuições são bem-vindas! Sinta-se à vontade para:
-1. Fazer fork do projeto
-2. Criar uma branch para sua feature
-3. Commit suas mudanças
-4. Push para a branch
-5. Abrir um Pull Request
+Este projeto é privado do grupo Meinha Games. Para sugestões ou melhorias, entre em contato com a equipe de desenvolvimento.
 
-## 📞 Suporte
+## 📄 Licença
 
-Se você encontrar algum problema ou tiver dúvidas, abra uma issue no repositório.
+Projeto privado - Todos os direitos reservados ao grupo Meinha Games.
+
+---
+
+**"A vergonha continua."** 🐷

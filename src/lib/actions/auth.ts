@@ -89,6 +89,8 @@ export async function getCurrentUser(): Promise<User | null> {
       photoURL: user.photoURL,
       role: user.role,
       passwordChanged: user.passwordChanged,
+      forcePasswordReset: user.forcePasswordReset ?? !user.passwordChanged,
+      skipCurrentPassword: user.skipCurrentPassword ?? false,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

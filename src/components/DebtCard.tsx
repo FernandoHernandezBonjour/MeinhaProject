@@ -62,6 +62,7 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
       const result = await markDebtAsPaidAction(debt.id);
       if (result.success) {
         onUpdate?.();
+        window.dispatchEvent(new Event('notifications:refresh'));
       } else {
         console.error('Erro ao marcar como paga:', result.error);
       }
@@ -81,6 +82,7 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
       const result = await deleteDebtAction(debt.id);
       if (result.success) {
         onUpdate?.();
+        window.dispatchEvent(new Event('notifications:refresh'));
       } else {
         console.error('Erro ao excluir dívida:', result.error);
         alert('Erro ao excluir dívida: ' + result.error);
