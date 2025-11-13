@@ -15,6 +15,62 @@ import {
 } from '../firestore-server';
 import { uploadPhotoAction } from './upload';
 import { Debt, User } from '@/types';
+import { randomUUID } from 'crypto';
+
+const randomFromArray = <T>(items: T[]): T => items[Math.floor(Math.random() * items.length)];
+
+const formatCurrencyBRL = (value: number): string =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+
+const fillTemplate = (template: string, replacements: Record<string, string>): string =>
+  template.replace(/\{(\w+)\}/g, (_, key) => replacements[key] ?? '');
+
+const DEBT_CREATION_INSULTS = [
+  'para de enrolar e paga essa merda logo.',
+  'mais uma vergonha pra sua conta, chinelagem.',
+  'isso aqui não é fiado infinito, caloteiro.',
+  'espero que dessa vez você tenha vergonha na cara.',
+  'se enrolar de novo, a gente publica no grupo, chinelagem.',
+];
+
+const PARTIAL_PAYMENT_INSULTS = [
+  'a chinelagem pagou só um pedaço e acha que tá bonito.',
+  'largou umas moedas e saiu correndo.',
+  'deu só uma lasquinha desse débito miserável.',
+  'soltou um fiapo de grana pra ver se engana.',
+  'pagou de migalhas, mas ainda tá devendo pra caramba.',
+];
+
+const FULL_PAYMENT_INSULTS = [
+  'até que enfim quitou essa merda, demorou mas veio.',
+  'milagre: o caloteiro pagou tudo.',
+  'pagou o valor inteiro, tá liberado de meia vergonha (por enquanto).',
+  'finalmente acertou a conta completa, era hora.',
+  'agora sim, sem resto pendurado. Por enquanto...',
+];
+
+const REMAINING_DEBT_INSULTS = [
+  'ainda restam {valor}, não some não, chinelagem.',
+  'sobra {valor} pra você pagar, trata de agilizar.',
+  '{valor} continuam pendurados no seu nome, vergonha.',
+  'não inventa moda: falta {valor}, vai pagando.',
+  'se finge de morto não, falta {valor} e todo mundo tá vendo.',
+];
+
+const PARTIAL_PAYMENT_CREDITOR_NOTES = [
+  '{nomeDevedor} deixou {valor} cair na sua conta, mas ainda falta {restante}.',
+  '{nomeDevedor} pagou {valor}, guarda esse recibo porque sobra {restante}.',
+  '{valor} pingou do(a) {nomeDevedor}, mas a novela continua com {restante} pendente.',
+  '{nomeDevedor} soltou {valor}, cobra o resto ({restante}) sem dó.',
+  '{nomeDevedor} pagou {valor}, falta arrancar {restante}.',
+];
+
+const FULL_PAYMENT_CREDITOR_NOTES = [
+  '{nomeDevedor} pagou {valor} inteiro. Finalmente.',
+  '{valor} caiu do bolso do(a) {nomeDevedor}. Fim da novela.',
+  'Caloteiro nenhum: {nomeDevedor} quitou {valor}.',
+  '{nomeDevedor} acertou {valor}. Pode respirar até a próxima chinelagem.',
+];
 
 async function getAuthenticatedUser() {
   const cookieStore = await cookies();
@@ -126,12 +182,20 @@ export async function createDebtAction(formData: FormData) {
       return { error: 'Você não pode criar uma dívida para si mesmo' };
     }
 
+    const chainId = randomUUID();
+
     const debtData: any = {
       creditorId: user.userId,
       debtorId,
       amount,
       dueDate: new Date(dueDate),
       status: 'OPEN' as const,
+      originalAmount: amount,
+      paidAmount: 0,
+      remainingAmount: amount,
+      totalPaidInChain: 0,
+      chainId,
+      wasPartialPayment: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -177,13 +241,16 @@ export async function createDebtAction(formData: FormData) {
     const debtor = await getUser(debtorId);
 
     if (debtor) {
+      const actorName = actor?.username ?? actor?.name ?? 'Um usuário';
+      const debtorDisplayName = debtor.name || debtor.username || 'caloteiro';
+      const insult = randomFromArray(DEBT_CREATION_INSULTS);
+      const formattedAmount = formatCurrencyBRL(amount);
+
       await createNotification({
         userId: debtor.id,
         type: 'debt_created',
-        title: 'Nova dívida criada',
-        message: `${actor?.username ?? 'Um usuário'} registrou uma dívida de R$ ${amount.toFixed(
-          2,
-        )} para você.`,
+        title: 'Nova dívida na sua lomba',
+        message: `${actorName} registrou uma dívida de ${formattedAmount} pra você, ${debtorDisplayName}. ${insult}`,
         read: false,
         createdAt: new Date(),
       });
@@ -262,7 +329,7 @@ export async function updateDebtAction(debtId: string, formData: FormData) {
   }
 }
 
-export async function markDebtAsPaidAction(debtId: string) {
+export async function markDebtAsPaidAction(debtId: string, paymentValue?: number) {
   try {
     const user = await getAuthenticatedUser();
     const actor = await getUser(user.userId);
@@ -273,6 +340,10 @@ export async function markDebtAsPaidAction(debtId: string) {
       return { error: 'Dívida não encontrada' };
     }
 
+    if (debt.status === 'PAID') {
+      return { error: 'Essa dívida já foi finalizada' };
+    }
+
     // Verificar permissões (apenas dono ou admin pode alterar)
     const canEdit = debt.creditorId === user.userId || user.role === 'admin';
 
@@ -280,29 +351,144 @@ export async function markDebtAsPaidAction(debtId: string) {
       return { error: 'Você não tem permissão para alterar esta dívida' };
     }
 
-    await updateDebt(debtId, { status: 'PAID' });
+    const remainingAmount = Math.round(Number(debt.amount ?? 0) * 100) / 100;
+    const requestedPayment = paymentValue ?? remainingAmount;
+    const paymentAmount = Math.round(Number(requestedPayment) * 100) / 100;
 
-    const recipients = [debt.creditorId, debt.debtorId].filter((id) => id !== user.userId);
-    await Promise.all(
-      recipients.map(async (recipientId) => {
-        const recipient = await getUser(recipientId);
-        if (!recipient) return;
+    if (!Number.isFinite(paymentAmount) || Number.isNaN(paymentAmount)) {
+      return { error: 'Valor de pagamento inválido' };
+    }
+
+    if (paymentAmount <= 0) {
+      return { error: 'O valor pago deve ser maior que zero' };
+    }
+
+    if (paymentAmount > remainingAmount) {
+      return { error: 'O valor pago não pode ser maior do que o que falta' };
+    }
+
+    const isPartialPayment = paymentAmount < remainingAmount;
+    const chainId = debt.chainId ?? randomUUID();
+    const originalAmount = Math.round(
+      Number((debt.originalAmount ?? remainingAmount) as number) * 100,
+    ) / 100;
+    const previousTotalPaid = Math.round(Number(debt.totalPaidInChain ?? 0) * 100) / 100;
+    const newTotalPaid = Math.round((previousTotalPaid + paymentAmount) * 100) / 100;
+    const remainingAfterPayment = Math.max(
+      0,
+      Math.round((originalAmount - newTotalPaid) * 100) / 100,
+    );
+
+    await updateDebt(debtId, {
+      status: 'PAID',
+      amount: paymentAmount,
+      paidAmount: paymentAmount,
+      originalAmount,
+      remainingAmount: remainingAfterPayment,
+      totalPaidInChain: newTotalPaid,
+      chainId,
+      wasPartialPayment: isPartialPayment,
+    });
+
+    const debtor = await getUser(debt.debtorId);
+    const creditor = await getUser(debt.creditorId);
+
+    const formattedPaid = formatCurrencyBRL(paymentAmount);
+    const formattedRemaining = formatCurrencyBRL(remainingAfterPayment);
+    const actorName = actor?.username ?? actor?.name ?? 'Alguém';
+    const debtorName = debtor?.name || debtor?.username || 'caloteiro';
+
+    const debtorInsult = randomFromArray(isPartialPayment ? PARTIAL_PAYMENT_INSULTS : FULL_PAYMENT_INSULTS);
+    const debtorNotificationMessage = isPartialPayment
+      ? `${actorName} marcou ${formattedPaid} como pago. ${debtorInsult} Ainda falta ${formattedRemaining}.`
+      : `${actorName} marcou ${formattedPaid} como pago. ${debtorInsult}`;
+
+    if (debtor) {
+      await createNotification({
+        userId: debtor.id,
+        type: 'debt_paid',
+        title: isPartialPayment ? 'Pagamento parcial registrado' : 'Dívida quitada',
+        message: debtorNotificationMessage,
+        read: false,
+        createdAt: new Date(),
+      });
+    }
+
+    if (creditor && creditor.id !== user.userId) {
+      const creditorTemplate = randomFromArray(
+        isPartialPayment ? PARTIAL_PAYMENT_CREDITOR_NOTES : FULL_PAYMENT_CREDITOR_NOTES,
+      );
+
+      const creditorMessage = fillTemplate(creditorTemplate, {
+        valor: formattedPaid,
+        restante: formattedRemaining,
+        nomeDevedor: debtorName,
+      });
+
+      await createNotification({
+        userId: creditor.id,
+        type: 'debt_paid',
+        title: isPartialPayment ? 'Entrou um troco' : 'Dívida liquidada',
+        message: creditorMessage,
+        read: false,
+        createdAt: new Date(),
+      });
+    }
+
+    let newDebtId: string | null = null;
+
+    if (isPartialPayment && remainingAfterPayment > 0) {
+      const newDebtData: Record<string, any> = {
+        creditorId: debt.creditorId,
+        debtorId: debt.debtorId,
+        amount: remainingAfterPayment,
+        dueDate: debt.dueDate,
+        status: 'OPEN' as const,
+        originalAmount,
+        paidAmount: 0,
+        remainingAmount: remainingAfterPayment,
+        totalPaidInChain: newTotalPaid,
+        chainId,
+        parentDebtId: debt.id,
+        wasPartialPayment: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      if (debt.attachment) {
+        newDebtData.attachment = debt.attachment;
+      }
+
+      if (debt.description) {
+        newDebtData.description = debt.description;
+      }
+
+      newDebtId = await createDebt(newDebtData);
+
+      if (debtor) {
+        const remainderTemplate = randomFromArray(REMAINING_DEBT_INSULTS);
+        const remainderMessage = fillTemplate(remainderTemplate, {
+          valor: formattedRemaining,
+          nome: debtorName,
+        });
+
         await createNotification({
-          userId: recipient.id,
-          type: 'debt_paid',
-          title: 'Dívida marcada como paga',
-          message: `${actor?.username ?? 'Um usuário'} marcou a dívida de R$ ${debt.amount.toFixed(
-            2,
-          )} como paga.`,
+          userId: debtor.id,
+          type: 'debt_created',
+          title: 'Restinho dessa dívida',
+          message: remainderMessage,
           read: false,
           createdAt: new Date(),
         });
-      }),
-    );
+      }
+    }
 
     return {
       success: true,
-      message: 'Dívida marcada como paga',
+      message: isPartialPayment
+        ? 'Pagamento parcial registrado. O resto virou nova dívida.'
+        : 'Dívida marcada como paga',
+      newDebtId,
     };
   } catch (error) {
     console.error('Erro ao marcar dívida como paga:', error);

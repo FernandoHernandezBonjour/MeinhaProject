@@ -19,6 +19,13 @@ export interface Debt {
   creditorId: string; // Quem deve receber
   debtorId: string; // Quem deve pagar
   amount: number;
+  originalAmount?: number;
+  paidAmount?: number;
+  remainingAmount?: number;
+  totalPaidInChain?: number;
+  chainId?: string;
+  parentDebtId?: string;
+  wasPartialPayment?: boolean;
   dueDate: Date;
   status: 'OPEN' | 'PAID';
   attachment?: string; // URL do anexo

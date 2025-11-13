@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { Debt, User } from '@/types';
 import { markDebtAsPaidAction, deleteDebtAction } from '@/lib/actions/debts';
 
@@ -18,6 +18,19 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
   const isAdmin = currentUser.role === 'admin';
   const canEdit = isOwner || isAdmin;
   const canDelete = isAdmin || (isOwner && debt.status === 'OPEN');
+  const originalAmount = debt.originalAmount ?? debt.amount;
+  const totalPaidInChain = Math.max(0, debt.totalPaidInChain ?? 0);
+  const alreadyPaid = Math.min(originalAmount, totalPaidInChain);
+  const chainRemainingAmount = Math.max(
+    0,
+    debt.remainingAmount ?? originalAmount - alreadyPaid,
+  );
+  const hasPartialHistory = alreadyPaid > 0 || Boolean(debt.parentDebtId);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentInput, setPaymentInput] = useState(() =>
+    chainRemainingAmount.toFixed(2).replace('.', ','),
+  );
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   const getTimeAgo = (date: Date): string => {
     const now = new Date();
@@ -55,19 +68,57 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
     return `VENCIDA HÁ ${diffInYears} ANOS - CALOTEIRO PROFISSIONAL!`;
   };
 
-  const handleMarkAsPaid = async () => {
+  const remainingValue = useMemo(
+    () => Math.round(chainRemainingAmount * 100) / 100,
+    [chainRemainingAmount],
+  );
+
+  const openPaymentModal = () => {
     if (!canEdit) return;
-    
+    setPaymentInput(remainingValue.toFixed(2).replace('.', ','));
+    setPaymentError(null);
+    setShowPaymentModal(true);
+  };
+
+  const closePaymentModal = () => {
+    setShowPaymentModal(false);
+    setPaymentError(null);
+  };
+
+  const handleConfirmPayment = async () => {
+    if (!canEdit) return;
+
+    const normalizedInput = paymentInput.replace(/\s/g, '').replace(',', '.');
+    const paymentAmount = Number.parseFloat(normalizedInput);
+
+    if (Number.isNaN(paymentAmount)) {
+      setPaymentError('Valor inválido. Aprende a digitar número, chinelagem.');
+      return;
+    }
+
+    if (paymentAmount <= 0) {
+      setPaymentError('Zero não paga dívida, meu anjo. Coloca um valor decente.');
+      return;
+    }
+
+    if (paymentAmount > remainingValue) {
+      setPaymentError('Nem tenta pagar mais do que deve. Usa um valor até o máximo informado.');
+      return;
+    }
+
     try {
-      const result = await markDebtAsPaidAction(debt.id);
+      const result = await markDebtAsPaidAction(debt.id, paymentAmount);
       if (result.success) {
         onUpdate?.();
         window.dispatchEvent(new Event('notifications:refresh'));
+        setShowPaymentModal(false);
       } else {
         console.error('Erro ao marcar como paga:', result.error);
+        setPaymentError(result.error ?? 'Erro ao registrar pagamento. Tenta de novo.');
       }
     } catch (error) {
       console.error('Erro ao marcar como paga:', error);
+      setPaymentError('Travou geral. Recarrega e tenta de novo, chinelagem.');
     }
   };
 
@@ -123,6 +174,11 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
           <h3 className="text-3xl font-black text-red-600 mb-2">
             {formatCurrency(debt.amount)}
           </h3>
+          {hasPartialHistory && (
+            <span className="inline-block bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-black border-2 border-black">
+              Restinho da chinelagem
+            </span>
+          )}
           <div className="flex items-center space-x-6">
             {/* Devedor */}
             <div className="flex flex-col items-center space-y-1">
@@ -197,6 +253,24 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
             <span className="font-black text-green-900 break-all">{creditor.pixKey}</span>
           </div>
         )}
+
+      {hasPartialHistory && (
+        <div className="mt-4 p-4 bg-purple-50 rounded-lg border-2 border-purple-300 text-sm text-purple-900 font-bold space-y-2">
+          <p className="text-base">🪓 Pagamento picado dessa dívida</p>
+          <div className="flex justify-between">
+            <span>Valor original:</span>
+            <span>{formatCurrency(originalAmount)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Já pago:</span>
+            <span>{formatCurrency(alreadyPaid)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Restando:</span>
+            <span>{formatCurrency(chainRemainingAmount)}</span>
+          </div>
+        </div>
+      )}
       </div>
 
       {debt.description && (
@@ -220,11 +294,89 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
       {canEdit && debt.status === 'OPEN' && (
         <div className="mt-6 pt-4 border-t-2 border-gray-300">
           <button
-            onClick={handleMarkAsPaid}
+            onClick={openPaymentModal}
             className="bg-gradient-to-r from-green-600 to-green-800 text-white px-6 py-3 rounded-xl hover:from-green-700 hover:to-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 text-lg font-black border-2 border-black shadow-lg w-full"
           >
             ✅ PAGAR ESSA MERDA
           </button>
+        </div>
+      )}
+
+      {showPaymentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+          <div className="relative bg-white rounded-3xl border-4 border-black shadow-[0_20px_60px_rgba(0,0,0,0.7)] w-full max-w-lg">
+            <div className="absolute -top-6 right-6 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-black border-2 border-black shadow-lg">
+              HUMILHAÇÃO FINANCEIRA
+            </div>
+
+            <div className="px-8 py-6 bg-gradient-to-r from-purple-700 via-purple-600 to-purple-800 rounded-t-3xl border-b-4 border-black text-white">
+              <h3 className="text-2xl font-black">
+                Quanto do calote vai sair agora?
+              </h3>
+              <p className="text-sm font-bold text-purple-200 mt-2">
+                {debtor.name || debtor.username} tá querendo pagar quanto dessa vergonha? Valor máximo: {formatCurrency(remainingValue)}
+              </p>
+            </div>
+
+            <div className="px-8 py-6 space-y-6">
+              <div>
+                <label className="block text-sm font-black text-gray-700 uppercase tracking-wide mb-2">
+                  Valor a quitar (até {formatCurrency(remainingValue)})
+                </label>
+                <div className="flex rounded-2xl border-4 border-purple-400 overflow-hidden shadow-inner">
+                  <span className="bg-purple-600 text-white font-black px-4 flex items-center text-lg border-r-4 border-black">
+                    R$
+                  </span>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={paymentInput}
+                    onChange={(event) => setPaymentInput(event.target.value)}
+                    className="flex-1 px-4 py-3 text-lg font-black text-gray-900 focus:outline-none"
+                    placeholder="123,45"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 font-bold mt-2">
+                  Dica: usa vírgula como separador decimal, seu sem noção.
+                </p>
+                {paymentError && (
+                  <div className="mt-3 bg-red-100 border-2 border-red-400 text-red-800 text-sm font-black px-4 py-3 rounded-xl">
+                    {paymentError}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="bg-purple-100 border-2 border-purple-300 rounded-xl p-3 font-bold text-sm text-purple-900">
+                  <div className="flex justify-between">
+                    <span>Original:</span>
+                    <span>{formatCurrency(originalAmount)}</span>
+                  </div>
+                </div>
+                <div className="bg-green-100 border-2 border-green-300 rounded-xl p-3 font-bold text-sm text-green-900">
+                  <div className="flex justify-between">
+                    <span>Restando:</span>
+                    <span>{formatCurrency(remainingValue)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-8 py-6 bg-gray-100 border-t-4 border-black rounded-b-3xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <button
+                onClick={closePaymentModal}
+                className="w-full sm:w-auto bg-gray-300 hover:bg-gray-400 text-gray-900 font-black px-6 py-3 rounded-xl border-2 border-black transition-colors"
+              >
+                Cancelar, bundão
+              </button>
+              <button
+                onClick={handleConfirmPayment}
+                className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white font-black px-6 py-3 rounded-xl border-2 border-black shadow-lg transition-colors"
+              >
+                Registrar pagamento
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
