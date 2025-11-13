@@ -438,12 +438,14 @@ export async function markDebtAsPaidAction(debtId: string, paymentValue?: number
     let newDebtId: string | null = null;
 
     if (isPartialPayment && remainingAfterPayment > 0) {
-      const newDebtData: Record<string, any> = {
+      const newDebtData: Omit<Debt, 'id'> = {
         creditorId: debt.creditorId,
         debtorId: debt.debtorId,
         amount: remainingAfterPayment,
         dueDate: debt.dueDate,
         status: 'OPEN' as const,
+        createdAt: new Date(),
+        updatedAt: new Date(),
         originalAmount,
         paidAmount: 0,
         remainingAmount: remainingAfterPayment,
@@ -451,17 +453,9 @@ export async function markDebtAsPaidAction(debtId: string, paymentValue?: number
         chainId,
         parentDebtId: debt.id,
         wasPartialPayment: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        ...(debt.attachment ? { attachment: debt.attachment } : {}),
+        ...(debt.description ? { description: debt.description } : {}),
       };
-
-      if (debt.attachment) {
-        newDebtData.attachment = debt.attachment;
-      }
-
-      if (debt.description) {
-        newDebtData.description = debt.description;
-      }
 
       newDebtId = await createDebt(newDebtData);
 
