@@ -9,7 +9,68 @@ import {
   toggleMediaReactionAction,
 } from '@/lib/actions/media';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { MediaViewerModal } from './MediaViewerModal';
+
+const VideoThumbnail: React.FC<{ src: string; className?: string; alt?: string }> = ({ src, className = '', alt = 'Vídeo' }) => {
+  const [thumb, setThumb] = React.useState<string | null>(null);
+  const [error, setError] = React.useState(false);
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    const capture = async () => {
+      try {
+        const video = document.createElement('video');
+        video.crossOrigin = 'anonymous';
+        video.preload = 'auto';
+        video.src = src;
+        video.muted = true;
+        video.playsInline = true as any;
+
+        await new Promise<void>((resolve, reject) => {
+          const onLoaded = () => resolve();
+          const onError = () => reject(new Error('Falha ao carregar vídeo'));
+          video.addEventListener('loadeddata', onLoaded, { once: true });
+          video.addEventListener('error', onError, { once: true });
+        });
+
+        // Garante dimensões
+        const width = video.videoWidth || 320;
+        const height = video.videoHeight || 180;
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error('Canvas não suportado');
+        ctx.drawImage(video, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg');
+        if (!cancelled) setThumb(dataUrl);
+      } catch (e) {
+        if (!cancelled) setError(true);
+      }
+    };
+
+    capture();
+    return () => { cancelled = true; };
+  }, [src]);
+
+  if (error) {
+    return (
+      <div className={`bg-gray-900 flex items-center justify-center ${className}`}>
+        <span className="text-white text-4xl">🎬</span>
+      </div>
+    );
+  }
+
+  if (!thumb) {
+    return (
+      <div className={`bg-gray-900 animate-pulse ${className}`} />
+    );
+  }
+
+  return <img src={thumb} alt={alt} className={className} />;
+};
 
 const reactionOptions = ['😂', '🔥', '🤮', '👏', '💀'];
 
@@ -24,6 +85,7 @@ interface MediaEventOption {
 
 export const MediaPage: React.FC = () => {
   const { user } = useAuth();
+  const { isXvideosMode } = useTheme();
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [events, setEvents] = useState<MediaEventOption[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<string>('all');
@@ -179,7 +241,7 @@ export const MediaPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-20 min-h-[75vh]">
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 text-white shadow-2xl border-4 border-black">
         <h2 className="text-4xl font-black mb-4">📸 Galeria Meinha</h2>
         <p className="text-xl text-purple-200">
@@ -265,7 +327,7 @@ export const MediaPage: React.FC = () => {
       </div>
 
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className={isXvideosMode ? 'xvideos-grid' : 'grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6'}>
           {filteredMedia.map((item) => {
             const canDelete = user && (user.role === 'admin' || user.id === item.uploadedBy);
             const reactionSummary = item.reactions.reduce<Record<string, number>>((acc, reaction) => {
@@ -276,43 +338,51 @@ export const MediaPage: React.FC = () => {
             return (
               <div
                 key={item.id}
-                className="bg-white rounded-2xl p-4 shadow-lg border-4 border-black hover:shadow-xl transition-shadow group cursor-pointer"
+                className={isXvideosMode ? 
+                  'xvideos-card rounded-lg transition-all duration-200 hover:opacity-90 cursor-pointer flex flex-col h-full' :
+                  'bg-white rounded-2xl p-4 shadow-lg border-4 border-black hover:shadow-xl transition-shadow group cursor-pointer flex flex-col h-full'
+                }
                 onClick={() => setPreviewItem(item)}
               >
-                <div className="relative overflow-hidden rounded-xl mb-4">
+                <div className={isXvideosMode ? 'xvideos-thumbnail' : 'relative overflow-hidden rounded-xl mb-4'}>
                   {item.type === 'photo' ? (
                     <img
                       src={item.url}
                       alt="Mídia do evento"
-                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                      className={isXvideosMode ? 'w-full aspect-video object-cover' : 'w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300'}
                     />
                   ) : (
-                    <div className="w-full h-48 bg-gray-900 flex items-center justify-center">
-                      <span className="text-6xl text-white">🎬</span>
-                    </div>
+                    <VideoThumbnail
+                      src={item.url}
+                      alt="Vídeo do evento"
+                      className={isXvideosMode ? 'w-full aspect-video object-cover' : 'w-full h-48 object-cover'}
+                    />
                   )}
 
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <div className="text-center text-white">
-                      <p className="font-bold text-lg">{item.type === 'photo' ? '📸' : '🎬'}</p>
-                      <p className="text-sm">Clique para ver</p>
+                  {!isXvideosMode && (
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <div className="text-center text-white">
+                        <p className="font-bold text-lg">{item.type === 'photo' ? '📸' : '🎬'}</p>
+                        <p className="text-sm">Clique para ver</p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
-                <div className="space-y-1 text-sm text-gray-700">
-                  <p className="font-bold text-gray-800">
+                <div className={isXvideosMode ? 'xvideos-content flex-1' : 'space-y-1 text-sm text-gray-700 flex-1'}>
+                  <p className={isXvideosMode ? 'xvideos-title xvideos-text-primary' : 'font-bold text-gray-800'}>
                     {item.eventTitle || events.find((event) => event.id === item.eventId)?.title || 'Sem evento'}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className={isXvideosMode ? 'xvideos-meta' : 'text-xs text-gray-500'}>
                     {item.createdAt.toLocaleString('pt-BR')}
                     {item.uploadedByUsername ? ` • por ${item.uploadedByUsername}` : ''}
                   </p>
-                  {item.description && (
+                  {!isXvideosMode && item.description && (
                     <p className="text-xs text-gray-600 italic">"{item.description}"</p>
                   )}
                 </div>
 
+                {!isXvideosMode && (
                 <div className="mt-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-black text-gray-500 uppercase">Reações</p>
@@ -394,19 +464,28 @@ export const MediaPage: React.FC = () => {
                     )}
                   </div>
                 </div>
-
-                {canDelete && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteMedia(item.id);
-                    }}
-                    disabled={deletingId === item.id}
-                    className="w-full mt-4 bg-red-600 text-white py-2 rounded-lg font-bold border-2 border-black hover:bg-red-700 transition-colors disabled:opacity-60"
-                  >
-                    {deletingId === item.id ? 'Removendo...' : '🗑️ Remover'}
-                  </button>
                 )}
+
+                {/* Footer de ações com altura fixa para manter cartões iguais */}
+                <div className={isXvideosMode ? 'px-3 pb-3 pt-2' : ''}>
+                  {canDelete ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteMedia(item.id);
+                      }}
+                      disabled={deletingId === item.id}
+                      className={isXvideosMode
+                        ? 'w-full h-10 bg-red-600/90 hover:bg-red-700 text-white rounded-md font-bold border border-gray-700 transition-colors text-sm'
+                        : 'w-full h-10 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold border-2 border-black transition-colors'
+                      }
+                    >
+                      {deletingId === item.id ? 'Removendo...' : '🗑️ Remover'}
+                    </button>
+                  ) : (
+                    <div className="h-10" />
+                  )}
+                </div>
               </div>
             );
           })}

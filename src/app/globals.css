@@ -113,14 +113,27 @@ a {
   border-radius: 6px;
 }
 
+.dark ::-webkit-scrollbar-track {
+  background: #1f1f1f;
+}
+
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(45deg, #dc2626, #ea580c);
   border-radius: 6px;
   border: 2px solid #f1f1f1;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #dc2626, #ea580c);
+  border: 2px solid #1f1f1f;
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(45deg, #b91c1c, #c2410c);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #991b1b, #9a3412);
 }
 
 /* Efeitos especiais para elementos importantes */
@@ -134,12 +147,197 @@ a {
   filter: drop-shadow(0 0 10px rgba(234, 179, 8, 0.8));
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
-  
-  .meinha-card {
-    @apply bg-gray-800 border-gray-600;
-  }
+.dark {
+  color-scheme: dark;
+}
+
+.dark .meinha-card {
+  @apply bg-gray-800 border-gray-600;
+}
+
+/* Modo XVIDEOS - Tema Claro */
+.xvideos-mode.xvideos-light {
+  color-scheme: light;
+}
+
+.xvideos-mode.xvideos-light body {
+  background-color: #f5f5f5;
+}
+
+.xvideos-mode.xvideos-light .xvideos-header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.xvideos-mode.xvideos-light .xvideos-nav {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.xvideos-mode.xvideos-light .xvideos-card {
+  background-color: #ffffff;
+  overflow: visible !important;
+  padding-bottom: 1rem;
+}
+
+.xvideos-mode.xvideos-light .xvideos-text-primary {
+  color: #333333;
+}
+
+.xvideos-mode.xvideos-light .xvideos-text-secondary {
+  color: #666666;
+}
+
+.xvideos-mode.xvideos-light .xvideos-border {
+  border-color: #e0e0e0;
+}
+
+/* Modo XVIDEOS - Tema Escuro */
+.xvideos-mode.xvideos-dark {
+  color-scheme: dark;
+}
+
+.xvideos-mode.xvideos-dark body {
+  background-color: #0a0a0a;
+}
+
+.xvideos-mode.xvideos-dark .xvideos-header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.xvideos-mode.xvideos-dark .xvideos-nav {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.xvideos-mode.xvideos-dark .xvideos-card {
+  background-color: #1a1a1a;
+  overflow: visible !important;
+  padding-bottom: 1rem;
+}
+
+.xvideos-mode.xvideos-dark .xvideos-text-primary {
+  color: #ffffff;
+}
+
+.xvideos-mode.xvideos-dark .xvideos-text-secondary {
+  color: #cccccc;
+}
+
+.xvideos-mode.xvideos-dark .xvideos-border {
+  border-color: #333333;
+}
+
+/* Estilos gerais do modo XVIDEOS */
+.xvideos-mode .xvideos-header {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.xvideos-mode .xvideos-logo {
+  font-size: 24px;
+  font-weight: 900;
+  color: #dc2626; /* red-600 */
+  text-transform: uppercase;
+  letter-spacing: -1px;
+}
+
+.xvideos-mode .xvideos-nav {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 24px;
+}
+
+.xvideos-mode .xvideos-nav-item {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.xvideos-mode .xvideos-nav-item:hover {
+  color: #ff9900;
+}
+
+.xvideos-mode .xvideos-search {
+  background-color: #2a2a2a;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.xvideos-mode .xvideos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  padding: 16px 0;
+  align-items: start; /* Garante que os cards não sejam cortados */
+  overflow: visible;
+}
+
+.xvideos-mode .xvideos-thumbnail {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.xvideos-mode .xvideos-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.xvideos-mode .xvideos-thumbnail-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  padding: 8px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.xvideos-mode .xvideos-content {
+  padding: 12px 0;
+}
+
+.xvideos-mode .xvideos-card {
+  padding: 0;
+  margin: 0;
+  overflow: visible !important;
+  min-height: fit-content;
+  border-radius: 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 1;
+}
+
+.xvideos-mode .xvideos-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.xvideos-mode .xvideos-meta {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
 }

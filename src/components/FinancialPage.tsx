@@ -111,9 +111,9 @@ export const FinancialPage: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Header da seção financeira */}
-      <div className="bg-gradient-to-r from-red-600 to-orange-600 rounded-2xl p-8 text-white shadow-2xl border-4 border-black">
+      <div className="bg-gradient-to-r from-red-600 to-orange-600 dark:from-red-800 dark:to-orange-800 rounded-2xl p-8 text-white shadow-2xl border-4 border-black dark:border-gray-700 transition-colors duration-200">
         <h2 className="text-4xl font-black mb-4">💰 Financeiro Meinha</h2>
-        <p className="text-xl text-red-200">
+        <p className="text-xl text-red-200 dark:text-red-100">
           Controle total das dívidas, caloteiros e humilhação pública!
         </p>
       </div>
@@ -122,14 +122,14 @@ export const FinancialPage: React.FC = () => {
       <div className="flex flex-wrap gap-4 justify-center">
         <button
           onClick={() => setShowDebtForm(true)}
-          className="bg-red-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-colors border-2 border-black shadow-lg"
+          className="bg-red-600 dark:bg-red-700 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 dark:hover:bg-red-600 transition-colors border-2 border-black dark:border-gray-600 shadow-lg"
         >
           💸 Nova Dívida
         </button>
 
         <button
           onClick={() => setShowPaidDebts(true)}
-          className="bg-yellow-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-yellow-700 transition-colors border-2 border-black shadow-lg"
+          className="bg-yellow-600 dark:bg-yellow-700 text-white px-6 py-3 rounded-xl font-bold hover:bg-yellow-700 dark:hover:bg-yellow-600 transition-colors border-2 border-black dark:border-gray-600 shadow-lg"
         >
           ✅ Dívidas Pagas
         </button>
@@ -163,7 +163,7 @@ export const FinancialPage: React.FC = () => {
       <DashboardCharts debts={debts} users={users} />
 
       {/* Relatório Auditoria Meinha (CPI) */}
-      <div className="bg-white rounded-2xl p-6 shadow-lg border-4 border-yellow-500">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border-4 border-yellow-500 dark:border-yellow-600 transition-colors duration-200">
         <div className="px-6 py-4 border-b-4 border-yellow-500 bg-gradient-to-r from-yellow-600/60 to-orange-600/60 rounded-t-2xl">
           <div className="flex justify-between items-center">
             <h3 className="text-2xl font-black text-white">
@@ -226,7 +226,7 @@ export const FinancialPage: React.FC = () => {
 
           {/* Ranking dos Devedores */}
           <div className="mb-6">
-            <h4 className="text-xl font-black text-gray-800 mb-4">
+            <h4 className="text-xl font-black text-gray-800 dark:text-gray-200 mb-4">
               🏆 Ranking dos Devedores
             </h4>
             <div className="space-y-2">
@@ -250,17 +250,17 @@ export const FinancialPage: React.FC = () => {
                 return sortedDebtors.map((item, index) => (
                   <div
                     key={item.user!.id}
-                    className="flex justify-between items-center p-3 bg-gray-100 rounded-lg border-2 border-gray-300"
+                    className="flex justify-between items-center p-3 bg-gray-100 dark:bg-gray-700 rounded-lg border-2 border-gray-300 dark:border-gray-600 transition-colors duration-200"
                   >
                     <div className="flex items-center space-x-3">
-                      <span className="text-2xl font-black text-gray-600">
+                      <span className="text-2xl font-black text-gray-600 dark:text-gray-300">
                         #{index + 1}
                       </span>
-                      <span className="font-bold text-gray-800">
+                      <span className="font-bold text-gray-800 dark:text-gray-200">
                         {item.user!.name || item.user!.username}
                       </span>
                     </div>
-                    <span className="text-lg font-black text-red-600">
+                    <span className="text-lg font-black text-red-600 dark:text-red-400">
                       {formatCurrency(item.total)}
                     </span>
                   </div>
@@ -279,7 +279,7 @@ export const FinancialPage: React.FC = () => {
       </div>
 
       {/* Minhas Dívidas */}
-      <div className="bg-white rounded-2xl p-6 shadow-lg border-4 border-purple-500">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border-4 border-purple-500 dark:border-purple-600 transition-colors duration-200">
         <div className="px-6 py-4 border-b-4 border-purple-500 bg-gradient-to-r from-purple-600/60 to-purple-800/60 rounded-t-2xl">
           <h3 className="text-2xl font-black text-white">
             👤 Minhas Dívidas - O que eu devo e o que me devem 👤
@@ -298,8 +298,8 @@ export const FinancialPage: React.FC = () => {
               return (
                 <div className="text-center py-8">
                   <div className="text-6xl mb-4">😴</div>
-                  <p className="text-xl font-bold text-gray-600">Você não tem nenhuma dívida!</p>
-                  <p className="text-lg text-gray-500">Nem deve nem te devem nada.</p>
+                  <p className="text-xl font-bold text-gray-600 dark:text-gray-300">Você não tem nenhuma dívida!</p>
+                  <p className="text-lg text-gray-500 dark:text-gray-400">Nem deve nem te devem nada.</p>
                 </div>
               );
             }
@@ -370,7 +370,7 @@ export const FinancialPage: React.FC = () => {
       </div>
 
       {/* Dívidas em Aberto */}
-      <div className="bg-white rounded-2xl p-6 shadow-lg border-4 border-black">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border-4 border-black dark:border-gray-700 transition-colors duration-200">
         <div className="px-6 py-4 border-b-4 border-black bg-gradient-to-r from-red-500/60 to-orange-500/60 rounded-t-2xl">
           <h3 className="text-2xl font-black text-white">
             💀 Dívidas em Aberto - Quem não paga vira caloteiro 💀
@@ -409,10 +409,10 @@ export const FinancialPage: React.FC = () => {
               <h4 className="mt-4 text-3xl font-black text-green-600">
                 Ninguém está devendo!
               </h4>
-              <p className="mt-2 text-xl text-gray-700 font-bold">
+              <p className="mt-2 text-xl text-gray-700 dark:text-gray-300 font-bold">
                 Que milagre! Todos pagaram suas contas! 
               </p>
-              <p className="mt-1 text-lg text-gray-600">
+              <p className="mt-1 text-lg text-gray-600 dark:text-gray-400">
                 Mas se quiser criar uma nova dívida pra alguém, é só clicar aí embaixo 👇
               </p>
               <div className="mt-8">
@@ -443,7 +443,7 @@ export const FinancialPage: React.FC = () => {
       {showPaidDebts && (
         <div className="fixed inset-0 bg-black bg-opacity-75 overflow-y-auto h-full w-full z-50">
           <div className="relative top-4 mx-auto w-11/12 md:w-4/5 lg:w-3/4">
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl border-4 border-purple-500">
+            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl border-4 border-purple-500 dark:border-purple-600 transition-colors duration-200">
               <div className="px-6 py-4 border-b-4 border-purple-500 bg-gradient-to-r from-purple-600/60 to-purple-800/60 rounded-t-xl">
                 <div className="flex justify-between items-center">
                   <h3 className="text-2xl font-black text-white">
@@ -471,7 +471,7 @@ export const FinancialPage: React.FC = () => {
                     return (
                       <div className="text-center py-12">
                         <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-600 border-t-transparent mx-auto mb-4"></div>
-                        <p className="text-xl font-bold text-gray-600">Carregando dívidas pagas...</p>
+                        <p className="text-xl font-bold text-gray-600 dark:text-gray-300">Carregando dívidas pagas...</p>
                       </div>
                     );
                   }
@@ -480,8 +480,8 @@ export const FinancialPage: React.FC = () => {
                     return (
                       <div className="text-center py-12">
                         <div className="text-6xl mb-4">😢</div>
-                        <p className="text-xl font-bold text-gray-600">Nenhuma dívida paga ainda!</p>
-                        <p className="text-lg text-gray-500">Crie algumas dívidas e aguarde o pagamento.</p>
+                        <p className="text-xl font-bold text-gray-600 dark:text-gray-300">Nenhuma dívida paga ainda!</p>
+                        <p className="text-lg text-gray-500 dark:text-gray-400">Crie algumas dívidas e aguarde o pagamento.</p>
                       </div>
                     );
                   }
@@ -559,7 +559,7 @@ export const FinancialPage: React.FC = () => {
                                     />
                                   ) : (
                                     <div className="w-10 h-10 rounded-full border-2 border-gray-400 shadow-lg bg-gray-200 flex items-center justify-center">
-                                      <span className="text-xs font-bold text-gray-600">👤</span>
+                                      <span className="text-xs font-bold text-gray-600 dark:text-gray-400">👤</span>
                                     </div>
                                   )}
                                   <span className={`text-sm font-bold text-center mt-1 ${
@@ -570,7 +570,7 @@ export const FinancialPage: React.FC = () => {
                                 </div>
                                 
                                 <div className="text-center">
-                                  <span className="text-sm text-gray-600 font-bold">
+                                  <span className="text-sm text-gray-600 dark:text-gray-300 font-bold">
                                     {isUserCreditor ? 'pagou para' : 'recebeu de'}
                                   </span>
                                 </div>
@@ -586,7 +586,7 @@ export const FinancialPage: React.FC = () => {
                                     />
                                   ) : (
                                     <div className="w-10 h-10 rounded-full border-2 border-gray-400 shadow-lg bg-gray-200 flex items-center justify-center">
-                                      <span className="text-xs font-bold text-gray-600">👤</span>
+                                      <span className="text-xs font-bold text-gray-600 dark:text-gray-400">👤</span>
                                     </div>
                                   )}
                                   <span className={`text-sm font-bold text-center mt-1 ${
@@ -623,7 +623,7 @@ export const FinancialPage: React.FC = () => {
                               
                               {debt.description && (
                                 <div className="mt-3 p-3 bg-yellow-50 rounded-lg border border-yellow-300">
-                                  <p className="text-sm text-gray-800 font-bold">📝 {debt.description}</p>
+                                  <p className="text-sm text-gray-800 dark:text-gray-200 font-bold">📝 {debt.description}</p>
                                 </div>
                               )}
                             </div>

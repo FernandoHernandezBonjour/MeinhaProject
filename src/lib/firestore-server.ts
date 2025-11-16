@@ -496,13 +496,21 @@ export const createMediaItem = async (
   },
 ): Promise<string> => {
   checkFirebase();
-  const docRef = await db.collection(MEDIA_COLLECTION).add({
+  const dataToSave: any = {
     ...mediaData,
     createdAt: mediaData.createdAt ?? new Date(),
     updatedAt: new Date(),
     comments: mediaData.comments ?? [],
     reactions: mediaData.reactions ?? [],
+  };
+  // Remover campos undefined pois o Firestore não aceita valores undefined
+  Object.keys(dataToSave).forEach((key) => {
+    if (dataToSave[key] === undefined) {
+      delete dataToSave[key];
+    }
   });
+
+  const docRef = await db.collection(MEDIA_COLLECTION).add(dataToSave);
   return docRef.id;
 };
 

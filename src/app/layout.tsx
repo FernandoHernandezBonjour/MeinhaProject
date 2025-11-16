@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -24,11 +25,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
-      <body className={`${inter.variable} ${jetbrainsMono.variable} bg-gray-50 antialiased`}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body className={`${inter.variable} ${jetbrainsMono.variable} bg-gray-50 dark:bg-gray-900 antialiased`}>
+        <ThemeProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

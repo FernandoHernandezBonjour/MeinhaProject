@@ -23,9 +23,9 @@ export const App: React.FC = () => {
             backgroundAttachment: 'fixed'
           }}
         >
-        <div className="text-center bg-white/60 backdrop-blur-sm p-8 rounded-2xl border-4 border-black shadow-2xl">
-          <div className="animate-spin rounded-full h-32 w-32 border-8 border-red-600 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-2xl font-black text-red-600">Carregando os caloteiros...</p>
+        <div className="text-center bg-white/60 dark:bg-gray-800/80 backdrop-blur-sm p-8 rounded-2xl border-4 border-black dark:border-gray-700 shadow-2xl transition-colors duration-200">
+          <div className="animate-spin rounded-full h-32 w-32 border-8 border-red-600 dark:border-red-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-2xl font-black text-red-600 dark:text-red-400">Carregando os caloteiros...</p>
         </div>
       </div>
     );

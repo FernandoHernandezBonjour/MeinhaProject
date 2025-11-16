@@ -67,7 +67,8 @@ export async function uploadMediaAction(formData: FormData) {
   try {
     const user = await getAuthenticatedUser();
     const file = formData.get('media') as File;
-    const eventId = (formData.get('eventId') as string) || null;
+    const rawEventId = (formData.get('eventId') as string) ?? null;
+    const eventId = rawEventId && rawEventId !== 'none' && rawEventId.trim() !== '' ? rawEventId : null;
     const description = (formData.get('description') as string)?.trim() ?? '';
 
     if (!file) {
@@ -158,7 +159,8 @@ export async function uploadMediaAction(formData: FormData) {
     };
   } catch (error) {
     console.error('Erro ao enviar mídia:', error);
-    return { error: 'Erro interno do servidor' };
+    const message = error instanceof Error ? error.message : 'Erro interno do servidor';
+    return { error: message };
   }
 }
 
