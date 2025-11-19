@@ -104,7 +104,7 @@ export async function createForumPostAction(formData: FormData) {
       imageUrls.push(publicUrl);
     }
 
-    const postData: Omit<ForumPost, 'id' | 'comments' | 'reactions' | 'createdAt' | 'updatedAt'> = {
+    const postData: Omit<ForumPost, 'id' | 'comments' | 'reactions'> = {
       title,
       content,
       authorId: user.userId,
@@ -112,6 +112,8 @@ export async function createForumPostAction(formData: FormData) {
       authorName: userData.name,
       category: category as 'debate' | 'votacao' | 'zoeira' | 'geral',
       images: imageUrls,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     const postId = await createForumPost(postData);
@@ -144,6 +146,7 @@ export async function addForumCommentAction(formData: FormData) {
     }
 
     const comment = await addForumComment(postId, {
+      postId,
       authorId: user.userId,
       username: userData.username,
       content,
@@ -177,6 +180,7 @@ export async function toggleForumReactionAction(formData: FormData) {
     }
 
     const result = await toggleForumReaction(postId, {
+      postId,
       userId: user.userId,
       username: userData.username,
       reaction,

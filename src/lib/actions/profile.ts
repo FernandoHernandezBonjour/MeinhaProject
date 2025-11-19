@@ -157,7 +157,7 @@ export async function getUserProfileAction(username?: string, userId?: string) {
       userId: string;
       username?: string;
       content: string;
-      createdAt: Date;
+      createdAt: string; // ISO string para serialização
       eventId: string;
       eventTitle: string;
     }> = [];
@@ -167,7 +167,7 @@ export async function getUserProfileAction(username?: string, userId?: string) {
       userId: string;
       username?: string;
       reaction: string;
-      createdAt: Date;
+      createdAt: string; // ISO string para serialização
       eventId: string;
       eventTitle: string;
     }> = [];
@@ -223,7 +223,7 @@ export async function getUserProfileAction(username?: string, userId?: string) {
       userId: string;
       username?: string;
       content: string;
-      createdAt: Date;
+      createdAt: string; // ISO string para serialização
       mediaId: string;
       mediaUrl: string;
     }> = [];
@@ -233,7 +233,7 @@ export async function getUserProfileAction(username?: string, userId?: string) {
       userId: string;
       username?: string;
       reaction: string;
-      createdAt: Date;
+      createdAt: string; // ISO string para serialização
       mediaId: string;
       mediaUrl: string;
     }> = [];
