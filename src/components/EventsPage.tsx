@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getMediaContextAction } from '@/lib/actions/media';
 import { MediaViewerModal } from './MediaViewerModal';
+import { UserLink } from './UserLink';
 
 const VideoThumbnail: React.FC<{ src: string; className?: string; alt?: string }> = ({ src, className = '', alt = 'Vídeo' }) => {
   const [thumb, setThumb] = React.useState<string | null>(null);
@@ -414,7 +415,7 @@ export const EventsPage: React.FC = () => {
                     </h4>
                     {!isXvideosMode && (
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Por {event.createdByUsername ?? event.createdBy}
+                        Por <UserLink username={event.createdByUsername ?? event.createdBy} userId={event.createdBy} />
                       </p>
                     )}
                   </div>
@@ -426,7 +427,7 @@ export const EventsPage: React.FC = () => {
                 </div>
                 {isXvideosMode && (
                   <div className="xvideos-meta mb-3">
-                    {event.createdByUsername ?? event.createdBy} • {event.date.toLocaleDateString('pt-BR')} às {event.time}
+                    <UserLink username={event.createdByUsername ?? event.createdBy} userId={event.createdBy} /> • {event.date.toLocaleDateString('pt-BR')} às {event.time}
                   </div>
                 )}
                 {event.description && (
@@ -498,7 +499,7 @@ export const EventsPage: React.FC = () => {
                         }`}
                       >
                         <p className={`font-bold ${isXvideosMode ? 'text-orange-600 dark:text-orange-400' : 'text-blue-600 dark:text-blue-400'}`}>
-                          {comment.username ?? comment.userId}
+                          <UserLink username={comment.username ?? comment.userId} userId={comment.userId} />
                         </p>
                         <p className={isXvideosMode ? 'xvideos-text-primary text-sm' : 'text-gray-700 dark:text-gray-300 whitespace-pre-wrap'}>
                           {comment.content}

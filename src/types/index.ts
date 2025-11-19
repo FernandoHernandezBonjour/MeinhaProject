@@ -4,6 +4,8 @@ export interface User {
   email?: string;
   name?: string;
   pixKey?: string;
+  phone?: string;
+  steamProfile?: string;
   photoURL?: string;
   role: 'admin' | 'user';
   passwordChanged: boolean;
@@ -150,9 +152,13 @@ export interface ForumPost {
   title: string;
   content: string;
   authorId: string;
+  authorUsername?: string;
+  authorName?: string;
   category: 'debate' | 'votacao' | 'zoeira' | 'geral';
   poll?: Poll;
+  images: string[]; // URLs das imagens
   comments: ForumComment[];
+  reactions: ForumReaction[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -161,7 +167,17 @@ export interface ForumComment {
   id: string;
   postId: string;
   authorId: string;
+  username?: string;
   content: string;
+  createdAt: Date;
+}
+
+export interface ForumReaction {
+  id: string;
+  postId: string;
+  userId: string;
+  username?: string;
+  reaction: string; // "like", "love", "laugh", etc
   createdAt: Date;
 }
 

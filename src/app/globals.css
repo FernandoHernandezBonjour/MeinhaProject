@@ -148,11 +148,11 @@ a {
 }
 
 .dark {
-  color-scheme: dark;
-}
-
+    color-scheme: dark;
+  }
+  
 .dark .meinha-card {
-  @apply bg-gray-800 border-gray-600;
+    @apply bg-gray-800 border-gray-600;
 }
 
 /* Modo XVIDEOS - Tema Claro */
@@ -340,4 +340,840 @@ a {
   font-size: 12px;
   color: #999;
   margin-top: 4px;
+}
+
+/* ============================================
+   MODO SOVIÉTICO - TEMA CLARO
+   ============================================ */
+.soviet-mode.soviet-light {
+  color-scheme: light;
+}
+
+.soviet-mode.soviet-light body {
+  background: #CC0000 !important;
+  background-image: repeating-linear-gradient(
+    45deg,
+    #CC0000 0px,
+    #CC0000 10px,
+    #DC143C 10px,
+    #DC143C 20px
+  ) !important;
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+.soviet-mode.soviet-light .soviet-header {
+  background: linear-gradient(90deg, #CC0000 0%, #DC143C 50%, #CC0000 100%) !important;
+  border-bottom: 4px solid #FFD700;
+  border-top: 2px solid #FFD700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.soviet-mode.soviet-light .soviet-nav {
+  background: linear-gradient(90deg, #CC0000 0%, #DC143C 50%, #CC0000 100%) !important;
+  border-bottom: 3px solid #FFD700;
+  border-top: 1px solid #FFFFFF;
+}
+
+.soviet-mode.soviet-light .soviet-card {
+  background: #FFFFFF !important;
+  border: 4px solid #FFD700 !important;
+  box-shadow: 
+    0 6px 16px rgba(0, 0, 0, 0.4),
+    inset 0 0 20px rgba(255, 215, 0, 0.1);
+  overflow: visible !important;
+  padding-bottom: 1rem;
+}
+
+.soviet-mode.soviet-light .soviet-text-primary {
+  color: #CC0000 !important;
+  font-weight: 900;
+  text-shadow: 2px 2px 4px rgba(255, 215, 0, 0.5);
+}
+
+.soviet-mode.soviet-light .soviet-text-secondary {
+  color: #8B0000 !important;
+  font-weight: 700;
+}
+
+.soviet-mode.soviet-light .soviet-border {
+  border-color: #FFD700 !important;
+}
+
+/* ============================================
+   MODO SOVIÉTICO - TEMA ESCURO
+   ============================================ */
+.soviet-mode.soviet-dark {
+  color-scheme: dark;
+}
+
+.soviet-mode.soviet-dark body {
+  background: #8B0000 !important;
+  background-image: repeating-linear-gradient(
+    45deg,
+    #8B0000 0px,
+    #8B0000 10px,
+    #CC0000 10px,
+    #CC0000 20px
+  ) !important;
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+.soviet-mode.soviet-dark .soviet-header {
+  background: linear-gradient(90deg, #8B0000 0%, #CC0000 50%, #8B0000 100%) !important;
+  border-bottom: 4px solid #FFD700;
+  border-top: 2px solid #FFD700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+}
+
+.soviet-mode.soviet-dark .soviet-nav {
+  background: linear-gradient(90deg, #8B0000 0%, #CC0000 50%, #8B0000 100%) !important;
+  border-bottom: 3px solid #FFD700;
+  border-top: 1px solid #FFFFFF;
+}
+
+.soviet-mode.soviet-dark .soviet-card {
+  background: #FFFFFF !important;
+  border: 4px solid #FFD700 !important;
+  box-shadow: 
+    0 6px 16px rgba(0, 0, 0, 0.6),
+    inset 0 0 20px rgba(255, 215, 0, 0.15);
+  overflow: visible !important;
+  padding-bottom: 1rem;
+}
+
+.soviet-mode.soviet-dark .soviet-text-primary {
+  color: #CC0000 !important;
+  font-weight: 900;
+  text-shadow: 2px 2px 4px rgba(255, 215, 0, 0.6), 0 0 8px rgba(204, 0, 0, 0.3);
+}
+
+.soviet-mode.soviet-dark .soviet-text-secondary {
+  color: #8B0000 !important;
+  font-weight: 700;
+}
+
+.soviet-mode.soviet-dark .soviet-border {
+  border-color: #FFD700 !important;
+}
+
+/* ============================================
+   ESTILOS GERAIS DO MODO SOVIÉTICO
+   ============================================ */
+.soviet-mode .soviet-header {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  position: relative;
+}
+
+.soviet-mode .soviet-header::before {
+  content: '★';
+  position: absolute;
+  left: 10px;
+  color: #FFD700;
+  font-size: 36px;
+  text-shadow: 
+    2px 2px 4px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(255, 215, 0, 0.8),
+    0 0 30px rgba(255, 215, 0, 0.6);
+  animation: soviet-pulse 2s infinite;
+  z-index: 10;
+}
+
+.soviet-mode .soviet-header::after {
+  content: '★';
+  position: absolute;
+  right: 10px;
+  color: #FFD700;
+  font-size: 36px;
+  text-shadow: 
+    2px 2px 4px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(255, 215, 0, 0.8),
+    0 0 30px rgba(255, 215, 0, 0.6);
+  animation: soviet-pulse 2s infinite;
+  z-index: 10;
+}
+
+@keyframes soviet-pulse {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.15);
+    opacity: 0.9;
+  }
+}
+
+.soviet-mode .soviet-logo {
+  font-size: 32px;
+  font-weight: 900;
+  color: #FFD700 !important;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  text-shadow: 
+    3px 3px 0px #CC0000,
+    5px 5px 10px rgba(0, 0, 0, 1),
+    0 0 30px rgba(255, 215, 0, 0.8),
+    0 0 50px rgba(255, 215, 0, 0.5);
+  font-family: 'Arial Black', 'Impact', sans-serif;
+}
+
+.soviet-mode .soviet-nav {
+  height: 45px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 30px;
+}
+
+.soviet-mode .soviet-nav-item {
+  color: #FFD700 !important;
+  font-size: 18px;
+  font-weight: 900 !important;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: all 0.3s;
+  text-shadow: 
+    2px 2px 4px rgba(0, 0, 0, 1),
+    0 0 10px rgba(255, 215, 0, 0.6);
+  position: relative;
+}
+
+.soviet-mode .soviet-nav-item::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background: #FFFFFF;
+  transition: width 0.3s;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+.soviet-mode .soviet-nav-item:hover {
+  color: #FFFFFF !important;
+  text-shadow: 
+    2px 2px 4px rgba(0, 0, 0, 1),
+    0 0 20px rgba(255, 255, 255, 1),
+    0 0 30px rgba(255, 215, 0, 0.8);
+}
+
+.soviet-mode .soviet-nav-item:hover::after {
+  width: 100%;
+  background: #FFD700;
+}
+
+.soviet-mode .soviet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  padding: 20px;
+  align-items: start;
+  overflow: visible;
+}
+
+.soviet-mode .soviet-card {
+  position: relative;
+  border-radius: 8px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.soviet-mode .soviet-card::before {
+  content: '☭';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 32px;
+  color: #CC0000;
+  opacity: 0.3;
+  z-index: 0;
+  text-shadow: 2px 2px 4px rgba(255, 215, 0, 0.5);
+}
+
+.soviet-mode .soviet-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 8px 24px rgba(204, 0, 0, 0.8),
+    0 0 30px rgba(255, 215, 0, 0.4),
+    inset 0 0 30px rgba(255, 215, 0, 0.1);
+  border-color: #FFA500 !important;
+}
+
+.soviet-mode .soviet-thumbnail {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 3px solid #CC0000;
+}
+
+.soviet-mode .soviet-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.soviet-mode .soviet-content {
+  padding: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Scrollbar soviética */
+.soviet-mode ::-webkit-scrollbar {
+  width: 14px;
+}
+
+.soviet-mode ::-webkit-scrollbar-track {
+  background: linear-gradient(90deg, #8B0000, #CC0000, #8B0000);
+  border-radius: 0;
+}
+
+.soviet-mode ::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #FFD700, #FFA500, #FFD700);
+  border: 2px solid #8B0000;
+  border-radius: 0;
+}
+
+.soviet-mode ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #FFA500, #FFD700, #FFA500);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+}
+
+/* Botões soviéticos */
+.soviet-mode button:not(.soviet-nav-item) {
+  background: #FFD700 !important;
+  color: #CC0000 !important;
+  border-color: #FFD700 !important;
+  font-weight: 900 !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.soviet-mode button:not(.soviet-nav-item):hover {
+  background: #FFA500 !important;
+  border-color: #FFA500 !important;
+  color: #8B0000 !important;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+}
+
+/* Links soviéticos */
+.soviet-mode a {
+  color: #FFD700 !important;
+  font-weight: 700;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.soviet-mode a:hover {
+  color: #FFFFFF !important;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+/* ============================================
+   MODO PATRIOTA - TEMA CLARO
+   ============================================ */
+.patriota-mode.patriota-light {
+  color-scheme: light;
+}
+
+.patriota-mode.patriota-light body {
+  background-image: url('/images/bolsonaro.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 100vh;
+  position: relative;
+}
+
+.patriota-mode.patriota-light body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    /* Losango amarelo central (referência à bandeira) */
+    linear-gradient(135deg, transparent 40%, rgba(254, 221, 0, 0.15) 45%, rgba(254, 221, 0, 0.15) 55%, transparent 60%),
+    linear-gradient(45deg, transparent 40%, rgba(254, 221, 0, 0.15) 45%, rgba(254, 221, 0, 0.15) 55%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.patriota-mode.patriota-light .patriota-header {
+  background: linear-gradient(90deg, #009739 0%, #00A644 50%, #009739 100%) !important;
+  border-bottom: 4px solid #FEDD00;
+  border-top: 3px solid #012169;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.patriota-mode.patriota-light .patriota-nav {
+  background: linear-gradient(90deg, #009739 0%, #00A644 50%, #009739 100%) !important;
+  border-bottom: 3px solid #FEDD00;
+  border-top: 2px solid #FFFFFF;
+}
+
+.patriota-mode.patriota-light .patriota-card {
+  background: #FFFFFF !important;
+  border: 4px solid #FEDD00 !important;
+  box-shadow: 
+    0 6px 16px rgba(0, 151, 57, 0.5),
+    inset 0 0 20px rgba(254, 221, 0, 0.15);
+  overflow: visible !important;
+  padding-bottom: 1rem;
+}
+
+.patriota-mode.patriota-light .patriota-text-primary {
+  color: #009739 !important;
+  font-weight: 900;
+  text-shadow: 2px 2px 4px rgba(254, 221, 0, 0.4);
+}
+
+.patriota-mode.patriota-light .patriota-text-secondary {
+  color: #006B2C !important;
+  font-weight: 700;
+}
+
+.patriota-mode.patriota-light .patriota-border {
+  border-color: #FEDD00 !important;
+}
+
+/* ============================================
+   MODO PATRIOTA - TEMA ESCURO
+   ============================================ */
+.patriota-mode.patriota-dark {
+  color-scheme: dark;
+}
+
+.patriota-mode.patriota-dark body, .patriota-mode.patriota-light body {
+  background-image: url('/images/bolsonaro.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 100vh;
+  position: relative;
+}
+
+.patriota-mode.patriota-dark body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    /* Losango amarelo central (referência à bandeira) */
+    linear-gradient(135deg, transparent 40%, rgba(254, 221, 0, 0.2) 45%, rgba(254, 221, 0, 0.2) 55%, transparent 60%),
+    linear-gradient(45deg, transparent 40%, rgba(254, 221, 0, 0.2) 45%, rgba(254, 221, 0, 0.2) 55%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.patriota-mode.patriota-dark .patriota-header {
+  background: linear-gradient(90deg, #006B2C 0%, #009739 50%, #006B2C 100%) !important;
+  border-bottom: 4px solid #FEDD00;
+  border-top: 3px solid #012169;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+
+.patriota-mode.patriota-dark .patriota-nav {
+  background: linear-gradient(90deg, #006B2C 0%, #009739 50%, #006B2C 100%) !important;
+  border-bottom: 3px solid #FEDD00;
+  border-top: 2px solid #FFFFFF;
+}
+
+.patriota-mode.patriota-dark .patriota-card {
+  background: #FFFFFF !important;
+  border: 4px solid #FEDD00 !important;
+  box-shadow: 
+    0 6px 16px rgba(0, 151, 57, 0.7),
+    inset 0 0 20px rgba(254, 221, 0, 0.2);
+  overflow: visible !important;
+  padding-bottom: 1rem;
+}
+
+.patriota-mode.patriota-dark .patriota-text-primary {
+  color: #009739 !important;
+  font-weight: 900;
+  text-shadow: 2px 2px 4px rgba(254, 221, 0, 0.6), 0 0 8px rgba(0, 151, 57, 0.3);
+}
+
+.patriota-mode.patriota-dark .patriota-text-secondary {
+  color: #006B2C !important;
+  font-weight: 700;
+}
+
+.patriota-mode.patriota-dark .patriota-border {
+  border-color: #FEDD00 !important;
+}
+
+/* ============================================
+   ESTILOS GERAIS DO MODO PATRIOTA
+   ============================================ */
+.patriota-mode .patriota-header {
+  height: 75px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  position: relative;
+  background-image: 
+    /* Linhas horizontais amarelas e brancas no header */
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 8px,
+      rgba(254, 221, 0, 0.3) 8px,
+      rgba(254, 221, 0, 0.3) 10px,
+      transparent 10px,
+      transparent 18px,
+      rgba(255, 255, 255, 0.2) 18px,
+      rgba(255, 255, 255, 0.2) 20px,
+      transparent 20px,
+      transparent 28px
+    );
+}
+
+.patriota-mode .patriota-header::before {
+  content: '🇧🇷';
+  position: absolute;
+  left: 10px;
+  font-size: 40px;
+  text-shadow: 
+    2px 2px 4px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(254, 221, 0, 0.6);
+  animation: patriota-float 3s ease-in-out infinite;
+  z-index: 10;
+}
+
+.patriota-mode .patriota-header::after {
+  content: '⭐';
+  position: absolute;
+  right: 10px;
+  color: #FFFFFF;
+  font-size: 36px;
+  text-shadow: 
+    2px 2px 4px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(255, 255, 255, 0.8),
+    0 0 30px rgba(254, 221, 0, 0.6);
+  animation: patriota-pulse 2s infinite;
+  z-index: 10;
+}
+
+/* Estrelas brancas adicionais no header */
+.patriota-mode .patriota-header {
+  background-image: 
+    /* Estrelas brancas pequenas */
+    radial-gradient(circle at 15% 50%, #FFFFFF 2px, transparent 2px),
+    radial-gradient(circle at 25% 30%, #FFFFFF 1.5px, transparent 1.5px),
+    radial-gradient(circle at 35% 70%, #FFFFFF 2px, transparent 2px),
+    radial-gradient(circle at 45% 20%, #FFFFFF 1.5px, transparent 1.5px),
+    radial-gradient(circle at 55% 80%, #FFFFFF 2px, transparent 2px),
+    radial-gradient(circle at 65% 40%, #FFFFFF 1.5px, transparent 1.5px),
+    radial-gradient(circle at 75% 60%, #FFFFFF 2px, transparent 2px),
+    radial-gradient(circle at 85% 25%, #FFFFFF 1.5px, transparent 1.5px),
+    /* Linhas horizontais amarelas e brancas no header */
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 8px,
+      rgba(254, 221, 0, 0.3) 8px,
+      rgba(254, 221, 0, 0.3) 10px,
+      transparent 10px,
+      transparent 18px,
+      rgba(255, 255, 255, 0.2) 18px,
+      rgba(255, 255, 255, 0.2) 20px,
+      transparent 20px,
+      transparent 28px
+    );
+  background-size: 
+    100px 100px,
+    80px 80px,
+    90px 90px,
+    85px 85px,
+    95px 95px,
+    88px 88px,
+    92px 92px,
+    87px 87px,
+    100% 100%;
+}
+
+@keyframes pulse-red {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(220, 38, 38, 0.5), 0 0 20px rgba(220, 38, 38, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.8), 0 0 30px rgba(220, 38, 38, 0.5), 0 0 40px rgba(220, 38, 38, 0.3);
+  }
+}
+
+@keyframes patriota-float {
+  0%, 100% { 
+    transform: translateY(0) rotate(0deg);
+  }
+  50% { 
+    transform: translateY(-8px) rotate(5deg);
+  }
+}
+
+@keyframes patriota-pulse {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.15);
+    opacity: 0.9;
+  }
+}
+
+.patriota-mode .patriota-logo {
+  font-size: 30px;
+  font-weight: 900;
+  color: #FEDD00 !important;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  text-shadow: 
+    3px 3px 0px #009739,
+    5px 5px 10px rgba(0, 0, 0, 1),
+    0 0 25px rgba(254, 221, 0, 0.7),
+    0 0 40px rgba(1, 33, 105, 0.5);
+  font-family: 'Arial Black', 'Impact', sans-serif;
+  background: linear-gradient(180deg, #FEDD00 0%, #FFC700 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.8));
+}
+
+.patriota-mode .patriota-nav {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 30px;
+  background-image: 
+    /* Linhas horizontais amarelas e brancas na nav */
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 6px,
+      rgba(254, 221, 0, 0.25) 6px,
+      rgba(254, 221, 0, 0.25) 8px,
+      transparent 8px,
+      transparent 14px,
+      rgba(255, 255, 255, 0.15) 14px,
+      rgba(255, 255, 255, 0.15) 16px,
+      transparent 16px,
+      transparent 22px
+    );
+}
+
+.patriota-mode .patriota-nav-item {
+  color: #FEDD00 !important;
+  font-size: 18px;
+  font-weight: 900 !important;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: all 0.3s;
+  text-shadow: 
+    2px 2px 4px rgba(0, 0, 0, 1),
+    0 0 10px rgba(254, 221, 0, 0.6);
+  position: relative;
+}
+
+.patriota-mode .patriota-nav-item::before {
+  content: '⭐';
+  position: absolute;
+  left: -20px;
+  font-size: 16px;
+  color: #FFFFFF;
+  opacity: 0;
+  transition: opacity 0.3s;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+}
+
+.patriota-mode .patriota-nav-item::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background: #FFFFFF;
+  transition: width 0.3s;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+.patriota-mode .patriota-nav-item:hover::before {
+  opacity: 1;
+}
+
+.patriota-mode .patriota-nav-item:hover {
+  color: #FFFFFF !important;
+  text-shadow: 
+    2px 2px 4px rgba(0, 0, 0, 1),
+    0 0 20px rgba(255, 255, 255, 1),
+    0 0 30px rgba(254, 221, 0, 0.8);
+}
+
+.patriota-mode .patriota-nav-item:hover::after {
+  width: 100%;
+  background: #FEDD00;
+}
+
+.patriota-mode .patriota-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  padding: 20px;
+  align-items: start;
+  overflow: visible;
+}
+
+.patriota-mode .patriota-card {
+  position: relative;
+  border-radius: 8px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.patriota-mode .patriota-card::before {
+  content: '🇧🇷';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 32px;
+  opacity: 0.25;
+  z-index: 0;
+  filter: grayscale(0.3);
+}
+
+.patriota-mode .patriota-card::after {
+  content: '⭐';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 20px;
+  color: #FFFFFF;
+  opacity: 0.4;
+  z-index: 0;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+/* Estrelas brancas nos cards */
+.patriota-mode .patriota-card {
+  background-image: 
+    /* Estrelas brancas pequenas no fundo do card */
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    radial-gradient(circle at 60% 50%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 150px 150px, 120px 120px, 130px 130px, 140px 140px;
+}
+
+.patriota-mode .patriota-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 8px 24px rgba(0, 151, 57, 0.7),
+    0 0 30px rgba(254, 221, 0, 0.5),
+    inset 0 0 30px rgba(254, 221, 0, 0.1);
+  border-color: #FFC700 !important;
+}
+
+.patriota-mode .patriota-thumbnail {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 3px solid #009739;
+}
+
+.patriota-mode .patriota-thumbnail::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(135deg, #009739 0%, #FEDD00 50%, #012169 100%);
+  border-radius: 0 4px 0 20px;
+  opacity: 0.8;
+}
+
+.patriota-mode .patriota-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.patriota-mode .patriota-content {
+  padding: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Scrollbar patriota */
+.patriota-mode ::-webkit-scrollbar {
+  width: 14px;
+}
+
+.patriota-mode ::-webkit-scrollbar-track {
+  background: linear-gradient(90deg, #006B2C, #009739, #006B2C);
+  border-radius: 0;
+}
+
+.patriota-mode ::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #FEDD00, #FFC700, #FEDD00);
+  border: 2px solid #009739;
+  border-radius: 0;
+}
+
+.patriota-mode ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #FFC700, #FEDD00, #FFC700);
+  box-shadow: 0 0 10px rgba(254, 221, 0, 0.8);
+}
+
+/* Botões patriota */
+.patriota-mode button:not(.patriota-nav-item) {
+  background: #FEDD00 !important;
+  color: #009739 !important;
+  border-color: #FEDD00 !important;
+  font-weight: 900 !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.patriota-mode button:not(.patriota-nav-item):hover {
+  background: #FFC700 !important;
+  border-color: #FFC700 !important;
+  color: #006B2C !important;
+  box-shadow: 0 0 15px rgba(254, 221, 0, 0.7);
+}
+
+/* Links patriota */
+.patriota-mode a {
+  color: #FEDD00 !important;
+  font-weight: 700;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.patriota-mode a:hover {
+  color: #FFFFFF !important;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.9), 0 0 20px rgba(254, 221, 0, 0.6);
 }

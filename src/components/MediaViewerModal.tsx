@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { MediaItem } from '@/types';
 import { addMediaCommentAction, toggleMediaReactionAction } from '@/lib/actions/media';
 import { useAuth } from '@/contexts/AuthContext';
+import { UserLink } from './UserLink';
 
 const reactionOptions = ['😂', '🔥', '🤮', '👏', '💀'];
 
@@ -117,7 +118,11 @@ export const MediaViewerModal: React.FC<MediaViewerModalProps> = ({ media, onClo
               </p>
               <p className="text-xs text-gray-500">
                 {media.createdAt.toLocaleString('pt-BR')}
-                {media.uploadedByUsername ? ` • Por ${media.uploadedByUsername}` : ''}
+                {media.uploadedByUsername ? (
+                  <> • Por <UserLink username={media.uploadedByUsername} userId={media.uploadedBy} /></>
+                ) : media.uploadedBy ? (
+                  <> • Por <UserLink username={media.uploadedBy} userId={media.uploadedBy} /></>
+                ) : null}
               </p>
               {media.description && (
                 <p className="text-sm text-gray-700 italic">
@@ -165,7 +170,11 @@ export const MediaViewerModal: React.FC<MediaViewerModalProps> = ({ media, onClo
                   >
                     <div className="flex justify-between items-start">
                       <p className="text-sm font-black text-red-600">
-                        {commentItem.username ?? 'Anônimo degenerado'}
+                        {commentItem.username ? (
+                          <UserLink username={commentItem.username} userId={commentItem.userId} />
+                        ) : (
+                          'Anônimo degenerado'
+                        )}
                       </p>
                       <span className="text-xs text-gray-500 font-semibold">
                         {commentItem.createdAt.toLocaleString('pt-BR')}

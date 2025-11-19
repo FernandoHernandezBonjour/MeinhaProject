@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityFeed, CaloteiroRanking, WeeklyStats } from '@/types';
 import { getHomeDataAction } from '@/lib/actions/home';
+import { UserLink } from './UserLink';
 
 export const HomePage: React.FC = () => {
   const [ranking, setRanking] = useState<CaloteiroRanking[]>([]);
@@ -109,7 +110,7 @@ export const HomePage: React.FC = () => {
                               caloteiro.isLeader ? 'text-yellow-800 dark:text-yellow-100' : 'text-gray-800 dark:text-gray-200'
                             }`}
                           >
-                            {caloteiro.username}
+                            <UserLink username={caloteiro.username} userId={caloteiro.userId} />
                           </h4>
                           <p className="text-sm text-gray-600 dark:text-gray-300">
                             {caloteiro.isLeader ? 'Rei da Vergonha' : 'Caloteiro Pleno'}
@@ -182,11 +183,19 @@ export const HomePage: React.FC = () => {
                 className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl border-2 border-gray-300 dark:border-gray-600 transition-colors duration-200"
               >
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-red-600 dark:bg-red-700 rounded-full flex items-center justify-center text-white font-bold">
+                  <button
+                    onClick={() => window.dispatchEvent(new CustomEvent('profile:open', { 
+                      detail: { username: activity.username, userId: activity.userId } 
+                    }))}
+                    className="w-10 h-10 bg-red-600 dark:bg-red-700 rounded-full flex items-center justify-center text-white font-bold hover:bg-red-700 dark:hover:bg-red-800 transition-colors cursor-pointer"
+                    title={`Ver perfil de ${activity.username}`}
+                  >
                     {activity.username.charAt(0).toUpperCase()}
-                  </div>
+                  </button>
                   <div className="flex-1">
-                    <p className="font-bold text-gray-800 dark:text-gray-200">{activity.message}</p>
+                    <p className="font-bold text-gray-800 dark:text-gray-200">
+                      <UserLink username={activity.username} userId={activity.userId} /> {activity.message.replace(activity.username, '').trim()}
+                    </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       {(activity.createdAt instanceof Date
                         ? activity.createdAt

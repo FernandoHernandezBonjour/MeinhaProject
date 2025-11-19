@@ -1,96 +1,201 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { ForumPost, ForumPostFormData } from '@/types';
+import React, { useState, useEffect, useMemo } from 'react';
+import { ForumPost, ForumComment, ForumReaction } from '@/types';
+import { 
+  getForumPostsAction, 
+  createForumPostAction, 
+  addForumCommentAction, 
+  toggleForumReactionAction,
+  deleteForumPostAction 
+} from '@/lib/actions/forum';
+import { useAuth } from '@/contexts/AuthContext';
+import { UserLink } from './UserLink';
+
+const REACTIONS = [
+  { emoji: '👍', value: 'like', label: 'Curtir' },
+  { emoji: '❤️', value: 'love', label: 'Amar' },
+  { emoji: '😂', value: 'laugh', label: 'Rir' },
+  { emoji: '😮', value: 'wow', label: 'Uau' },
+  { emoji: '😢', value: 'sad', label: 'Triste' },
+  { emoji: '😡', value: 'angry', label: 'Bravo' },
+];
 
 export const ForumPage: React.FC = () => {
+  const { user } = useAuth();
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [loading, setLoading] = useState(true);
+  const [expandedPost, setExpandedPost] = useState<string | null>(null);
+  const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Mock data para demonstração
   useEffect(() => {
-    const mockPosts: ForumPost[] = [
-      {
-        id: '1',
-        title: 'Quem foi o maior caloteiro do mês?',
-        content: 'Galera, vamos votar no maior caloteiro de dezembro. Eu já sei quem vai ganhar...',
-        authorId: '1',
-        category: 'votacao',
-        poll: {
-          id: '1',
-          question: 'Quem foi o maior caloteiro do mês?',
-          options: [
-            { id: '1', text: 'Luis - R$ 1.250,50', votes: 8, voters: ['1', '2', '3', '4', '5', '6', '7', '8'] },
-            { id: '2', text: 'Diego - R$ 890,00', votes: 3, voters: ['9', '10', '11'] },
-            { id: '3', text: 'Fernando - R$ 650,75', votes: 1, voters: ['12'] }
-          ],
-          createdAt: new Date()
-        },
-        comments: [
-          {
-            id: '1',
-            postId: '1',
-            authorId: '2',
-            content: 'Luis nem precisa votar, já ganhou por W.O.',
-            createdAt: new Date()
-          }
-        ],
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: '2',
-        title: 'Qual foi o pior churrasco da história?',
-        content: 'Lembram do churrasco que o Diego esqueceu o carvão? Ou daquele que o Luis não levou nada?',
-        authorId: '2',
-        category: 'zoeira',
-        comments: [
-          {
-            id: '2',
-            postId: '2',
-            authorId: '3',
-            content: 'O do carvão foi épico! Ficamos 2 horas esperando ele voltar da loja',
-            createdAt: new Date()
-          }
-        ],
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: '3',
-        title: 'Qual dívida merece perdão (mas não vai ter)?',
-        content: 'Discussão séria: qual dívida vocês acham que deveria ser perdoada? (Spoiler: nenhuma)',
-        authorId: '3',
-        category: 'debate',
-        comments: [],
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-    ];
-
-    setPosts(mockPosts);
-    setLoading(false);
+    fetchPosts();
   }, []);
 
-  const categories = [
-    { id: 'all', name: 'Todos', icon: '🏠' },
-    { id: 'debate', name: 'Debate', icon: '💬' },
-    { id: 'votacao', name: 'Votação', icon: '🗳️' },
-    { id: 'zoeira', name: 'Zoeira', icon: '😂' },
-    { id: 'geral', name: 'Geral', icon: '📝' }
-  ];
-
-  const filteredPosts = selectedCategory === 'all' 
-    ? posts 
-    : posts.filter(post => post.category === selectedCategory);
-
-  const handleCreatePost = (formData: ForumPostFormData) => {
-    // Aqui seria a lógica para criar um post
-    console.log('Criando post:', formData);
-    setShowForm(false);
+  const fetchPosts = async () => {
+    setLoading(true);
+    try {
+      const result = await getForumPostsAction();
+      if (result.success && result.posts) {
+        setPosts(result.posts);
+      } else {
+        setError(result.error || 'Erro ao carregar posts');
+      }
+    } catch (err) {
+      setError('Erro ao carregar posts');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleCreatePost = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError('');
+
+    const formData = new FormData(e.currentTarget);
+    const title = formData.get('title') as string;
+    const content = formData.get('content') as string;
+    const imageFiles = formData.getAll('images') as File[];
+
+    if (!title?.trim()) {
+      setError('Título é obrigatório');
+      setSubmitting(false);
+      return;
+    }
+
+    if (!content?.trim()) {
+      setError('Conteúdo é obrigatório');
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      const submitFormData = new FormData();
+      submitFormData.append('title', title);
+      submitFormData.append('content', content);
+      submitFormData.append('category', 'debate');
+      imageFiles.forEach((file) => {
+        if (file && file.size > 0) {
+          submitFormData.append('images', file);
+        }
+      });
+
+      const result = await createForumPostAction(submitFormData);
+      
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setShowForm(false);
+        (e.target as HTMLFormElement).reset();
+        fetchPosts();
+      }
+    } catch (err) {
+      setError('Erro ao criar post');
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleAddComment = async (postId: string) => {
+    const content = commentInputs[postId]?.trim();
+    if (!content) return;
+
+    setSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('postId', postId);
+      formData.append('content', content);
+
+      const result = await addForumCommentAction(formData);
+      
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setCommentInputs({ ...commentInputs, [postId]: '' });
+        fetchPosts();
+      }
+    } catch (err) {
+      setError('Erro ao adicionar comentário');
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleToggleReaction = async (postId: string, reaction: string) => {
+    if (!user) return;
+
+    setSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('postId', postId);
+      formData.append('reaction', reaction);
+
+      const result = await toggleForumReactionAction(formData);
+      
+      if (result.error) {
+        setError(result.error);
+      } else {
+        fetchPosts();
+      }
+    } catch (err) {
+      setError('Erro ao reagir');
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    if (!confirm('Tem certeza que deseja deletar este post?')) return;
+
+    setSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('postId', postId);
+
+      const result = await deleteForumPostAction(formData);
+      
+      if (result.error) {
+        setError(result.error);
+      } else {
+        fetchPosts();
+      }
+    } catch (err) {
+      setError('Erro ao deletar post');
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const getReactionCount = (post: ForumPost, reactionType: string) => {
+    return post.reactions.filter(r => r.reaction === reactionType).length;
+  };
+
+  const hasUserReacted = (post: ForumPost, reactionType: string) => {
+    if (!user) return false;
+    return post.reactions.some(r => r.userId === user.id && r.reaction === reactionType);
+  };
+
+  const filteredPosts = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return posts;
+    }
+    
+    const query = searchQuery.toLowerCase().trim();
+    return posts.filter(post => 
+      post.title.toLowerCase().includes(query) || 
+      post.content.toLowerCase().includes(query)
+    );
+  }, [posts, searchQuery]);
 
   if (loading) {
     return (
@@ -106,193 +211,282 @@ export const ForumPage: React.FC = () => {
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-white shadow-2xl border-4 border-black">
         <h2 className="text-4xl font-black mb-4">💬 Fórum Interno</h2>
         <p className="text-xl text-indigo-200">
-          Espaço de debates, votações e zoeira sem limites!
+          Espaço de debates sem limites!
         </p>
       </div>
 
-      {/* Categorias */}
-      <div className="bg-white rounded-2xl p-6 shadow-lg border-4 border-black">
-        <h3 className="text-xl font-bold mb-4">Categorias</h3>
-        <div className="flex flex-wrap gap-2">
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`px-4 py-2 rounded-lg font-bold transition-colors border-2 ${
-                selectedCategory === category.id
-                  ? 'bg-indigo-600 text-white border-indigo-800'
-                  : 'bg-gray-200 text-gray-700 border-gray-400 hover:bg-gray-300'
-              }`}
-            >
-              <span className="mr-2">{category.icon}</span>
-              {category.name}
-            </button>
-          ))}
+      {error && (
+        <div className="bg-red-100 border-2 border-red-600 text-red-800 px-4 py-3 rounded-lg">
+          {error}
         </div>
+      )}
+
+      {/* Campo de Pesquisa */}
+      <div className="bg-white rounded-2xl p-6 shadow-lg border-4 border-black">
+        <div className="flex items-center space-x-4">
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Pesquisar posts por título ou conteúdo..."
+              className="w-full p-3 pl-10 border-2 border-gray-300 rounded-lg focus:border-indigo-600 focus:outline-none"
+            />
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">
+              🔍
+            </span>
+          </div>
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-lg border-2 border-gray-400 transition-colors"
+              title="Limpar pesquisa"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+        {searchQuery && (
+          <p className="mt-2 text-sm text-gray-600">
+            {filteredPosts.length === 0 
+              ? 'Nenhum post encontrado com essa pesquisa.'
+              : `Encontrados ${filteredPosts.length} post(s) com "${searchQuery}"`
+            }
+          </p>
+        )}
       </div>
 
       {/* Botão de Criar Post */}
       <div className="flex justify-between items-center">
-        <h3 className="text-2xl font-black text-gray-800">Posts Recentes</h3>
-        <button
-          onClick={() => setShowForm(true)}
-          className="bg-green-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-green-700 transition-colors border-2 border-black shadow-lg"
-        >
-          ✍️ Novo Post
-        </button>
+        <h3 className="text-2xl font-black text-gray-800">
+          {searchQuery ? `Resultados da Pesquisa` : 'Posts Recentes'}
+        </h3>
+        {user && (
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-green-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-green-700 transition-colors border-2 border-black shadow-lg"
+          >
+            ✍️ Novo Post
+          </button>
+        )}
       </div>
 
       {/* Lista de Posts */}
       <div className="space-y-6">
-        {filteredPosts.map((post) => (
-          <div
-            key={post.id}
-            className="bg-white rounded-2xl p-6 shadow-lg border-4 border-black hover:shadow-xl transition-shadow"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <div className="flex items-center space-x-3 mb-2">
-                  <span className="text-2xl">
-                    {categories.find(c => c.id === post.category)?.icon}
-                  </span>
-                  <h4 className="text-xl font-bold text-gray-800">{post.title}</h4>
-                  <span className={`px-3 py-1 rounded-full text-sm font-bold ${
-                    post.category === 'votacao' ? 'bg-blue-100 text-blue-800' :
-                    post.category === 'zoeira' ? 'bg-yellow-100 text-yellow-800' :
-                    post.category === 'debate' ? 'bg-green-100 text-green-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {categories.find(c => c.id === post.category)?.name}
-                  </span>
+        {filteredPosts.length === 0 ? (
+          <div className="bg-white rounded-2xl p-8 text-center border-4 border-black">
+            <p className="text-gray-600 text-lg">Nenhum post encontrado nesta categoria.</p>
+          </div>
+        ) : (
+          filteredPosts.map((post) => (
+            <div
+              key={post.id}
+              className="bg-white rounded-2xl p-6 shadow-lg border-4 border-black hover:shadow-xl transition-shadow"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <span className="text-2xl">💬</span>
+                    <h4 className="text-xl font-bold text-gray-800">{post.title}</h4>
+                  </div>
+                  <div className="flex items-center space-x-2 mb-2 text-sm text-gray-600">
+                    <span>Por</span>
+                    <UserLink userId={post.authorId} username={post.authorUsername || post.authorId} />
+                    <span>•</span>
+                    <span>{new Date(post.createdAt).toLocaleString('pt-BR')}</span>
+                  </div>
+                  <p className="text-gray-700 mb-4 whitespace-pre-wrap">{post.content}</p>
+                  
+                  {/* Imagens */}
+                  {post.images && post.images.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                      {post.images.map((imageUrl, idx) => (
+                        <img
+                          key={idx}
+                          src={imageUrl}
+                          alt={`Imagem ${idx + 1} do post`}
+                          className="w-full h-48 object-cover rounded-lg border-2 border-gray-300 cursor-pointer hover:opacity-90"
+                          onClick={() => window.open(imageUrl, '_blank')}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <p className="text-gray-600 mb-4">{post.content}</p>
+                {(user?.id === post.authorId || user?.role === 'admin') && (
+                  <button
+                    onClick={() => handleDeletePost(post.id)}
+                    className="ml-4 text-red-600 hover:text-red-800 font-bold"
+                    title="Deletar post"
+                  >
+                    🗑️
+                  </button>
+                )}
               </div>
-            </div>
 
-            {/* Enquete */}
-            {post.poll && (
-              <div className="mb-6 p-4 bg-blue-50 rounded-xl border-2 border-blue-200">
-                <h5 className="font-bold text-blue-800 mb-3">{post.poll.question}</h5>
-                <div className="space-y-2">
-                  {post.poll.options.map((option) => (
-                    <div key={option.id} className="flex items-center space-x-3">
-                      <button className="flex-1 p-3 bg-white rounded-lg border-2 border-blue-300 hover:border-blue-500 transition-colors text-left">
-                        <div className="flex justify-between items-center">
-                          <span className="font-medium">{option.text}</span>
-                          <span className="text-sm text-blue-600 font-bold">
-                            {option.votes} votos
-                          </span>
+              {/* Reações */}
+              <div className="flex items-center space-x-4 mb-4 pb-4 border-b-2 border-gray-200">
+                {REACTIONS.map((reaction) => {
+                  const count = getReactionCount(post, reaction.value);
+                  const reacted = hasUserReacted(post, reaction.value);
+                  if (count === 0 && !reacted) return null;
+                  
+                  return (
+                    <button
+                      key={reaction.value}
+                      onClick={() => handleToggleReaction(post.id, reaction.value)}
+                      disabled={submitting || !user}
+                      className={`flex items-center space-x-1 px-3 py-1 rounded-lg border-2 transition-colors ${
+                        reacted
+                          ? 'bg-blue-100 border-blue-400 text-blue-800'
+                          : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
+                      } ${!user ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                      title={reaction.label}
+                    >
+                      <span>{reaction.emoji}</span>
+                      {count > 0 && <span className="font-bold">{count}</span>}
+                    </button>
+                  );
+                })}
+                {user && (
+                  <button
+                    onClick={() => setExpandedPost(expandedPost === post.id ? null : post.id)}
+                    className="flex items-center space-x-1 px-3 py-1 rounded-lg border-2 border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                  >
+                    <span>💬</span>
+                    <span className="font-bold">{post.comments.length}</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Comentários */}
+              {expandedPost === post.id && (
+                <div className="mt-4 space-y-3">
+                  {post.comments.length > 0 && (
+                    <div className="space-y-3">
+                      {post.comments.map((comment) => (
+                        <div
+                          key={comment.id}
+                          className="p-3 bg-gray-50 rounded-lg border-2 border-gray-200"
+                        >
+                          <div className="flex items-center space-x-2 mb-1">
+                            <UserLink userId={comment.authorId} username={comment.username || comment.authorId} />
+                            <span className="text-sm text-gray-500">
+                              {new Date(comment.createdAt).toLocaleString('pt-BR')}
+                            </span>
+                          </div>
+                          <p className="text-gray-700 whitespace-pre-wrap">{comment.content}</p>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                          <div 
-                            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                            style={{ 
-                              width: `${(option.votes / Math.max(...post.poll!.options.map(o => o.votes))) * 100}%` 
-                            }}
-                          ></div>
-                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {user && (
+                    <div className="flex space-x-2">
+                      <input
+                        type="text"
+                        value={commentInputs[post.id] || ''}
+                        onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleAddComment(post.id);
+                          }
+                        }}
+                        placeholder="Escreva um comentário..."
+                        className="flex-1 p-2 border-2 border-gray-300 rounded-lg focus:border-indigo-600 focus:outline-none"
+                        disabled={submitting}
+                      />
+                      <button
+                        onClick={() => handleAddComment(post.id)}
+                        disabled={submitting || !commentInputs[post.id]?.trim()}
+                        className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-2 border-black"
+                      >
+                        Enviar
                       </button>
                     </div>
-                  ))}
+                  )}
                 </div>
-                <p className="text-sm text-blue-600 mt-2">
-                  Total de votos: {post.poll.options.reduce((sum, opt) => sum + opt.votes, 0)}
-                </p>
-              </div>
-            )}
-
-            {/* Comentários */}
-            {post.comments.length > 0 && (
-              <div className="mb-4">
-                <h5 className="font-bold text-gray-800 mb-3">
-                  Comentários ({post.comments.length})
-                </h5>
-                <div className="space-y-3">
-                  {post.comments.map((comment) => (
-                    <div
-                      key={comment.id}
-                      className="p-3 bg-gray-50 rounded-lg border-2 border-gray-200"
-                    >
-                      <div className="flex items-center space-x-2 mb-1">
-                        <span className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                          U
-                        </span>
-                        <span className="font-bold text-gray-800">Usuário</span>
-                        <span className="text-sm text-gray-500">
-                          {comment.createdAt.toLocaleString('pt-BR')}
-                        </span>
-                      </div>
-                      <p className="text-gray-700">{comment.content}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Ações */}
-            <div className="flex space-x-4">
-              <button className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors border-2 border-black">
-                <span>💬</span>
-                <span>Comentar</span>
-              </button>
-              {post.poll && (
-                <button className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-colors border-2 border-black">
-                  <span>🗳️</span>
-                  <span>Votar</span>
-                </button>
               )}
-              <button className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-colors border-2 border-black">
-                <span>❤️</span>
-                <span>Curtir</span>
-              </button>
             </div>
-
-            <div className="mt-4 text-sm text-gray-500">
-              Postado em {post.createdAt.toLocaleString('pt-BR')}
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
-      {/* Modal de Criar Post (simplificado) */}
+      {/* Modal de Criar Post */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 border-4 border-black">
-            <h3 className="text-2xl font-bold mb-4">Criar Novo Post</h3>
-            <form className="space-y-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 border-4 border-black max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-2xl font-bold">Criar Novo Post</h3>
+              <button
+                onClick={() => {
+                  setShowForm(false);
+                  setError('');
+                }}
+                className="text-gray-600 hover:text-gray-800 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            <form onSubmit={handleCreatePost} className="space-y-4">
               <input
                 type="text"
+                name="title"
                 placeholder="Título do post"
+                required
                 className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-indigo-600 focus:outline-none"
+                disabled={submitting}
               />
-              
-              <select className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-indigo-600 focus:outline-none">
-                <option value="">Selecione uma categoria</option>
-                {categories.slice(1).map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.icon} {category.name}
-                  </option>
-                ))}
-              </select>
               
               <textarea
+                name="content"
                 placeholder="Conteúdo do post"
-                className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-indigo-600 focus:outline-none h-32"
+                required
+                rows={6}
+                className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-indigo-600 focus:outline-none resize-none"
+                disabled={submitting}
               />
+              
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Imagens (opcional)
+                </label>
+                <input
+                  type="file"
+                  name="images"
+                  multiple
+                  accept="image/*"
+                  className="w-full p-2 border-2 border-gray-300 rounded-lg focus:border-indigo-600 focus:outline-none"
+                  disabled={submitting}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Você pode selecionar múltiplas imagens. Máximo 5MB por imagem.
+                </p>
+              </div>
+              
+              {error && (
+                <div className="bg-red-100 border-2 border-red-600 text-red-800 px-4 py-2 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
               
               <div className="flex space-x-4">
                 <button
                   type="button"
-                  onClick={() => setShowForm(false)}
-                  className="flex-1 bg-gray-600 text-white py-3 rounded-lg font-bold hover:bg-gray-700 transition-colors"
+                  onClick={() => {
+                    setShowForm(false);
+                    setError('');
+                  }}
+                  disabled={submitting}
+                  className="flex-1 bg-gray-600 text-white py-3 rounded-lg font-bold hover:bg-gray-700 transition-colors disabled:opacity-50"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition-colors"
+                  disabled={submitting}
+                  className="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition-colors disabled:opacity-50"
                 >
-                  Publicar
+                  {submitting ? 'Publicando...' : 'Publicar'}
                 </button>
               </div>
             </form>
@@ -302,4 +496,3 @@ export const ForumPage: React.FC = () => {
     </div>
   );
 };
-

@@ -11,6 +11,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { MediaViewerModal } from './MediaViewerModal';
+import { UserLink } from './UserLink';
 
 const VideoThumbnail: React.FC<{ src: string; className?: string; alt?: string }> = ({ src, className = '', alt = 'Vídeo' }) => {
   const [thumb, setThumb] = React.useState<string | null>(null);
@@ -375,7 +376,11 @@ export const MediaPage: React.FC = () => {
                   </p>
                   <p className={isXvideosMode ? 'xvideos-meta' : 'text-xs text-gray-500'}>
                     {item.createdAt.toLocaleString('pt-BR')}
-                    {item.uploadedByUsername ? ` • por ${item.uploadedByUsername}` : ''}
+                    {item.uploadedByUsername ? (
+                      <> • por <UserLink username={item.uploadedByUsername} userId={item.uploadedBy} /></>
+                    ) : item.uploadedBy ? (
+                      <> • por <UserLink username={item.uploadedBy} userId={item.uploadedBy} /></>
+                    ) : null}
                   </p>
                   {!isXvideosMode && item.description && (
                     <p className="text-xs text-gray-600 italic">"{item.description}"</p>
@@ -428,7 +433,13 @@ export const MediaPage: React.FC = () => {
                           key={commentItem.id}
                           className="bg-gray-100 border border-gray-200 rounded-lg p-2"
                         >
-                          <p className="text-xs font-black text-red-600">{commentItem.username ?? 'Anônimo degenerado'}</p>
+                          <p className="text-xs font-black text-red-600">
+                            {commentItem.username ? (
+                              <UserLink username={commentItem.username} userId={commentItem.userId} />
+                            ) : (
+                              'Anônimo degenerado'
+                            )}
+                          </p>
                           <p className="text-xs text-gray-700 font-semibold">
                             {commentItem.content}
                           </p>

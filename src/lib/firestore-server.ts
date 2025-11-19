@@ -9,6 +9,9 @@ import {
   MediaItem,
   MediaComment,
   MediaReaction,
+  ForumPost,
+  ForumComment,
+  ForumReaction,
 } from '@/types';
 
 // Check if Firebase is initialized
@@ -24,6 +27,7 @@ const DEBTS_COLLECTION = 'debts';
 const NOTIFICATIONS_COLLECTION = 'notifications';
 const EVENTS_COLLECTION = 'events';
 const MEDIA_COLLECTION = 'media';
+const FORUM_POSTS_COLLECTION = 'forum_posts';
 
 // User operations
 export const createUser = async (userData: Omit<User, 'id'>): Promise<string> => {
@@ -621,4 +625,187 @@ export const toggleMediaReaction = async (
   });
 
   return { added, updatedReactions };
+};
+
+// ============================================
+// FORUM OPERATIONS
+// ============================================
+
+export const createForumPost = async (postData: Omit<ForumPost, 'id' | 'comments' | 'reactions'>): Promise<string> => {
+  checkFirebase();
+  const dataToSave: any = {
+    ...postData,
+    comments: [],
+    reactions: [],
+    images: postData.images || [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  
+  // Remove undefined values
+  Object.keys(dataToSave).forEach(key => {
+    if (dataToSave[key] === undefined) {
+      delete dataToSave[key];
+    }
+  });
+  
+  const docRef = await db.collection(FORUM_POSTS_COLLECTION).add(dataToSave);
+  return docRef.id;
+};
+
+export const getAllForumPosts = async (): Promise<ForumPost[]> => {
+  checkFirebase();
+  const querySnapshot = await db.collection(FORUM_POSTS_COLLECTION)
+    .orderBy('createdAt', 'desc')
+    .get();
+  
+  return querySnapshot.docs.map((doc: any) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      title: data.title,
+      content: data.content,
+      authorId: data.authorId,
+      authorUsername: data.authorUsername,
+      authorName: data.authorName,
+      category: data.category,
+      poll: data.poll ? {
+        ...data.poll,
+        createdAt: data.poll.createdAt?.toDate ? data.poll.createdAt.toDate() : new Date(data.poll.createdAt),
+        expiresAt: data.poll.expiresAt?.toDate ? data.poll.expiresAt.toDate() : (data.poll.expiresAt ? new Date(data.poll.expiresAt) : undefined),
+      } : undefined,
+      images: data.images || [],
+      comments: (data.comments || []).map((comment: any) => ({
+        ...comment,
+        createdAt: comment.createdAt?.toDate ? comment.createdAt.toDate() : new Date(comment.createdAt),
+      })),
+      reactions: (data.reactions || []).map((reaction: any) => ({
+        ...reaction,
+        createdAt: reaction.createdAt?.toDate ? reaction.createdAt.toDate() : new Date(reaction.createdAt),
+      })),
+      createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
+      updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt),
+    } as ForumPost;
+  });
+};
+
+export const getForumPostById = async (postId: string): Promise<ForumPost | null> => {
+  checkFirebase();
+  const doc = await db.collection(FORUM_POSTS_COLLECTION).doc(postId).get();
+  
+  if (doc.exists) {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      title: data?.title,
+      content: data?.content,
+      authorId: data?.authorId,
+      authorUsername: data?.authorUsername,
+      authorName: data?.authorName,
+      category: data?.category,
+      poll: data?.poll ? {
+        ...data.poll,
+        createdAt: data.poll.createdAt?.toDate ? data.poll.createdAt.toDate() : new Date(data.poll.createdAt),
+        expiresAt: data.poll.expiresAt?.toDate ? data.poll.expiresAt.toDate() : (data.poll.expiresAt ? new Date(data.poll.expiresAt) : undefined),
+      } : undefined,
+      images: data?.images || [],
+      comments: (data?.comments || []).map((comment: any) => ({
+        ...comment,
+        createdAt: comment.createdAt?.toDate ? comment.createdAt.toDate() : new Date(comment.createdAt),
+      })),
+      reactions: (data?.reactions || []).map((reaction: any) => ({
+        ...reaction,
+        createdAt: reaction.createdAt?.toDate ? reaction.createdAt.toDate() : new Date(reaction.createdAt),
+      })),
+      createdAt: data?.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
+      updatedAt: data?.updatedAt?.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt),
+    } as ForumPost;
+  }
+  return null;
+};
+
+export const addForumComment = async (
+  postId: string,
+  comment: Omit<ForumComment, 'id' | 'createdAt'>
+): Promise<ForumComment> => {
+  checkFirebase();
+  const docRef = db.collection(FORUM_POSTS_COLLECTION).doc(postId);
+  const post = await docRef.get();
+  
+  if (!post.exists) {
+    throw new Error('Post não encontrado');
+  }
+  
+  const postData = post.data();
+  const comments = postData?.comments || [];
+  
+  const newComment: ForumComment = {
+    id: db.collection('temp').doc().id, // Generate ID
+    postId,
+    authorId: comment.authorId,
+    username: comment.username,
+    content: comment.content,
+    createdAt: new Date(),
+  };
+  
+  const updatedComments = [...comments, newComment];
+  
+  await docRef.update({
+    comments: updatedComments,
+    updatedAt: new Date(),
+  });
+  
+  return newComment;
+};
+
+export const toggleForumReaction = async (
+  postId: string,
+  reaction: Omit<ForumReaction, 'id' | 'createdAt'>
+): Promise<{ added: boolean; updatedReactions: ForumReaction[] }> => {
+  checkFirebase();
+  const docRef = db.collection(FORUM_POSTS_COLLECTION).doc(postId);
+  const post = await docRef.get();
+  
+  if (!post.exists) {
+    throw new Error('Post não encontrado');
+  }
+  
+  const postData = post.data();
+  const reactions = postData?.reactions || [];
+  
+  const existingIndex = reactions.findIndex(
+    (r: ForumReaction) => r.userId === reaction.userId && r.reaction === reaction.reaction
+  );
+  
+  let updatedReactions: ForumReaction[];
+  let added = true;
+  
+  if (existingIndex >= 0) {
+    updatedReactions = reactions.filter(
+      (_: ForumReaction, index: number) => index !== existingIndex,
+    );
+    added = false;
+  } else {
+    const newReaction: ForumReaction = {
+      id: db.collection('temp').doc().id,
+      postId,
+      userId: reaction.userId,
+      username: reaction.username,
+      reaction: reaction.reaction,
+      createdAt: new Date(),
+    };
+    updatedReactions = [...reactions, newReaction];
+  }
+  
+  await docRef.update({
+    reactions: updatedReactions,
+    updatedAt: new Date(),
+  });
+  
+  return { added, updatedReactions };
+};
+
+export const deleteForumPost = async (postId: string): Promise<void> => {
+  checkFirebase();
+  await db.collection(FORUM_POSTS_COLLECTION).doc(postId).delete();
 };

@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { randomBytes } from 'crypto';
 import { verifyToken } from '../auth-server';
 import { registerUser, updateUserPassword, updateUserProfile, hashPassword } from '../auth-server';
-import { getAllUsers, getUser, updateUser } from '../firestore-server';
+import { getAllUsers, getUser, updateUser, getUserByUsername } from '../firestore-server';
 import { uploadPhotoAction } from './upload';
 import { User } from '@/types';
 
@@ -91,6 +91,9 @@ export async function getUsersAction() {
         role: user.role,
         email: user.email,
         name: user.name,
+        pixKey: user.pixKey,
+        phone: user.phone,
+        steamProfile: user.steamProfile,
         passwordChanged: user.passwordChanged,
         forcePasswordReset: user.forcePasswordReset ?? !user.passwordChanged,
         skipCurrentPassword: user.skipCurrentPassword ?? false,
@@ -218,6 +221,8 @@ export async function updateUserProfileAction(formData: FormData) {
     const name = formData.get('name') as string;
     const email = formData.get('email') as string;
     const pixKey = formData.get('pixKey') as string;
+    const phone = formData.get('phone') as string;
+    const steamProfile = formData.get('steamProfile') as string;
     const photo = formData.get('photo') as File;
 
     if (!name || name.trim() === '') {
@@ -229,16 +234,49 @@ export async function updateUserProfileAction(formData: FormData) {
       return { error: 'Email inválido' };
     }
 
+    // Validar telefone se fornecido
+    if (phone && phone.trim() !== '' && !/^\+[0-9]{11,15}$/.test(phone.trim())) {
+      return { error: 'Telefone inválido. Formato esperado: +5511987654321 (código do país + DDD + número)' };
+    }
+
+    // Validar Steam Profile se fornecido
+    if (steamProfile && steamProfile.trim() !== '') {
+      try {
+        const url = new URL(steamProfile.trim());
+        if (!url.hostname.includes('steamcommunity.com')) {
+          return { error: 'URL inválida. Deve ser um link do Steam Community (steamcommunity.com)' };
+        }
+      } catch (e) {
+        return { error: 'URL da Steam inválida. Use o formato: https://steamcommunity.com/id/seu-usuario' };
+      }
+    }
+
     const profileData: any = {
       name: name.trim(),
     };
     
     if (email && email.trim() !== '') {
       profileData.email = email.trim();
+    } else {
+      profileData.email = null;
     }
     
     if (pixKey && pixKey.trim() !== '') {
       profileData.pixKey = pixKey.trim();
+    } else {
+      profileData.pixKey = null;
+    }
+
+    if (phone && phone.trim() !== '') {
+      profileData.phone = phone.trim();
+    } else {
+      profileData.phone = null;
+    }
+
+    if (steamProfile && steamProfile.trim() !== '') {
+      profileData.steamProfile = steamProfile.trim();
+    } else {
+      profileData.steamProfile = null;
     }
 
     // Se há uma foto para upload
@@ -271,6 +309,142 @@ export async function updateUserProfileAction(formData: FormData) {
     };
   } catch (error) {
     console.error('Erro ao atualizar perfil:', error);
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+export async function updateUserByAdminAction(formData: FormData) {
+  try {
+    await requireAdmin();
+
+    const userId = formData.get('userId') as string;
+    const username = formData.get('username') as string;
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const pixKey = formData.get('pixKey') as string;
+    const phone = formData.get('phone') as string;
+    const steamProfile = formData.get('steamProfile') as string;
+    const role = formData.get('role') as 'admin' | 'user';
+
+    if (!userId) {
+      return { error: 'ID do usuário é obrigatório' };
+    }
+
+    const user = await getUser(userId);
+    if (!user) {
+      return { error: 'Usuário não encontrado' };
+    }
+
+    const updateData: any = {};
+
+    // Atualizar username se fornecido e diferente do atual
+    if (username && username.trim() !== '') {
+      const newUsername = username.trim().toLowerCase();
+      
+      // Validar formato do username
+      if (!/^[a-zA-Z0-9_]+$/.test(newUsername)) {
+        return { error: 'Nome de usuário deve conter apenas letras, números e underscore' };
+      }
+
+      // Verificar se o username já existe (exceto se for o mesmo usuário)
+      if (newUsername !== user.username) {
+        const existingUser = await getUserByUsername(newUsername);
+        if (existingUser && existingUser.id !== userId) {
+          return { error: 'Nome de usuário já existe' };
+        }
+      }
+
+      updateData.username = newUsername;
+    }
+
+    // Atualizar nome completo
+    if (name !== null && name !== undefined) {
+      updateData.name = name.trim() || null;
+    }
+
+    // Atualizar email
+    if (email !== null && email !== undefined) {
+      const emailValue = email.trim();
+      if (emailValue === '') {
+        updateData.email = null;
+      } else {
+        // Validar email se fornecido
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
+          return { error: 'Email inválido' };
+        }
+        updateData.email = emailValue;
+      }
+    }
+
+    // Atualizar telefone
+    if (phone !== null && phone !== undefined) {
+      const phoneValue = phone.trim();
+      if (phoneValue === '') {
+        updateData.phone = null;
+      } else {
+        // Validar formato do telefone (+ seguido de 11 a 15 dígitos)
+        if (!/^\+[0-9]{11,15}$/.test(phoneValue)) {
+          return { error: 'Telefone inválido. Formato esperado: +5511987654321 (código do país + DDD + número)' };
+        }
+        updateData.phone = phoneValue;
+      }
+    }
+
+    // Atualizar chave PIX
+    if (pixKey !== null && pixKey !== undefined) {
+      updateData.pixKey = pixKey.trim() || null;
+    }
+
+    // Atualizar perfil da Steam
+    if (steamProfile !== null && steamProfile !== undefined) {
+      const steamValue = steamProfile.trim();
+      if (steamValue === '') {
+        updateData.steamProfile = null;
+      } else {
+        // Validar URL da Steam
+        try {
+          const url = new URL(steamValue);
+          if (!url.hostname.includes('steamcommunity.com')) {
+            return { error: 'URL inválida. Deve ser um link do Steam Community (steamcommunity.com)' };
+          }
+          updateData.steamProfile = steamValue;
+        } catch (e) {
+          return { error: 'URL da Steam inválida. Use o formato: https://steamcommunity.com/id/seu-usuario' };
+        }
+      }
+    }
+
+    // Atualizar papel (role) do usuário
+    if (role && (role === 'admin' || role === 'user')) {
+      // Se está removendo privilégios de admin, verificar se não é o último admin
+      if (user.role === 'admin' && role === 'user') {
+        const allUsers = await getAllUsers();
+        const adminCount = allUsers.filter(u => u.role === 'admin' && u.id !== userId).length;
+        
+        if (adminCount === 0) {
+          return { error: 'Não é possível remover os privilégios do último administrador. Deve haver pelo menos um administrador no sistema.' };
+        }
+      }
+      
+      updateData.role = role;
+    }
+
+    // Atualizar usuário
+    await updateUser(userId, updateData);
+
+    return {
+      success: true,
+      message: 'Usuário atualizado com sucesso',
+    };
+  } catch (error) {
+    console.error('Erro ao atualizar usuário:', error);
+    
+    if (error instanceof Error) {
+      if (error.message.includes('administradores')) {
+        return { error: error.message };
+      }
+    }
+
     return { error: 'Erro interno do servidor' };
   }
 }

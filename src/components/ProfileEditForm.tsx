@@ -15,6 +15,8 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ onSuccess, onC
     name: user?.name || '',
     email: user?.email || '',
     pixKey: user?.pixKey || '',
+    phone: user?.phone || '',
+    steamProfile: user?.steamProfile || '',
   });
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -40,6 +42,8 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ onSuccess, onC
       formDataToSend.append('name', formData.name);
       formDataToSend.append('email', formData.email);
       formDataToSend.append('pixKey', formData.pixKey);
+      formDataToSend.append('phone', formData.phone);
+      formDataToSend.append('steamProfile', formData.steamProfile);
       
       // Se há um arquivo selecionado, adicionar ao FormData
       if (selectedFile) {
@@ -159,7 +163,7 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ onSuccess, onC
                 id="username"
                 value={user?.username || ''}
                 disabled
-                className="mt-1 block w-full px-4 py-3 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-bold bg-gray-100 cursor-not-allowed"
+                className="mt-1 block w-full px-4 py-2 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-bold bg-gray-100 cursor-not-allowed"
               />
               <p className="mt-2 text-sm text-gray-600 font-bold">
                 O nome de usuário não pode ser alterado por segurança.
@@ -181,7 +185,7 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ onSuccess, onC
                 id="name"
                 name="name"
                 required
-                className="mt-1 block w-full px-4 py-3 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-bold"
+                className="mt-1 block w-full px-4 py-2 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-bold"
                 placeholder="Digite seu nome completo..."
                 value={formData.name}
                 onChange={handleChange}
@@ -196,7 +200,7 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ onSuccess, onC
                 type="email"
                 id="email"
                 name="email"
-                className="mt-1 block w-full px-4 py-3 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-bold"
+                className="mt-1 block w-full px-4 py-2 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-bold"
                 placeholder="Digite seu email..."
                 value={formData.email}
                 onChange={handleChange}
@@ -214,7 +218,7 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ onSuccess, onC
                 type="text"
                 id="pixKey"
                 name="pixKey"
-                className="mt-1 block w-full px-4 py-3 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-bold"
+                className="mt-1 block w-full px-4 py-2 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-bold"
                 placeholder="Digite sua chave PIX (CPF, email, telefone, etc.)..."
                 value={formData.pixKey}
                 onChange={handleChange}
@@ -223,6 +227,46 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ onSuccess, onC
                 Pode ser CPF, email, telefone ou chave aleatória
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* Segunda linha - Telefone e Steam */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <div>
+            <label htmlFor="phone" className="block text-lg font-bold text-gray-800 mb-2">
+              📱 Seu telefone (opcional):
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              className="mt-1 block w-full px-4 py-2 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-bold"
+              placeholder="+5511987654321"
+              pattern="\+[0-9]{11,15}"
+              value={formData.phone}
+              onChange={handleChange}
+            />
+            <p className="mt-2 text-sm text-gray-600 font-bold">
+              Formato: +5511987654321 (código do país + DDD + número)
+            </p>
+          </div>
+
+          <div>
+            <label htmlFor="steamProfile" className="block text-lg font-bold text-gray-800 mb-2">
+              🎮 Biblioteca da Steam (opcional):
+            </label>
+            <input
+              type="url"
+              id="steamProfile"
+              name="steamProfile"
+              className="mt-1 block w-full px-4 py-2 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-bold"
+              placeholder="https://steamcommunity.com/id/seu-usuario"
+              value={formData.steamProfile}
+              onChange={handleChange}
+            />
+            <p className="mt-2 text-sm text-gray-600 font-bold">
+              URL completa do seu perfil da Steam
+            </p>
           </div>
         </div>
 
