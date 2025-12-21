@@ -638,12 +638,14 @@ export const Dashboard: React.FC = () => {
 
       {/* Modals */}
       {showDebtForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-10 mx-auto w-11/12 md:w-3/4 lg:w-1/2">
-            <DebtFormServer
-              onSuccess={handleDebtCreated}
-              onCancel={() => setShowDebtForm(false)}
-            />
+        <div className="fixed inset-0 bg-black bg-opacity-75 z-50 overflow-y-auto">
+          <div className="flex items-start justify-center min-h-full py-8 px-4">
+            <div className="w-full max-w-6xl">
+              <DebtFormServer
+                onSuccess={handleDebtCreated}
+                onCancel={() => setShowDebtForm(false)}
+              />
+            </div>
           </div>
         </div>
       )}
