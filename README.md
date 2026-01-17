@@ -164,8 +164,6 @@ Este projeto é privado do grupo Meinha Games. Para sugestões ou melhorias, ent
 
 Projeto privado - Todos os direitos reservados ao grupo Meinha Games.
 
-Adicionado 
-
 ---
 
 **"A vergonha continua."** 🐷
