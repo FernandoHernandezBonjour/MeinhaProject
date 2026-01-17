@@ -45,7 +45,7 @@ export const InvoiceManager: React.FC<Props> = ({ cards, invoices, accounts, onU
     return months[month - 1];
   };
 
-  const openInvoices = invoices.filter(i => i.status !== 'PAID').sort((a, b) => {
+  const openInvoices = invoices.filter(i => i.status !== 'PAID').sort((a: Invoice, b: Invoice) => {
     if (a.year !== b.year) return b.year - a.year;
     return b.month - a.month;
   });

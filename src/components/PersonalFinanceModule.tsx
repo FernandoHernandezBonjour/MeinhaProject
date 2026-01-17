@@ -223,7 +223,7 @@ export const PersonalFinanceModule: React.FC = () => {
                     return acc;
                   }, {} as Record<string, number>)
               )
-              .sort((a, b) => b[1] - a[1])
+              .sort((a: [string, number], b: [string, number]) => b[1] - a[1])
               .map(([category, amount]) => (
                 <div key={category} className="flex justify-between items-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
                   <span className="font-bold text-gray-700 dark:text-gray-300">{category}</span>
@@ -255,7 +255,7 @@ export const PersonalFinanceModule: React.FC = () => {
                     return acc;
                   }, {} as Record<string, number>)
               )
-              .sort((a, b) => b[1] - a[1])
+              .sort((a: [string, number], b: [string, number]) => b[1] - a[1])
               .map(([category, amount]) => (
                 <div key={category} className="flex justify-between items-center p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
                   <span className="font-bold text-gray-700 dark:text-gray-300">{category}</span>

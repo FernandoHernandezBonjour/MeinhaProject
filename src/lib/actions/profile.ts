@@ -103,7 +103,7 @@ async function getProfileComments(userId: string): Promise<ProfileComment[]> {
     console.log('Comentários processados:', comments.length);
     
     // Ordenar manualmente se não usou orderBy
-    comments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    comments.sort((a: ProfileComment, b: ProfileComment) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     
     return comments;
   } catch (error) {

@@ -109,7 +109,7 @@ function buildRanking(
 
   const ranking = Array.from(aggregator.entries())
     .filter(([, info]) => info.total > 0)
-    .sort((a, b) => b[1].total - a[1].total)
+    .sort((a: [string, { total: number; overdue: number }], b: [string, { total: number; overdue: number }]) => b[1].total - a[1].total)
     .slice(0, 5)
     .map(([userId, info], index) => {
       const userInfo = userMap.get(userId);
@@ -247,7 +247,7 @@ function buildActivityFeed(
   });
 
   return feed
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .sort((a: ActivityFeed, b: ActivityFeed) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(0, 15);
 }
 

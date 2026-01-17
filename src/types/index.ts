@@ -196,7 +196,7 @@ export interface PollOption {
   voters: string[]; // IDs dos usuários que votaram
 }
 
-export interface Notification {
+export interface AppNotification {
   id: string;
   userId: string;
   type:
@@ -209,10 +209,17 @@ export interface Notification {
     | 'event_comment'
     | 'media_uploaded'
     | 'media_comment'
-  | 'media_reaction'
-  | 'forum_post'
-  | 'changelog_added'
-  | 'debt_overdue';
+    | 'media_reaction'
+    | 'forum_post'
+    | 'changelog_added'
+    | 'debt_overdue';
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: Date;
+  updatedAt?: Date;
+}
+
 export interface ChangelogItem {
   id: string;
   title: string;
@@ -230,12 +237,6 @@ export interface ChangelogFormData {
   content: string;
   version?: string;
   type: 'feature' | 'fix' | 'improvement' | 'other';
-}
-  title: string;
-  message: string;
-  read: boolean;
-  createdAt: Date;
-  updatedAt?: Date;
 }
 
 export interface UserLevel {

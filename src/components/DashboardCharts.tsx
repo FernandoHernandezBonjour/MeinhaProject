@@ -29,7 +29,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
 
   const topCreditors: ChartData[] = Object.entries(creditorTotals)
     .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value)
+    .sort((a: ChartData, b: ChartData) => b.value - a.value)
     .slice(0, 5);
 
   // Calcular maiores caloteiros (quem tem dívidas VENCIDAS)
@@ -46,7 +46,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
 
   const topOverdueDebtors: ChartData[] = Object.entries(overdueDebtorTotals)
     .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value)
+    .sort((a: ChartData, b: ChartData) => b.value - a.value)
     .slice(0, 5);
 
   // Calcular futuros possíveis caloteiros (quem tem dívidas em aberto mas não vencidas)
@@ -63,7 +63,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
 
   const topFutureDebtors: ChartData[] = Object.entries(futureDebtorTotals)
     .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value)
+    .sort((a: ChartData, b: ChartData) => b.value - a.value)
     .slice(0, 5);
 
   // Calcular totais

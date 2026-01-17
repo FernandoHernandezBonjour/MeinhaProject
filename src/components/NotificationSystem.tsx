@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Notification } from '@/types';
+import { AppNotification } from '@/types';
 import {
   getNotificationsAction,
   markNotificationReadAction,
@@ -9,7 +9,7 @@ import {
 } from '@/lib/actions/notifications';
 
 export const NotificationSystem: React.FC = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,16 +24,16 @@ export const NotificationSystem: React.FC = () => {
         return;
       }
 
-      const parsed = response.notifications.map((notification) => ({
-        ...notification,
+      const parsed = response.notifications.map((n: AppNotification) => ({
+        ...n,
         createdAt:
-          notification.createdAt instanceof Date
-            ? notification.createdAt
-            : new Date(notification.createdAt),
+          n.createdAt instanceof Date
+            ? n.createdAt
+            : new Date(n.createdAt),
         updatedAt:
-          notification.updatedAt instanceof Date || notification.updatedAt === undefined
-            ? notification.updatedAt
-            : new Date(notification.updatedAt),
+          n.updatedAt instanceof Date || n.updatedAt === undefined
+            ? n.updatedAt
+            : new Date(n.updatedAt),
       }));
 
       setNotifications(parsed);
@@ -80,8 +80,8 @@ export const NotificationSystem: React.FC = () => {
     try {
       await markNotificationReadAction(notificationId);
       setNotifications((prev) =>
-        prev.map((notification) =>
-          notification.id === notificationId ? { ...notification, read: true } : notification,
+        prev.map((n) =>
+          n.id === notificationId ? { ...n, read: true } : n,
         ),
       );
     } catch (err) {
@@ -92,7 +92,7 @@ export const NotificationSystem: React.FC = () => {
   const markAllAsRead = async () => {
     try {
       await markAllNotificationsReadAction();
-      setNotifications((prev) => prev.map((notification) => ({ ...notification, read: true })));
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao marcar notificações');
     }
@@ -142,34 +142,34 @@ export const NotificationSystem: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-2 p-2">
-                {notifications.map((notification) => (
+                {notifications.map((n) => (
                   <div
-                    key={notification.id}
-                    onClick={() => markAsRead(notification.id)}
+                    key={n.id}
+                    onClick={() => markAsRead(n.id)}
                     className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                      notification.read 
+                      n.read 
                         ? 'bg-gray-50 hover:bg-gray-100' 
                         : 'bg-blue-50 hover:bg-blue-100 border-l-4 border-blue-500'
                     }`}
                   >
                     <div className="flex items-start space-x-3">
                       <span className="text-2xl">
-                        {getNotificationIcon(notification.type)}
+                        {getNotificationIcon(n.type)}
                       </span>
                       <div className="flex-1 min-w-0">
                         <p className={`font-bold text-sm ${
-                          notification.read ? 'text-gray-600' : 'text-gray-800'
+                          n.read ? 'text-gray-600' : 'text-gray-800'
                         }`}>
-                          {notification.title}
+                          {n.title}
                         </p>
                         <p className="text-sm text-gray-600 mt-1">
-                          {notification.message}
+                          {n.message}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
-                          {notification.createdAt.toLocaleString('pt-BR')}
+                          {n.createdAt.toLocaleString('pt-BR')}
                         </p>
                       </div>
-                      {!notification.read && (
+                      {!n.read && (
                         <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-2"></div>
                       )}
                     </div>

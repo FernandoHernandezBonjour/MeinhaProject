@@ -148,7 +148,7 @@ export const AdminPanel: React.FC = () => {
 
   const sortedUsers = useMemo(
     () =>
-      [...users].sort((a, b) => a.username.localeCompare(b.username)),
+      [...users].sort((a: ManagedUser, b: ManagedUser) => a.username.localeCompare(b.username)),
     [users],
   );
 

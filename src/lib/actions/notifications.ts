@@ -9,7 +9,7 @@ import {
   markAllNotificationsAsRead,
   getNotificationById,
 } from '../firestore-server';
-import { Notification } from '@/types';
+import { AppNotification } from '@/types';
 
 async function getAuthenticatedUser() {
   const cookieStore = await cookies();
@@ -28,7 +28,7 @@ async function getAuthenticatedUser() {
   return payload;
 }
 
-export async function getNotificationsAction(): Promise<{ success: boolean; notifications?: Notification[]; error?: string }> {
+export async function getNotificationsAction(): Promise<{ success: boolean; notifications?: AppNotification[]; error?: string }> {
   try {
     const user = await getAuthenticatedUser();
     const notifications = await getNotificationsByUser(user.userId);
@@ -79,7 +79,7 @@ export async function markAllNotificationsReadAction() {
   }
 }
 
-export async function createNotificationAction(notification: Omit<Notification, 'id' | 'createdAt'> & { createdAt?: Date }) {
+export async function createNotificationAction(notification: Omit<AppNotification, 'id' | 'createdAt'> & { createdAt?: Date }) {
   try {
     await createNotification({
       ...notification,

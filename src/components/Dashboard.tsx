@@ -451,7 +451,7 @@ export const Dashboard: React.FC = () => {
                       return { user, total };
                     })
                     .filter(item => item.user)
-                    .sort((a, b) => b.total - a.total)
+                    .sort((a: { user: User | undefined; total: number }, b: { user: User | undefined; total: number }) => b.total - a.total)
                     .slice(0, 5);
 
                   return sortedDebtors.map((item, index) => (
