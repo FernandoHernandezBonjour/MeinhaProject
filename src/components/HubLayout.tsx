@@ -8,6 +8,7 @@ import { HomePage } from './HomePage';
 import { EventsPage } from './EventsPage';
 import { MediaPage } from './MediaPage';
 import { ForumPage } from './ForumPage';
+import { ChangelogPage } from './ChangelogPage';
 import { NotificationSystem } from './NotificationSystem';
 import { AdminPanel } from './AdminPanel';
 import { QuickActionsFab } from './QuickActionsFab';
@@ -16,7 +17,7 @@ import { ProfileEditForm } from './ProfileEditForm';
 import { PasswordChangeForm } from './PasswordChangeForm';
 import { UserProfilePage } from './UserProfilePage';
 
-type TabType = 'home' | 'events' | 'financial' | 'media' | 'forum' | 'admin' | 'profile';
+type TabType = 'home' | 'events' | 'financial' | 'media' | 'forum' | 'changelog' | 'admin' | 'profile';
 
 export const HubLayout: React.FC = () => {
   const { user, logout } = useAuth();
@@ -119,6 +120,7 @@ export const HubLayout: React.FC = () => {
     { id: 'financial', label: 'Financeiro', icon: '💰' },
     { id: 'media', label: 'Mídia', icon: '📸' },
     { id: 'forum', label: 'Fórum', icon: '💬' },
+    { id: 'changelog', label: 'Changelog', icon: '📜' },
   ];
 
   if (isAdmin) {
@@ -145,6 +147,8 @@ export const HubLayout: React.FC = () => {
         return <MediaPage />;
       case 'forum':
         return <ForumPage />;
+      case 'changelog':
+        return <ChangelogPage />;
       case 'admin':
         return isAdmin ? <AdminPanel /> : <HomePage />;
       case 'profile':

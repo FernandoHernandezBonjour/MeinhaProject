@@ -12,7 +12,17 @@ import {
   ForumPost,
   ForumComment,
   ForumReaction,
+  BankAccount,
+  CreditCard,
+  Transaction,
+  Invoice,
 } from '@/types';
+import { 
+  BankAccount as BankAccountFinancial, 
+  CreditCard as CreditCardFinancial, 
+  Transaction as TransactionFinancial, 
+  Invoice as InvoiceFinancial 
+} from '@/types/financial';
 
 // Check if Firebase is initialized
 const checkFirebase = () => {
@@ -28,6 +38,11 @@ const NOTIFICATIONS_COLLECTION = 'notifications';
 const EVENTS_COLLECTION = 'events';
 const MEDIA_COLLECTION = 'media';
 const FORUM_POSTS_COLLECTION = 'forum_posts';
+const CHANGELOG_COLLECTION = 'changelog';
+const BANK_ACCOUNTS_COLLECTION = 'bank_accounts';
+const CREDIT_CARDS_COLLECTION = 'credit_cards';
+const TRANSACTIONS_COLLECTION = 'transactions';
+const INVOICES_COLLECTION = 'invoices';
 
 // User operations
 export const createUser = async (userData: Omit<User, 'id'>): Promise<string> => {
@@ -231,10 +246,9 @@ export const getNotificationsByUser = async (userId: string): Promise<Notificati
   const querySnapshot = await db
     .collection(NOTIFICATIONS_COLLECTION)
     .where('userId', '==', userId)
-    .orderBy('createdAt', 'desc')
     .get();
 
-  return querySnapshot.docs.map((doc: any) => {
+  const notifications = querySnapshot.docs.map((doc: any) => {
     const data = doc.data();
     return {
       id: doc.id,
@@ -243,6 +257,8 @@ export const getNotificationsByUser = async (userId: string): Promise<Notificati
       updatedAt: data?.updatedAt?.toDate?.(),
     } as Notification;
   });
+
+  return notifications.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 };
 
 export const markNotificationAsRead = async (notificationId: string): Promise<void> => {
@@ -543,10 +559,10 @@ export const getMediaItemsByEvent = async (eventId: string): Promise<MediaItem[]
   const querySnapshot = await db
     .collection(MEDIA_COLLECTION)
     .where('eventId', '==', eventId)
-    .orderBy('createdAt', 'desc')
     .get();
 
-  return querySnapshot.docs.map(mapMediaDoc);
+  const items = querySnapshot.docs.map(mapMediaDoc);
+  return items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 };
 
 export const deleteMediaItem = async (mediaId: string): Promise<void> => {
@@ -808,4 +824,299 @@ export const toggleForumReaction = async (
 export const deleteForumPost = async (postId: string): Promise<void> => {
   checkFirebase();
   await db.collection(FORUM_POSTS_COLLECTION).doc(postId).delete();
+};
+
+// ============================================
+// CHANGELOG OPERATIONS
+// ============================================
+
+export const createChangelogItem = async (itemData: Omit<ChangelogItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+  checkFirebase();
+  const docRef = await db.collection(CHANGELOG_COLLECTION).add({
+    ...itemData,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+  return docRef.id;
+};
+
+export const getChangelogItems = async (limit = 50): Promise<ChangelogItem[]> => {
+  checkFirebase();
+  const querySnapshot = await db.collection(CHANGELOG_COLLECTION)
+    .orderBy('createdAt', 'desc')
+    .limit(limit)
+    .get();
+  
+  return querySnapshot.docs.map((doc: any) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
+      updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt),
+    } as ChangelogItem;
+  });
+};
+
+export const deleteChangelogItem = async (id: string): Promise<void> => {
+  checkFirebase();
+  await db.collection(CHANGELOG_COLLECTION).doc(id).delete();
+};
+
+// ============================================
+// FINANCIAL OPERATIONS
+// ============================================
+
+// Bank Accounts
+export const createBankAccount = async (accountData: Omit<BankAccountFinancial, 'id'>): Promise<string> => {
+  checkFirebase();
+  const docRef = await db.collection(BANK_ACCOUNTS_COLLECTION).add({
+    ...accountData,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+  return docRef.id;
+};
+
+export const getBankAccount = async (id: string): Promise<BankAccountFinancial | null> => {
+  checkFirebase();
+  const doc = await db.collection(BANK_ACCOUNTS_COLLECTION).doc(id).get();
+  if (doc.exists) {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      createdAt: data?.createdAt.toDate(),
+      updatedAt: data?.updatedAt.toDate(),
+    } as BankAccountFinancial;
+  }
+  return null;
+};
+
+export const getBankAccountsByUser = async (userId: string): Promise<BankAccountFinancial[]> => {
+  checkFirebase();
+  const querySnapshot = await db.collection(BANK_ACCOUNTS_COLLECTION)
+    .where('userId', '==', userId)
+    .get();
+  
+  const accounts = querySnapshot.docs.map((doc: any) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      createdAt: data?.createdAt.toDate(),
+      updatedAt: data?.updatedAt.toDate(),
+    } as BankAccountFinancial;
+  });
+
+  return accounts.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+};
+
+export const updateBankAccount = async (id: string, accountData: Partial<BankAccountFinancial>): Promise<void> => {
+  checkFirebase();
+  await db.collection(BANK_ACCOUNTS_COLLECTION).doc(id).update({
+    ...accountData,
+    updatedAt: new Date(),
+  });
+};
+
+export const deleteBankAccount = async (id: string): Promise<void> => {
+  checkFirebase();
+  await db.collection(BANK_ACCOUNTS_COLLECTION).doc(id).delete();
+};
+
+// Credit Cards
+export const createCreditCard = async (cardData: Omit<CreditCardFinancial, 'id'>): Promise<string> => {
+  checkFirebase();
+  const docRef = await db.collection(CREDIT_CARDS_COLLECTION).add({
+    ...cardData,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+  return docRef.id;
+};
+
+export const getCreditCard = async (id: string): Promise<CreditCardFinancial | null> => {
+  checkFirebase();
+  const doc = await db.collection(CREDIT_CARDS_COLLECTION).doc(id).get();
+  if (doc.exists) {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      createdAt: data?.createdAt.toDate(),
+      updatedAt: data?.updatedAt.toDate(),
+    } as CreditCardFinancial;
+  }
+  return null;
+};
+
+export const getCreditCardsByUser = async (userId: string): Promise<CreditCardFinancial[]> => {
+  checkFirebase();
+  const querySnapshot = await db.collection(CREDIT_CARDS_COLLECTION)
+    .where('userId', '==', userId)
+    .get();
+  
+  const cards = querySnapshot.docs.map((doc: any) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      createdAt: data?.createdAt.toDate(),
+      updatedAt: data?.updatedAt.toDate(),
+    } as CreditCardFinancial;
+  });
+
+  return cards.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+};
+
+export const updateCreditCard = async (id: string, cardData: Partial<CreditCardFinancial>): Promise<void> => {
+  checkFirebase();
+  await db.collection(CREDIT_CARDS_COLLECTION).doc(id).update({
+    ...cardData,
+    updatedAt: new Date(),
+  });
+};
+
+export const deleteCreditCard = async (id: string): Promise<void> => {
+  checkFirebase();
+  await db.collection(CREDIT_CARDS_COLLECTION).doc(id).delete();
+};
+
+// Transactions
+export const createTransaction = async (transactionData: Omit<TransactionFinancial, 'id'>): Promise<string> => {
+  checkFirebase();
+  const docRef = await db.collection(TRANSACTIONS_COLLECTION).add({
+    ...transactionData,
+    date: transactionData.date instanceof Date ? transactionData.date : new Date(transactionData.date),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+  return docRef.id;
+};
+
+export const getTransaction = async (id: string): Promise<TransactionFinancial | null> => {
+  checkFirebase();
+  const doc = await db.collection(TRANSACTIONS_COLLECTION).doc(id).get();
+  if (doc.exists) {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      date: data?.date.toDate(),
+      createdAt: data?.createdAt.toDate(),
+      updatedAt: data?.updatedAt.toDate(),
+    } as TransactionFinancial;
+  }
+  return null;
+};
+
+export const getTransactionsByUser = async (userId: string, filters?: any): Promise<TransactionFinancial[]> => {
+  checkFirebase();
+  let query = db.collection(TRANSACTIONS_COLLECTION).where('userId', '==', userId);
+  
+  if (filters?.startDate) {
+    query = query.where('date', '>=', filters.startDate);
+  }
+  if (filters?.endDate) {
+    query = query.where('date', '<=', filters.endDate);
+  }
+  if (filters?.category) {
+    query = query.where('category', '==', filters.category);
+  }
+  if (filters?.status) {
+    query = query.where('status', '==', filters.status);
+  }
+  
+  const querySnapshot = await query.get();
+  
+  const transactions = querySnapshot.docs.map((doc: any) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      date: data?.date.toDate(),
+      createdAt: data?.createdAt.toDate(),
+      updatedAt: data?.updatedAt.toDate(),
+    } as TransactionFinancial;
+  });
+
+  return transactions.sort((a, b) => b.date.getTime() - a.date.getTime());
+};
+
+// Invoices
+export const createInvoice = async (invoiceData: Omit<InvoiceFinancial, 'id'>): Promise<string> => {
+  checkFirebase();
+  const docRef = await db.collection(INVOICES_COLLECTION).add({
+    ...invoiceData,
+    dueDate: invoiceData.dueDate instanceof Date ? invoiceData.dueDate : new Date(invoiceData.dueDate),
+    closingDate: invoiceData.closingDate instanceof Date ? invoiceData.closingDate : new Date(invoiceData.closingDate),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+  return docRef.id;
+};
+
+export const getInvoice = async (id: string): Promise<InvoiceFinancial | null> => {
+  checkFirebase();
+  const doc = await db.collection(INVOICES_COLLECTION).doc(id).get();
+  if (doc.exists) {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      dueDate: data?.dueDate.toDate(),
+      closingDate: data?.closingDate.toDate(),
+      paidAt: data?.paidAt?.toDate(),
+      createdAt: data?.createdAt.toDate(),
+      updatedAt: data?.updatedAt.toDate(),
+    } as InvoiceFinancial;
+  }
+  return null;
+};
+
+export const getInvoicesByCard = async (creditCardId: string): Promise<InvoiceFinancial[]> => {
+  checkFirebase();
+  const querySnapshot = await db.collection(INVOICES_COLLECTION)
+    .where('creditCardId', '==', creditCardId)
+    .get();
+  
+  const invoices = querySnapshot.docs.map((doc: any) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      dueDate: data?.dueDate.toDate(),
+      closingDate: data?.closingDate.toDate(),
+      paidAt: data?.paidAt?.toDate(),
+      createdAt: data?.createdAt.toDate(),
+      updatedAt: data?.updatedAt.toDate(),
+    } as InvoiceFinancial;
+  });
+
+  return invoices.sort((a, b) => {
+    if (a.year !== b.year) return b.year - a.year;
+    return b.month - a.month;
+  });
+};
+
+export const updateInvoice = async (id: string, invoiceData: Partial<InvoiceFinancial>): Promise<void> => {
+  checkFirebase();
+  await db.collection(INVOICES_COLLECTION).doc(id).update({
+    ...invoiceData,
+    updatedAt: new Date(),
+  });
+};
+
+export const updateTransaction = async (id: string, transactionData: Partial<TransactionFinancial>): Promise<void> => {
+  checkFirebase();
+  await db.collection(TRANSACTIONS_COLLECTION).doc(id).update({
+    ...transactionData,
+    updatedAt: new Date(),
+  });
+};
+
+export const deleteTransaction = async (id: string): Promise<void> => {
+  checkFirebase();
+  await db.collection(TRANSACTIONS_COLLECTION).doc(id).delete();
 };

@@ -209,9 +209,28 @@ export interface Notification {
     | 'event_comment'
     | 'media_uploaded'
     | 'media_comment'
-    | 'media_reaction'
-    | 'forum_post'
-    | 'debt_overdue';
+  | 'media_reaction'
+  | 'forum_post'
+  | 'changelog_added'
+  | 'debt_overdue';
+export interface ChangelogItem {
+  id: string;
+  title: string;
+  content: string;
+  version?: string;
+  type: 'feature' | 'fix' | 'improvement' | 'other';
+  authorId: string;
+  authorUsername?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ChangelogFormData {
+  title: string;
+  content: string;
+  version?: string;
+  type: 'feature' | 'fix' | 'improvement' | 'other';
+}
   title: string;
   message: string;
   read: boolean;
