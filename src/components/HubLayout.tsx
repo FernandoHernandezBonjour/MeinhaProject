@@ -21,9 +21,10 @@ type TabType = 'home' | 'events' | 'financial' | 'media' | 'forum' | 'changelog'
 
 export const HubLayout: React.FC = () => {
   const { user, logout } = useAuth();
-  const { theme, layoutMode, toggleTheme, toggleXvideosMode, toggleSovietMode, togglePatriotaMode, isXvideosMode, isSovietMode, isPatriotaMode } = useTheme();
+  const { theme, layoutMode, toggleTheme, setTheme, setThemeAndLayout, toggleXvideosMode, toggleSovietMode, togglePatriotaMode, isXvideosMode, isSovietMode, isPatriotaMode } = useTheme();
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -212,13 +213,88 @@ export const HubLayout: React.FC = () => {
                   ☭
                 </button>
                 <NotificationSystem />
-                <button
-                  onClick={toggleTheme}
-                  className="p-2 rounded border border-gray-300 hover:bg-gray-100 text-gray-700"
-                  title={theme === 'light' ? 'Ativar tema escuro' : 'Ativar tema claro'}
-                >
-                  {theme === 'light' ? '🌙' : '☀️'}
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setThemeMenuOpen((prev) => !prev)}
+                    onMouseEnter={() => setThemeMenuOpen(true)}
+                    className="p-2 rounded border border-gray-300 hover:bg-gray-100 text-gray-700 flex items-center gap-1"
+                    title="Selecionar tema"
+                  >
+                    {layoutMode === 'normal' ? (theme === 'light' ? '☀️' : '🌙') : 
+                     layoutMode === 'xvideos' ? '🎬' :
+                     layoutMode === 'soviet' ? '☭' : '🇧🇷'}
+                    <span className="text-xs">▼</span>
+                  </button>
+                  {themeMenuOpen && (
+                    <div
+                      onMouseLeave={() => setThemeMenuOpen(false)}
+                      className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg z-50 max-h-96 overflow-y-auto"
+                    >
+                      <div className="py-2">
+                        <div className="px-4 py-2 text-xs font-bold text-gray-500 uppercase border-b border-gray-200">Normal</div>
+                        <button
+                          onClick={() => { setThemeAndLayout('light', 'normal'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2 ${theme === 'light' && layoutMode === 'normal' ? 'bg-blue-50 font-bold' : ''}`}
+                        >
+                          <span>☀️</span>
+                          <span>Claro</span>
+                        </button>
+                        <button
+                          onClick={() => { setThemeAndLayout('dark', 'normal'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2 ${theme === 'dark' && layoutMode === 'normal' ? 'bg-blue-50 font-bold' : ''}`}
+                        >
+                          <span>🌙</span>
+                          <span>Escuro</span>
+                        </button>
+                        <div className="px-4 py-2 text-xs font-bold text-gray-500 uppercase border-t border-b border-gray-200 mt-1">XVIDEOS</div>
+                        <button
+                          onClick={() => { setThemeAndLayout('light', 'xvideos'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2 ${theme === 'light' && layoutMode === 'xvideos' ? 'bg-blue-50 font-bold' : ''}`}
+                        >
+                          <span>🎬</span>
+                          <span>Claro</span>
+                        </button>
+                        <button
+                          onClick={() => { setThemeAndLayout('dark', 'xvideos'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2 ${theme === 'dark' && layoutMode === 'xvideos' ? 'bg-blue-50 font-bold' : ''}`}
+                        >
+                          <span>🎬</span>
+                          <span>Escuro</span>
+                        </button>
+                        <div className="px-4 py-2 text-xs font-bold text-gray-500 uppercase border-t border-b border-gray-200 mt-1">Soviético</div>
+                        <button
+                          onClick={() => { setThemeAndLayout('light', 'soviet'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2 ${theme === 'light' && layoutMode === 'soviet' ? 'bg-blue-50 font-bold' : ''}`}
+                        >
+                          <span>☭</span>
+                          <span>Claro</span>
+                        </button>
+                        <button
+                          onClick={() => { setThemeAndLayout('dark', 'soviet'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2 ${theme === 'dark' && layoutMode === 'soviet' ? 'bg-blue-50 font-bold' : ''}`}
+                        >
+                          <span>☭</span>
+                          <span>Escuro</span>
+                        </button>
+                        <div className="px-4 py-2 text-xs font-bold text-gray-500 uppercase border-t border-b border-gray-200 mt-1">Patriota</div>
+                        <button
+                          onClick={() => { setThemeAndLayout('light', 'patriota'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2 ${theme === 'light' && layoutMode === 'patriota' ? 'bg-blue-50 font-bold' : ''}`}
+                        >
+                          <span>🇧🇷</span>
+                          <span>Claro</span>
+                        </button>
+                        <button
+                          onClick={() => { setThemeAndLayout('dark', 'patriota'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2 ${theme === 'dark' && layoutMode === 'patriota' ? 'bg-blue-50 font-bold' : ''}`}
+                        >
+                          <span>🇧🇷</span>
+                          <span>Escuro</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <div className="relative">
                   <button
                     onClick={() => setMenuOpen((prev) => !prev)}
@@ -298,13 +374,88 @@ export const HubLayout: React.FC = () => {
                   🎬
                 </button>
                 <NotificationSystem />
-                <button
-                  onClick={toggleTheme}
-                  className="p-2 rounded border-2 border-yellow-500 hover:bg-yellow-500/20 text-yellow-500 font-bold"
-                  title={theme === 'light' ? 'Ativar tema escuro' : 'Ativar tema claro'}
-                >
-                  {theme === 'light' ? '🌙' : '☀️'}
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setThemeMenuOpen((prev) => !prev)}
+                    onMouseEnter={() => setThemeMenuOpen(true)}
+                    className="p-2 rounded border-2 border-yellow-500 hover:bg-yellow-500/20 text-yellow-500 font-bold flex items-center gap-1"
+                    title="Selecionar tema"
+                  >
+                    {layoutMode === 'normal' ? (theme === 'light' ? '☀️' : '🌙') : 
+                     layoutMode === 'xvideos' ? '🎬' :
+                     layoutMode === 'soviet' ? '☭' : '🇧🇷'}
+                    <span className="text-xs">▼</span>
+                  </button>
+                  {themeMenuOpen && (
+                    <div
+                      onMouseLeave={() => setThemeMenuOpen(false)}
+                      className="absolute right-0 mt-2 w-48 bg-red-900 border-2 border-yellow-500 rounded shadow-lg z-50 max-h-96 overflow-y-auto"
+                    >
+                      <div className="py-2">
+                        <div className="px-4 py-2 text-xs font-bold text-yellow-500 uppercase border-b border-yellow-700">Normal</div>
+                        <button
+                          onClick={() => { setThemeAndLayout('light', 'normal'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-red-800 text-yellow-500 font-bold flex items-center gap-2 ${theme === 'light' && layoutMode === 'normal' ? 'bg-red-800' : ''}`}
+                        >
+                          <span>☀️</span>
+                          <span>Claro</span>
+                        </button>
+                        <button
+                          onClick={() => { setThemeAndLayout('dark', 'normal'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-red-800 text-yellow-500 font-bold flex items-center gap-2 ${theme === 'dark' && layoutMode === 'normal' ? 'bg-red-800' : ''}`}
+                        >
+                          <span>🌙</span>
+                          <span>Escuro</span>
+                        </button>
+                        <div className="px-4 py-2 text-xs font-bold text-yellow-500 uppercase border-t border-b border-yellow-700 mt-1">XVIDEOS</div>
+                        <button
+                          onClick={() => { setThemeAndLayout('light', 'xvideos'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-red-800 text-yellow-500 font-bold flex items-center gap-2 ${theme === 'light' && layoutMode === 'xvideos' ? 'bg-red-800' : ''}`}
+                        >
+                          <span>🎬</span>
+                          <span>Claro</span>
+                        </button>
+                        <button
+                          onClick={() => { setThemeAndLayout('dark', 'xvideos'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-red-800 text-yellow-500 font-bold flex items-center gap-2 ${theme === 'dark' && layoutMode === 'xvideos' ? 'bg-red-800' : ''}`}
+                        >
+                          <span>🎬</span>
+                          <span>Escuro</span>
+                        </button>
+                        <div className="px-4 py-2 text-xs font-bold text-yellow-500 uppercase border-t border-b border-yellow-700 mt-1">Soviético</div>
+                        <button
+                          onClick={() => { setThemeAndLayout('light', 'soviet'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-red-800 text-yellow-500 font-bold flex items-center gap-2 ${theme === 'light' && layoutMode === 'soviet' ? 'bg-red-800' : ''}`}
+                        >
+                          <span>☭</span>
+                          <span>Claro</span>
+                        </button>
+                        <button
+                          onClick={() => { setThemeAndLayout('dark', 'soviet'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-red-800 text-yellow-500 font-bold flex items-center gap-2 ${theme === 'dark' && layoutMode === 'soviet' ? 'bg-red-800' : ''}`}
+                        >
+                          <span>☭</span>
+                          <span>Escuro</span>
+                        </button>
+                        <div className="px-4 py-2 text-xs font-bold text-yellow-500 uppercase border-t border-b border-yellow-700 mt-1">Patriota</div>
+                        <button
+                          onClick={() => { setThemeAndLayout('light', 'patriota'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-red-800 text-yellow-500 font-bold flex items-center gap-2 ${theme === 'light' && layoutMode === 'patriota' ? 'bg-red-800' : ''}`}
+                        >
+                          <span>🇧🇷</span>
+                          <span>Claro</span>
+                        </button>
+                        <button
+                          onClick={() => { setThemeAndLayout('dark', 'patriota'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-red-800 text-yellow-500 font-bold flex items-center gap-2 ${theme === 'dark' && layoutMode === 'patriota' ? 'bg-red-800' : ''}`}
+                        >
+                          <span>🇧🇷</span>
+                          <span>Escuro</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <div className="relative">
                   <button
                     onClick={() => setMenuOpen((prev) => !prev)}
@@ -391,13 +542,88 @@ export const HubLayout: React.FC = () => {
                   ☭
                 </button>
                 <NotificationSystem />
-                <button
-                  onClick={toggleTheme}
-                  className="p-2 rounded border-2 border-yellow-500 hover:bg-yellow-500/20 text-yellow-500 font-bold"
-                  title={theme === 'light' ? 'Ativar tema escuro' : 'Ativar tema claro'}
-                >
-                  {theme === 'light' ? '🌙' : '☀️'}
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setThemeMenuOpen((prev) => !prev)}
+                    onMouseEnter={() => setThemeMenuOpen(true)}
+                    className="p-2 rounded border-2 border-yellow-500 hover:bg-yellow-500/20 text-yellow-500 font-bold flex items-center gap-1"
+                    title="Selecionar tema"
+                  >
+                    {layoutMode === 'normal' ? (theme === 'light' ? '☀️' : '🌙') : 
+                     layoutMode === 'xvideos' ? '🎬' :
+                     layoutMode === 'soviet' ? '☭' : '🇧🇷'}
+                    <span className="text-xs">▼</span>
+                  </button>
+                  {themeMenuOpen && (
+                    <div
+                      onMouseLeave={() => setThemeMenuOpen(false)}
+                      className="absolute right-0 mt-2 w-48 bg-green-900 border-2 border-yellow-500 rounded shadow-lg z-50 max-h-96 overflow-y-auto"
+                    >
+                      <div className="py-2">
+                        <div className="px-4 py-2 text-xs font-bold text-yellow-500 uppercase border-b border-yellow-700">Normal</div>
+                        <button
+                          onClick={() => { setThemeAndLayout('light', 'normal'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-green-800 text-yellow-500 font-bold flex items-center gap-2 ${theme === 'light' && layoutMode === 'normal' ? 'bg-green-800' : ''}`}
+                        >
+                          <span>☀️</span>
+                          <span>Claro</span>
+                        </button>
+                        <button
+                          onClick={() => { setThemeAndLayout('dark', 'normal'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-green-800 text-yellow-500 font-bold flex items-center gap-2 ${theme === 'dark' && layoutMode === 'normal' ? 'bg-green-800' : ''}`}
+                        >
+                          <span>🌙</span>
+                          <span>Escuro</span>
+                        </button>
+                        <div className="px-4 py-2 text-xs font-bold text-yellow-500 uppercase border-t border-b border-yellow-700 mt-1">XVIDEOS</div>
+                        <button
+                          onClick={() => { setThemeAndLayout('light', 'xvideos'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-green-800 text-yellow-500 font-bold flex items-center gap-2 ${theme === 'light' && layoutMode === 'xvideos' ? 'bg-green-800' : ''}`}
+                        >
+                          <span>🎬</span>
+                          <span>Claro</span>
+                        </button>
+                        <button
+                          onClick={() => { setThemeAndLayout('dark', 'xvideos'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-green-800 text-yellow-500 font-bold flex items-center gap-2 ${theme === 'dark' && layoutMode === 'xvideos' ? 'bg-green-800' : ''}`}
+                        >
+                          <span>🎬</span>
+                          <span>Escuro</span>
+                        </button>
+                        <div className="px-4 py-2 text-xs font-bold text-yellow-500 uppercase border-t border-b border-yellow-700 mt-1">Soviético</div>
+                        <button
+                          onClick={() => { setThemeAndLayout('light', 'soviet'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-green-800 text-yellow-500 font-bold flex items-center gap-2 ${theme === 'light' && layoutMode === 'soviet' ? 'bg-green-800' : ''}`}
+                        >
+                          <span>☭</span>
+                          <span>Claro</span>
+                        </button>
+                        <button
+                          onClick={() => { setThemeAndLayout('dark', 'soviet'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-green-800 text-yellow-500 font-bold flex items-center gap-2 ${theme === 'dark' && layoutMode === 'soviet' ? 'bg-green-800' : ''}`}
+                        >
+                          <span>☭</span>
+                          <span>Escuro</span>
+                        </button>
+                        <div className="px-4 py-2 text-xs font-bold text-yellow-500 uppercase border-t border-b border-yellow-700 mt-1">Patriota</div>
+                        <button
+                          onClick={() => { setThemeAndLayout('light', 'patriota'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-green-800 text-yellow-500 font-bold flex items-center gap-2 ${theme === 'light' && layoutMode === 'patriota' ? 'bg-green-800' : ''}`}
+                        >
+                          <span>🇧🇷</span>
+                          <span>Claro</span>
+                        </button>
+                        <button
+                          onClick={() => { setThemeAndLayout('dark', 'patriota'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-green-800 text-yellow-500 font-bold flex items-center gap-2 ${theme === 'dark' && layoutMode === 'patriota' ? 'bg-green-800' : ''}`}
+                        >
+                          <span>🇧🇷</span>
+                          <span>Escuro</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <div className="relative">
                   <button
                     onClick={() => setMenuOpen((prev) => !prev)}
@@ -478,13 +704,88 @@ export const HubLayout: React.FC = () => {
                 >
                   🇧🇷
                 </button>
-                <button
-                  onClick={toggleTheme}
-                  className="p-2 bg-white/20 dark:bg-white/10 hover:bg-white/30 dark:hover:bg-white/20 rounded-lg border-2 border-white/30 dark:border-white/20"
-                  title={theme === 'light' ? 'Ativar tema escuro' : 'Ativar tema claro'}
-                >
-                  {theme === 'light' ? '🌙' : '☀️'}
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setThemeMenuOpen((prev) => !prev)}
+                    onMouseEnter={() => setThemeMenuOpen(true)}
+                    className="p-2 bg-white/20 dark:bg-white/10 hover:bg-white/30 dark:hover:bg-white/20 rounded-lg border-2 border-white/30 dark:border-white/20 flex items-center gap-1"
+                    title="Selecionar tema"
+                  >
+                    {layoutMode === 'normal' ? (theme === 'light' ? '☀️' : '🌙') : 
+                     layoutMode === 'xvideos' ? '🎬' :
+                     layoutMode === 'soviet' ? '☭' : '🇧🇷'}
+                    <span className="text-xs">▼</span>
+                  </button>
+                  {themeMenuOpen && (
+                    <div
+                      onMouseLeave={() => setThemeMenuOpen(false)}
+                      className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-50 max-h-96 overflow-y-auto"
+                    >
+                      <div className="py-2">
+                        <div className="px-4 py-2 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase border-b border-gray-200 dark:border-gray-700">Normal</div>
+                        <button
+                          onClick={() => { setThemeAndLayout('light', 'normal'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center gap-2 ${theme === 'light' && layoutMode === 'normal' ? 'bg-blue-50 dark:bg-blue-900/30 font-bold' : ''}`}
+                        >
+                          <span>☀️</span>
+                          <span>Claro</span>
+                        </button>
+                        <button
+                          onClick={() => { setThemeAndLayout('dark', 'normal'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center gap-2 ${theme === 'dark' && layoutMode === 'normal' ? 'bg-blue-50 dark:bg-blue-900/30 font-bold' : ''}`}
+                        >
+                          <span>🌙</span>
+                          <span>Escuro</span>
+                        </button>
+                        <div className="px-4 py-2 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase border-t border-b border-gray-200 dark:border-gray-700 mt-1">XVIDEOS</div>
+                        <button
+                          onClick={() => { setThemeAndLayout('light', 'xvideos'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center gap-2 ${theme === 'light' && layoutMode === 'xvideos' ? 'bg-blue-50 dark:bg-blue-900/30 font-bold' : ''}`}
+                        >
+                          <span>🎬</span>
+                          <span>Claro</span>
+                        </button>
+                        <button
+                          onClick={() => { setThemeAndLayout('dark', 'xvideos'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center gap-2 ${theme === 'dark' && layoutMode === 'xvideos' ? 'bg-blue-50 dark:bg-blue-900/30 font-bold' : ''}`}
+                        >
+                          <span>🎬</span>
+                          <span>Escuro</span>
+                        </button>
+                        <div className="px-4 py-2 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase border-t border-b border-gray-200 dark:border-gray-700 mt-1">Soviético</div>
+                        <button
+                          onClick={() => { setThemeAndLayout('light', 'soviet'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center gap-2 ${theme === 'light' && layoutMode === 'soviet' ? 'bg-blue-50 dark:bg-blue-900/30 font-bold' : ''}`}
+                        >
+                          <span>☭</span>
+                          <span>Claro</span>
+                        </button>
+                        <button
+                          onClick={() => { setThemeAndLayout('dark', 'soviet'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center gap-2 ${theme === 'dark' && layoutMode === 'soviet' ? 'bg-blue-50 dark:bg-blue-900/30 font-bold' : ''}`}
+                        >
+                          <span>☭</span>
+                          <span>Escuro</span>
+                        </button>
+                        <div className="px-4 py-2 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase border-t border-b border-gray-200 dark:border-gray-700 mt-1">Patriota</div>
+                        <button
+                          onClick={() => { setThemeAndLayout('light', 'patriota'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center gap-2 ${theme === 'light' && layoutMode === 'patriota' ? 'bg-blue-50 dark:bg-blue-900/30 font-bold' : ''}`}
+                        >
+                          <span>🇧🇷</span>
+                          <span>Claro</span>
+                        </button>
+                        <button
+                          onClick={() => { setThemeAndLayout('dark', 'patriota'); setThemeMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center gap-2 ${theme === 'dark' && layoutMode === 'patriota' ? 'bg-blue-50 dark:bg-blue-900/30 font-bold' : ''}`}
+                        >
+                          <span>🇧🇷</span>
+                          <span>Escuro</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <NotificationSystem />
 
                 {/* Perfil / avatar e menu */}
@@ -602,18 +903,6 @@ export const HubLayout: React.FC = () => {
                 </button>
               ))}
             </div>
-            <a
-              href="https://vimg.xvideosporno.blog.br/contents/videos_screenshots/11000/11885/preview.jpg"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 rounded-lg font-bold text-sm bg-red-600 text-white border-2 border-red-800 hover:bg-red-700 transition-colors whitespace-nowrap animate-pulse-red shadow-lg hover:shadow-xl"
-              style={{
-                animation: 'pulse-red 1.5s ease-in-out infinite',
-                boxShadow: '0 0 10px rgba(220, 38, 38, 0.5), 0 0 20px rgba(220, 38, 38, 0.3)'
-              }}
-            >
-              Não clique aqui
-            </a>
           </div>
         </div>
       </nav>

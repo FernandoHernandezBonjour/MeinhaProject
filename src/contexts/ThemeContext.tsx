@@ -10,6 +10,8 @@ interface ThemeContextType {
   theme: ThemeMode;
   layoutMode: LayoutMode;
   toggleTheme: () => void;
+  setTheme: (theme: ThemeMode) => void;
+  setThemeAndLayout: (theme: ThemeMode, layoutMode: LayoutMode) => void;
   toggleXvideosMode: () => void;
   toggleSovietMode: () => void;
   togglePatriotaMode: () => void;
@@ -77,10 +79,20 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     localStorage.setItem('layoutMode', newLayoutMode);
   };
 
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
+  const handleSetTheme = (newTheme: ThemeMode) => {
     setTheme(newTheme);
     applyTheme(newTheme, layoutMode);
+  };
+
+  const handleSetThemeAndLayout = (newTheme: ThemeMode, newLayoutMode: LayoutMode) => {
+    setTheme(newTheme);
+    setLayoutMode(newLayoutMode);
+    applyTheme(newTheme, newLayoutMode);
+  };
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    handleSetTheme(newTheme);
   };
 
   const toggleXvideosMode = () => {
@@ -140,7 +152,9 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     <ThemeContext.Provider value={{ 
       theme, 
       layoutMode,
-      toggleTheme, 
+      toggleTheme,
+      setTheme: handleSetTheme,
+      setThemeAndLayout: handleSetThemeAndLayout,
       toggleXvideosMode,
       toggleSovietMode,
       togglePatriotaMode,
