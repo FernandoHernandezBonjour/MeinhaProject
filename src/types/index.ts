@@ -7,6 +7,7 @@ export interface User {
   phone?: string;
   steamProfile?: string;
   photoURL?: string;
+  birthDate?: string; // YYYY-MM-DD
   role: 'admin' | 'user';
   passwordChanged: boolean;
   hashedPassword?: string | null;

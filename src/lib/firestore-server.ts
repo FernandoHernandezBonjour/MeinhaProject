@@ -14,11 +14,11 @@ import {
   ForumReaction,
   ChangelogItem,
 } from '@/types';
-import { 
-  BankAccount, 
-  CreditCard, 
-  Transaction, 
-  Invoice 
+import {
+  BankAccount,
+  CreditCard,
+  Transaction,
+  Invoice
 } from '@/types/financial';
 
 // Check if Firebase is initialized
@@ -55,7 +55,7 @@ export const createUser = async (userData: Omit<User, 'id'>): Promise<string> =>
 export const getUser = async (id: string): Promise<User | null> => {
   checkFirebase();
   const doc = await db.collection(USERS_COLLECTION).doc(id).get();
-  
+
   if (doc.exists) {
     const data = doc.data();
     return {
@@ -73,7 +73,7 @@ export const getUser = async (id: string): Promise<User | null> => {
 export const getUserById = async (id: string): Promise<User | null> => {
   checkFirebase();
   const doc = await db.collection(USERS_COLLECTION).doc(id).get();
-  
+
   if (doc.exists) {
     const data = doc.data();
     return {
@@ -93,7 +93,7 @@ export const getUserByUsername = async (username: string): Promise<User | null> 
   const querySnapshot = await db.collection(USERS_COLLECTION)
     .where('username', '==', username.toLowerCase())
     .get();
-  
+
   if (!querySnapshot.empty) {
     const doc: any = querySnapshot.docs[0];
     const data = doc.data();
@@ -125,10 +125,18 @@ export const getAllUsers = async (): Promise<User[]> => {
 
 export const updateUser = async (id: string, userData: Partial<User>): Promise<void> => {
   checkFirebase();
-  await db.collection(USERS_COLLECTION).doc(id).update({
+  const dataToUpdate: any = {
     ...userData,
     updatedAt: new Date(),
+  };
+
+  Object.keys(dataToUpdate).forEach(key => {
+    if (dataToUpdate[key] === undefined) {
+      delete dataToUpdate[key];
+    }
   });
+
+  await db.collection(USERS_COLLECTION).doc(id).update(dataToUpdate);
 };
 
 // Debt operations
@@ -145,7 +153,7 @@ export const createDebt = async (debtData: Omit<Debt, 'id'>): Promise<string> =>
 export const getDebt = async (id: string): Promise<Debt | null> => {
   checkFirebase();
   const doc = await db.collection(DEBTS_COLLECTION).doc(id).get();
-  
+
   if (doc.exists) {
     const data = doc.data();
     return {
@@ -180,7 +188,7 @@ export const getOpenDebts = async (): Promise<Debt[]> => {
     .where('status', '==', 'OPEN')
     .orderBy('dueDate', 'asc')
     .get();
-  
+
   return querySnapshot.docs.map((doc: any) => {
     const data = doc.data();
     return {
@@ -200,7 +208,7 @@ export const getPaidDebts = async (): Promise<Debt[]> => {
     .orderBy('updatedAt', 'desc')
     .get();
 
-  
+
   return querySnapshot.docs.map((doc: any) => {
     const data = doc.data();
     return {
@@ -654,14 +662,14 @@ export const createForumPost = async (postData: Omit<ForumPost, 'id' | 'comments
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-  
+
   // Remove undefined values
   Object.keys(dataToSave).forEach(key => {
     if (dataToSave[key] === undefined) {
       delete dataToSave[key];
     }
   });
-  
+
   const docRef = await db.collection(FORUM_POSTS_COLLECTION).add(dataToSave);
   return docRef.id;
 };
@@ -671,7 +679,7 @@ export const getAllForumPosts = async (): Promise<ForumPost[]> => {
   const querySnapshot = await db.collection(FORUM_POSTS_COLLECTION)
     .orderBy('createdAt', 'desc')
     .get();
-  
+
   return querySnapshot.docs.map((doc: any) => {
     const data = doc.data();
     return {
@@ -705,7 +713,7 @@ export const getAllForumPosts = async (): Promise<ForumPost[]> => {
 export const getForumPostById = async (postId: string): Promise<ForumPost | null> => {
   checkFirebase();
   const doc = await db.collection(FORUM_POSTS_COLLECTION).doc(postId).get();
-  
+
   if (doc.exists) {
     const data = doc.data();
     return {
@@ -744,14 +752,14 @@ export const addForumComment = async (
   checkFirebase();
   const docRef = db.collection(FORUM_POSTS_COLLECTION).doc(postId);
   const post = await docRef.get();
-  
+
   if (!post.exists) {
     throw new Error('Post não encontrado');
   }
-  
+
   const postData = post.data();
   const comments = postData?.comments || [];
-  
+
   const newComment: ForumComment = {
     id: db.collection('temp').doc().id, // Generate ID
     postId,
@@ -760,14 +768,14 @@ export const addForumComment = async (
     content: comment.content,
     createdAt: new Date(),
   };
-  
+
   const updatedComments = [...comments, newComment];
-  
+
   await docRef.update({
     comments: updatedComments,
     updatedAt: new Date(),
   });
-  
+
   return newComment;
 };
 
@@ -778,21 +786,21 @@ export const toggleForumReaction = async (
   checkFirebase();
   const docRef = db.collection(FORUM_POSTS_COLLECTION).doc(postId);
   const post = await docRef.get();
-  
+
   if (!post.exists) {
     throw new Error('Post não encontrado');
   }
-  
+
   const postData = post.data();
   const reactions = postData?.reactions || [];
-  
+
   const existingIndex = reactions.findIndex(
     (r: ForumReaction) => r.userId === reaction.userId && r.reaction === reaction.reaction
   );
-  
+
   let updatedReactions: ForumReaction[];
   let added = true;
-  
+
   if (existingIndex >= 0) {
     updatedReactions = reactions.filter(
       (_: ForumReaction, index: number) => index !== existingIndex,
@@ -809,12 +817,12 @@ export const toggleForumReaction = async (
     };
     updatedReactions = [...reactions, newReaction];
   }
-  
+
   await docRef.update({
     reactions: updatedReactions,
     updatedAt: new Date(),
   });
-  
+
   return { added, updatedReactions };
 };
 
@@ -843,7 +851,7 @@ export const getChangelogItems = async (limit = 50): Promise<ChangelogItem[]> =>
     .orderBy('createdAt', 'desc')
     .limit(limit)
     .get();
-  
+
   return querySnapshot.docs.map((doc: any) => {
     const data = doc.data();
     return {
@@ -895,7 +903,7 @@ export const getBankAccountsByUser = async (userId: string): Promise<BankAccount
   const querySnapshot = await db.collection(BANK_ACCOUNTS_COLLECTION)
     .where('userId', '==', userId)
     .get();
-  
+
   const accounts = querySnapshot.docs.map((doc: any) => {
     const data = doc.data();
     return {
@@ -953,7 +961,7 @@ export const getCreditCardsByUser = async (userId: string): Promise<CreditCard[]
   const querySnapshot = await db.collection(CREDIT_CARDS_COLLECTION)
     .where('userId', '==', userId)
     .get();
-  
+
   const cards = querySnapshot.docs.map((doc: any) => {
     const data = doc.data();
     return {
@@ -983,12 +991,22 @@ export const deleteCreditCard = async (id: string): Promise<void> => {
 // Transactions
 export const createTransaction = async (transactionData: Omit<Transaction, 'id'>): Promise<string> => {
   checkFirebase();
-  const docRef = await db.collection(TRANSACTIONS_COLLECTION).add({
+
+  const dataToSave: any = {
     ...transactionData,
     date: transactionData.date instanceof Date ? transactionData.date : new Date(transactionData.date),
     createdAt: new Date(),
     updatedAt: new Date(),
+  };
+
+  // Remove undefined values
+  Object.keys(dataToSave).forEach(key => {
+    if (dataToSave[key] === undefined) {
+      delete dataToSave[key];
+    }
   });
+
+  const docRef = await db.collection(TRANSACTIONS_COLLECTION).add(dataToSave);
   return docRef.id;
 };
 
@@ -1011,7 +1029,7 @@ export const getTransaction = async (id: string): Promise<Transaction | null> =>
 export const getTransactionsByUser = async (userId: string, filters?: any): Promise<Transaction[]> => {
   checkFirebase();
   let query = db.collection(TRANSACTIONS_COLLECTION).where('userId', '==', userId);
-  
+
   if (filters?.startDate) {
     query = query.where('date', '>=', filters.startDate);
   }
@@ -1024,9 +1042,9 @@ export const getTransactionsByUser = async (userId: string, filters?: any): Prom
   if (filters?.status) {
     query = query.where('status', '==', filters.status);
   }
-  
+
   const querySnapshot = await query.get();
-  
+
   const transactions = querySnapshot.docs.map((doc: any) => {
     const data = doc.data();
     return {
@@ -1044,13 +1062,23 @@ export const getTransactionsByUser = async (userId: string, filters?: any): Prom
 // Invoices
 export const createInvoice = async (invoiceData: Omit<Invoice, 'id'>): Promise<string> => {
   checkFirebase();
-  const docRef = await db.collection(INVOICES_COLLECTION).add({
+
+  const dataToSave: any = {
     ...invoiceData,
     dueDate: invoiceData.dueDate instanceof Date ? invoiceData.dueDate : new Date(invoiceData.dueDate),
     closingDate: invoiceData.closingDate instanceof Date ? invoiceData.closingDate : new Date(invoiceData.closingDate),
     createdAt: new Date(),
     updatedAt: new Date(),
+  };
+
+  // Remove undefined values
+  Object.keys(dataToSave).forEach(key => {
+    if (dataToSave[key] === undefined) {
+      delete dataToSave[key];
+    }
   });
+
+  const docRef = await db.collection(INVOICES_COLLECTION).add(dataToSave);
   return docRef.id;
 };
 
@@ -1077,7 +1105,7 @@ export const getInvoicesByCard = async (creditCardId: string): Promise<Invoice[]
   const querySnapshot = await db.collection(INVOICES_COLLECTION)
     .where('creditCardId', '==', creditCardId)
     .get();
-  
+
   const invoices = querySnapshot.docs.map((doc: any) => {
     const data = doc.data();
     return {
@@ -1099,18 +1127,34 @@ export const getInvoicesByCard = async (creditCardId: string): Promise<Invoice[]
 
 export const updateInvoice = async (id: string, invoiceData: Partial<Invoice>): Promise<void> => {
   checkFirebase();
-  await db.collection(INVOICES_COLLECTION).doc(id).update({
+  const dataToUpdate: any = {
     ...invoiceData,
     updatedAt: new Date(),
+  };
+
+  Object.keys(dataToUpdate).forEach(key => {
+    if (dataToUpdate[key] === undefined) {
+      delete dataToUpdate[key];
+    }
   });
+
+  await db.collection(INVOICES_COLLECTION).doc(id).update(dataToUpdate);
 };
 
 export const updateTransaction = async (id: string, transactionData: Partial<Transaction>): Promise<void> => {
   checkFirebase();
-  await db.collection(TRANSACTIONS_COLLECTION).doc(id).update({
+  const dataToUpdate: any = {
     ...transactionData,
     updatedAt: new Date(),
+  };
+
+  Object.keys(dataToUpdate).forEach(key => {
+    if (dataToUpdate[key] === undefined) {
+      delete dataToUpdate[key];
+    }
   });
+
+  await db.collection(TRANSACTIONS_COLLECTION).doc(id).update(dataToUpdate);
 };
 
 export const deleteTransaction = async (id: string): Promise<void> => {

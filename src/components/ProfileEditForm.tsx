@@ -17,6 +17,7 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ onSuccess, onC
     pixKey: user?.pixKey || '',
     phone: user?.phone || '',
     steamProfile: user?.steamProfile || '',
+    birthDate: user?.birthDate || '',
   });
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -44,14 +45,15 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ onSuccess, onC
       formDataToSend.append('pixKey', formData.pixKey);
       formDataToSend.append('phone', formData.phone);
       formDataToSend.append('steamProfile', formData.steamProfile);
-      
+      formDataToSend.append('birthDate', formData.birthDate);
+
       // Se há um arquivo selecionado, adicionar ao FormData
       if (selectedFile) {
         formDataToSend.append('photo', selectedFile);
       }
-      
+
       const result: any = await updateUserProfileAction(formDataToSend);
-      
+
       if (result.error) {
         setError(result.error);
       } else if (result.success && result.user) {
@@ -84,13 +86,13 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ onSuccess, onC
         setError('Por favor, selecione apenas arquivos de imagem');
         return;
       }
-      
+
       // Validar tamanho (máximo 5MB)
       if (file.size > 5 * 1024 * 1024) {
         setError('A imagem deve ter no máximo 5MB');
         return;
       }
-      
+
       setSelectedFile(file);
       const url = URL.createObjectURL(file);
       setPreviewURL(url);
@@ -107,32 +109,35 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ onSuccess, onC
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white/60 backdrop-blur-sm p-8 rounded-2xl shadow-2xl border-4 border-black">
-      <h2 className="text-3xl font-black text-blue-600 mb-8 text-center">👤 EDITAR PERFIL 👤</h2>
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Foto no canto superior esquerdo */}
-        <div className="flex items-start space-x-6 mb-8">
-          {/* Área da Foto */}
+    <div className="w-full">
+      <h2 className="text-2xl font-black text-blue-600 mb-6 text-center">👤 EDITAR PERFIL 👤</h2>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Foto e Info Básica */}
+        <div className="flex items-start space-x-4 mb-6">
           <div className="flex-shrink-0">
-            <div 
-              className="w-32 h-32 border-4 border-dashed border-gray-400 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors flex items-center justify-center"
+            <div
+              className="w-24 h-24 border-2 border-dashed border-gray-400 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors flex items-center justify-center relative group"
               onClick={() => fileInputRef.current?.click()}
             >
               {previewURL ? (
-                <img 
-                  src={previewURL} 
-                  alt="Preview da foto" 
-                  className="w-full h-full rounded-lg object-cover border-2 border-black shadow-lg"
-                />
+                <>
+                  <img
+                    src={previewURL}
+                    alt="Preview"
+                    className="w-full h-full rounded-lg object-cover border border-black"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
+                    <span className="text-white text-xs font-bold">Alterar</span>
+                  </div>
+                </>
               ) : (
                 <div className="text-center">
-                  <div className="text-4xl mb-2">📷</div>
-                  <p className="text-xs font-bold text-gray-800">CLIQUE AQUI</p>
+                  <div className="text-2xl">📷</div>
                 </div>
               )}
             </div>
-            
+
             <input
               ref={fileInputRef}
               type="file"
@@ -140,164 +145,154 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ onSuccess, onC
               onChange={handleFileSelect}
               className="hidden"
             />
-            
+
             {previewURL && (
               <button
                 type="button"
                 onClick={handleRemovePhoto}
-                className="mt-2 w-full bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 font-bold text-sm"
+                className="mt-1 w-full text-red-600 hover:text-red-800 text-xs font-bold"
               >
-                ❌ REMOVER
+                Remover
               </button>
             )}
           </div>
 
-          {/* Informações básicas ao lado da foto */}
-          <div className="flex-1">
-            <div className="mb-4">
-              <label htmlFor="username" className="block text-lg font-bold text-gray-800 mb-2">
-                👤 Nome de usuário (não pode ser alterado):
-              </label>
-              <input
-                type="text"
-                id="username"
-                value={user?.username || ''}
-                disabled
-                className="mt-1 block w-full px-4 py-2 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-bold bg-gray-100 cursor-not-allowed"
-              />
-              <p className="mt-2 text-sm text-gray-600 font-bold">
-                O nome de usuário não pode ser alterado por segurança.
-              </p>
+          <div className="flex-1 min-w-0">
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
+              Nome de usuário
+            </label>
+            <div className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 font-bold text-sm">
+              @{user?.username}
             </div>
+            <p className="mt-1 text-[10px] text-gray-500">
+              Não pode ser alterado.
+            </p>
           </div>
         </div>
 
-        {/* Campos em duas colunas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Coluna da Esquerda */}
-          <div className="space-y-6">
-            <div>
-              <label htmlFor="name" className="block text-lg font-bold text-gray-800 mb-2">
-                📝 Seu nome completo:
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                required
-                className="mt-1 block w-full px-4 py-2 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-bold"
-                placeholder="Digite seu nome completo..."
-                value={formData.name}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-lg font-bold text-gray-800 mb-2">
-                📧 Seu email (opcional):
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                className="mt-1 block w-full px-4 py-2 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-bold"
-                placeholder="Digite seu email..."
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          {/* Coluna da Direita */}
-          <div className="space-y-6">
-            <div>
-              <label htmlFor="pixKey" className="block text-lg font-bold text-gray-800 mb-2">
-                💳 Sua chave PIX (opcional):
-              </label>
-              <input
-                type="text"
-                id="pixKey"
-                name="pixKey"
-                className="mt-1 block w-full px-4 py-2 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-bold"
-                placeholder="Digite sua chave PIX (CPF, email, telefone, etc.)..."
-                value={formData.pixKey}
-                onChange={handleChange}
-              />
-              <p className="mt-2 text-sm text-gray-600 font-bold">
-                Pode ser CPF, email, telefone ou chave aleatória
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Segunda linha - Telefone e Steam */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        {/* Campos em Grid Compacto */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="phone" className="block text-lg font-bold text-gray-800 mb-2">
-              📱 Seu telefone (opcional):
+            <label htmlFor="name" className="block text-sm font-bold text-gray-700 mb-1">
+              Nome completo
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              value={formData.name}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="email" className="block text-sm font-bold text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              value={formData.email}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="pixKey" className="block text-sm font-bold text-gray-700 mb-1">
+              Chave PIX
+            </label>
+            <input
+              type="text"
+              id="pixKey"
+              name="pixKey"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              value={formData.pixKey}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="phone" className="block text-sm font-bold text-gray-700 mb-1">
+              Telefone
             </label>
             <input
               type="tel"
               id="phone"
               name="phone"
-              className="mt-1 block w-full px-4 py-2 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-bold"
-              placeholder="+5511987654321"
-              pattern="\+[0-9]{11,15}"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              placeholder="+55..."
               value={formData.phone}
               onChange={handleChange}
             />
-            <p className="mt-2 text-sm text-gray-600 font-bold">
-              Formato: +5511987654321 (código do país + DDD + número)
-            </p>
           </div>
 
-          <div>
-            <label htmlFor="steamProfile" className="block text-lg font-bold text-gray-800 mb-2">
-              🎮 Biblioteca da Steam (opcional):
+          <div className="sm:col-span-2">
+            <label htmlFor="steamProfile" className="block text-sm font-bold text-gray-700 mb-1">
+              Steam Profile URL
             </label>
             <input
               type="url"
               id="steamProfile"
               name="steamProfile"
-              className="mt-1 block w-full px-4 py-2 border-2 border-gray-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-bold"
-              placeholder="https://steamcommunity.com/id/seu-usuario"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               value={formData.steamProfile}
               onChange={handleChange}
             />
-            <p className="mt-2 text-sm text-gray-600 font-bold">
-              URL completa do seu perfil da Steam
-            </p>
+          </div>
+
+          <div className="sm:col-span-2">
+            <label htmlFor="birthDate" className="block text-sm font-bold text-gray-700 mb-1">
+              Data de nascimento
+            </label>
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🎂</span>
+              <input
+                type="date"
+                id="birthDate"
+                name="birthDate"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                value={formData.birthDate}
+                onChange={handleChange}
+              />
+            </div>
+            <p className="mt-1 text-xs text-gray-500">Para aparecer na lista de aniversariantes.</p>
           </div>
         </div>
 
+        {/* Mensagens de Erro/Sucesso */}
         {error && (
-          <div className="rounded-xl bg-red-100 border-2 border-red-400 p-4">
-            <div className="text-lg text-red-800 font-bold text-center">❌ {error}</div>
+          <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-3 py-2 rounded-lg text-center font-medium">
+            {error}
           </div>
         )}
 
         {success && (
-          <div className="rounded-xl bg-green-100 border-2 border-green-400 p-4">
-            <div className="text-lg text-green-800 font-bold text-center">✅ {success}</div>
+          <div className="bg-green-50 border border-green-200 text-green-600 text-sm px-3 py-2 rounded-lg text-center font-medium">
+            {success}
           </div>
         )}
 
-        <div className="flex space-x-4 pt-6">
+        {/* Botões */}
+        <div className="flex space-x-3 pt-4 border-t border-gray-100 mt-4">
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 bg-gradient-to-r from-blue-600 to-blue-800 text-white px-6 py-4 rounded-xl hover:from-blue-700 hover:to-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-xl font-black border-2 border-black shadow-lg"
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-sm hover:shadow transition-all disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {loading ? 'Salvando...' : '💾 SALVAR PERFIL'}
+            {loading ? 'Salvando...' : 'Salvar Alterações'}
           </button>
-          
+
           {onCancel && (
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 bg-gradient-to-r from-gray-400 to-gray-600 text-white px-6 py-4 rounded-xl hover:from-gray-500 hover:to-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 text-xl font-black border-2 border-black shadow-lg"
+              className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-bold text-sm transition-colors border border-gray-200"
             >
-              ❌ CANCELAR
+              Cancelar
             </button>
           )}
         </div>

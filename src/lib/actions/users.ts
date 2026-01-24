@@ -27,7 +27,7 @@ async function getAuthenticatedUser() {
 
 async function requireAdmin() {
   const user = await getAuthenticatedUser();
-  
+
   if (user.role !== 'admin') {
     throw new Error('Apenas administradores podem realizar esta ação');
   }
@@ -63,7 +63,7 @@ export async function registerUserAction(formData: FormData) {
     };
   } catch (error) {
     console.error('Erro no cadastro:', error);
-    
+
     if (error instanceof Error) {
       if (error.message === 'Nome de usuário já existe') {
         return { error: error.message };
@@ -94,6 +94,7 @@ export async function getUsersAction() {
         pixKey: user.pixKey,
         phone: user.phone,
         steamProfile: user.steamProfile,
+        birthDate: user.birthDate,
         passwordChanged: user.passwordChanged,
         forcePasswordReset: user.forcePasswordReset ?? !user.passwordChanged,
         skipCurrentPassword: user.skipCurrentPassword ?? false,
@@ -102,6 +103,26 @@ export async function getUsersAction() {
     };
   } catch (error) {
     console.error('Erro ao buscar usuários:', error);
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+export async function getPublicUserListAction() {
+  try {
+    const users = await getAllUsers();
+
+    return {
+      success: true,
+      users: users.map((user) => ({
+        id: user.id,
+        username: user.username,
+        name: user.name,
+        photoURL: user.photoURL,
+        birthDate: user.birthDate,
+      })),
+    };
+  } catch (error) {
+    console.error('Erro ao buscar lista pública de usuários:', error);
     return { error: 'Erro interno do servidor' };
   }
 }
@@ -223,6 +244,7 @@ export async function updateUserProfileAction(formData: FormData) {
     const pixKey = formData.get('pixKey') as string;
     const phone = formData.get('phone') as string;
     const steamProfile = formData.get('steamProfile') as string;
+    const birthDate = formData.get('birthDate') as string;
     const photo = formData.get('photo') as File;
 
     if (!name || name.trim() === '') {
@@ -254,13 +276,13 @@ export async function updateUserProfileAction(formData: FormData) {
     const profileData: any = {
       name: name.trim(),
     };
-    
+
     if (email && email.trim() !== '') {
       profileData.email = email.trim();
     } else {
       profileData.email = null;
     }
-    
+
     if (pixKey && pixKey.trim() !== '') {
       profileData.pixKey = pixKey.trim();
     } else {
@@ -279,18 +301,24 @@ export async function updateUserProfileAction(formData: FormData) {
       profileData.steamProfile = null;
     }
 
+    if (birthDate && birthDate.trim() !== '') {
+      profileData.birthDate = birthDate.trim();
+    } else {
+      profileData.birthDate = null;
+    }
+
     // Se há uma foto para upload
     if (photo && photo.size > 0) {
       try {
         const uploadFormData = new FormData();
         uploadFormData.append('photo', photo);
-        
+
         const uploadResult = await uploadPhotoAction(uploadFormData);
-        
+
         if (uploadResult.error) {
           return { error: uploadResult.error };
         }
-        
+
         if (uploadResult.success && uploadResult.photoURL) {
           profileData.photoURL = uploadResult.photoURL;
         }
@@ -324,6 +352,7 @@ export async function updateUserByAdminAction(formData: FormData) {
     const pixKey = formData.get('pixKey') as string;
     const phone = formData.get('phone') as string;
     const steamProfile = formData.get('steamProfile') as string;
+    const birthDate = formData.get('birthDate') as string;
     const role = formData.get('role') as 'admin' | 'user';
 
     if (!userId) {
@@ -340,7 +369,7 @@ export async function updateUserByAdminAction(formData: FormData) {
     // Atualizar username se fornecido e diferente do atual
     if (username && username.trim() !== '') {
       const newUsername = username.trim().toLowerCase();
-      
+
       // Validar formato do username
       if (!/^[a-zA-Z0-9_]+$/.test(newUsername)) {
         return { error: 'Nome de usuário deve conter apenas letras, números e underscore' };
@@ -414,18 +443,23 @@ export async function updateUserByAdminAction(formData: FormData) {
       }
     }
 
+    // Atualizar data de nascimento
+    if (birthDate !== null && birthDate !== undefined) {
+      updateData.birthDate = birthDate.trim() || null;
+    }
+
     // Atualizar papel (role) do usuário
     if (role && (role === 'admin' || role === 'user')) {
       // Se está removendo privilégios de admin, verificar se não é o último admin
       if (user.role === 'admin' && role === 'user') {
         const allUsers = await getAllUsers();
         const adminCount = allUsers.filter(u => u.role === 'admin' && u.id !== userId).length;
-        
+
         if (adminCount === 0) {
           return { error: 'Não é possível remover os privilégios do último administrador. Deve haver pelo menos um administrador no sistema.' };
         }
       }
-      
+
       updateData.role = role;
     }
 
@@ -438,7 +472,7 @@ export async function updateUserByAdminAction(formData: FormData) {
     };
   } catch (error) {
     console.error('Erro ao atualizar usuário:', error);
-    
+
     if (error instanceof Error) {
       if (error.message.includes('administradores')) {
         return { error: error.message };
