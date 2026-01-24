@@ -5,9 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { FinancialPage } from './FinancialPage';
 import { HomePage } from './HomePage';
-import { EventsPage } from './EventsPage';
-import { MediaPage } from './MediaPage';
-import { ForumPage } from './ForumPage';
+import { CommunityPage } from './CommunityPage';
 import { ChangelogPage } from './ChangelogPage';
 import { NotificationSystem } from './NotificationSystem';
 import { AdminPanel } from './AdminPanel';
@@ -17,7 +15,7 @@ import { ProfileEditForm } from './ProfileEditForm';
 import { PasswordChangeForm } from './PasswordChangeForm';
 import { UserProfilePage } from './UserProfilePage';
 
-type TabType = 'home' | 'events' | 'financial' | 'media' | 'forum' | 'changelog' | 'admin' | 'profile';
+type TabType = 'home' | 'financial' | 'community' | 'changelog' | 'admin' | 'profile';
 
 export const HubLayout: React.FC = () => {
   const { user, logout } = useAuth();
@@ -86,7 +84,7 @@ export const HubLayout: React.FC = () => {
 
     window.addEventListener('hub-set-tab', handleSetTab as EventListener);
     window.addEventListener('profile:open', handleOpenProfile as EventListener);
-    
+
     return () => {
       window.removeEventListener('hub-set-tab', handleSetTab as EventListener);
       window.removeEventListener('profile:open', handleOpenProfile as EventListener);
@@ -117,10 +115,8 @@ export const HubLayout: React.FC = () => {
 
   const tabs: Array<{ id: TabType; label: string; icon: string }> = [
     { id: 'home', label: 'Home', icon: '🏠' },
-    { id: 'events', label: 'Rolês', icon: '🎉' },
+    { id: 'community', label: 'Comunidade', icon: '👥' },
     { id: 'financial', label: 'Financeiro', icon: '💰' },
-    { id: 'media', label: 'Mídia', icon: '📸' },
-    { id: 'forum', label: 'Fórum', icon: '💬' },
     { id: 'changelog', label: 'Changelog', icon: '📜' },
   ];
 
@@ -140,14 +136,10 @@ export const HubLayout: React.FC = () => {
     switch (activeTab) {
       case 'home':
         return <HomePage />;
-      case 'events':
-        return <EventsPage />;
+      case 'community':
+        return <CommunityPage />;
       case 'financial':
         return <FinancialPage />;
-      case 'media':
-        return <MediaPage />;
-      case 'forum':
-        return <ForumPage />;
       case 'changelog':
         return <ChangelogPage />;
       case 'admin':
@@ -160,25 +152,23 @@ export const HubLayout: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-200 ${
-      isXvideosMode 
-        ? 'bg-gray-100 dark:bg-black' 
-        : isSovietMode
+    <div className={`min-h-screen transition-colors duration-200 ${isXvideosMode
+      ? 'bg-gray-100 dark:bg-black'
+      : isSovietMode
         ? ''
         : isPatriotaMode
-        ? ''
-        : 'bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900'
-    } ${isSovietMode ? 'soviet-mode' : ''} ${isPatriotaMode ? 'patriota-mode' : ''}`}>
+          ? ''
+          : 'bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900'
+      } ${isSovietMode ? 'soviet-mode' : ''} ${isPatriotaMode ? 'patriota-mode' : ''}`}>
       {/* Header */}
-      <header className={`transition-colors duration-200 ${
-        isXvideosMode
-          ? 'bg-white border-b border-gray-200'
-          : isSovietMode
+      <header className={`transition-colors duration-200 ${isXvideosMode
+        ? 'bg-white border-b border-gray-200'
+        : isSovietMode
           ? 'soviet-header'
           : isPatriotaMode
-          ? 'patriota-header'
-          : 'bg-gradient-to-r from-red-600 to-orange-600 dark:from-red-800 dark:to-orange-800 shadow-md border-b-4 border-black dark:border-gray-700'
-      }`}>
+            ? 'patriota-header'
+            : 'bg-gradient-to-r from-red-600 to-orange-600 dark:from-red-800 dark:to-orange-800 shadow-md border-b-4 border-black dark:border-gray-700'
+        }`}>
         <div className={`${isXvideosMode || isSovietMode || isPatriotaMode ? 'px-4 sm:px-6 lg:px-8 py-0' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2'}`}>
           {isXvideosMode ? (
             <div className="h-14 flex items-center justify-between">
@@ -220,9 +210,9 @@ export const HubLayout: React.FC = () => {
                     className="p-2 rounded border border-gray-300 hover:bg-gray-100 text-gray-700 flex items-center gap-1"
                     title="Selecionar tema"
                   >
-                    {layoutMode === 'normal' ? (theme === 'light' ? '☀️' : '🌙') : 
-                     layoutMode === 'xvideos' ? '🎬' :
-                     layoutMode === 'soviet' ? '☭' : '🇧🇷'}
+                    {layoutMode === 'normal' ? (theme === 'light' ? '☀️' : '🌙') :
+                      layoutMode === 'xvideos' ? '🎬' :
+                        layoutMode === 'soviet' ? '☭' : '🇧🇷'}
                     <span className="text-xs">▼</span>
                   </button>
                   {themeMenuOpen && (
@@ -381,9 +371,9 @@ export const HubLayout: React.FC = () => {
                     className="p-2 rounded border-2 border-yellow-500 hover:bg-yellow-500/20 text-yellow-500 font-bold flex items-center gap-1"
                     title="Selecionar tema"
                   >
-                    {layoutMode === 'normal' ? (theme === 'light' ? '☀️' : '🌙') : 
-                     layoutMode === 'xvideos' ? '🎬' :
-                     layoutMode === 'soviet' ? '☭' : '🇧🇷'}
+                    {layoutMode === 'normal' ? (theme === 'light' ? '☀️' : '🌙') :
+                      layoutMode === 'xvideos' ? '🎬' :
+                        layoutMode === 'soviet' ? '☭' : '🇧🇷'}
                     <span className="text-xs">▼</span>
                   </button>
                   {themeMenuOpen && (
@@ -549,9 +539,9 @@ export const HubLayout: React.FC = () => {
                     className="p-2 rounded border-2 border-yellow-500 hover:bg-yellow-500/20 text-yellow-500 font-bold flex items-center gap-1"
                     title="Selecionar tema"
                   >
-                    {layoutMode === 'normal' ? (theme === 'light' ? '☀️' : '🌙') : 
-                     layoutMode === 'xvideos' ? '🎬' :
-                     layoutMode === 'soviet' ? '☭' : '🇧🇷'}
+                    {layoutMode === 'normal' ? (theme === 'light' ? '☀️' : '🌙') :
+                      layoutMode === 'xvideos' ? '🎬' :
+                        layoutMode === 'soviet' ? '☭' : '🇧🇷'}
                     <span className="text-xs">▼</span>
                   </button>
                   {themeMenuOpen && (
@@ -711,9 +701,9 @@ export const HubLayout: React.FC = () => {
                     className="p-2 bg-white/20 dark:bg-white/10 hover:bg-white/30 dark:hover:bg-white/20 rounded-lg border-2 border-white/30 dark:border-white/20 flex items-center gap-1"
                     title="Selecionar tema"
                   >
-                    {layoutMode === 'normal' ? (theme === 'light' ? '☀️' : '🌙') : 
-                     layoutMode === 'xvideos' ? '🎬' :
-                     layoutMode === 'soviet' ? '☭' : '🇧🇷'}
+                    {layoutMode === 'normal' ? (theme === 'light' ? '☀️' : '🌙') :
+                      layoutMode === 'xvideos' ? '🎬' :
+                        layoutMode === 'soviet' ? '☭' : '🇧🇷'}
                     <span className="text-xs">▼</span>
                   </button>
                   {themeMenuOpen && (
@@ -860,11 +850,10 @@ export const HubLayout: React.FC = () => {
       </header>
 
       {/* Navigation Tabs */}
-      <nav className={`transition-colors duration-200 ${
-        isXvideosMode
-          ? 'bg-white border-b border-gray-200'
-          : 'bg-white dark:bg-gray-800 shadow-md border-b-2 border-gray-300 dark:border-gray-700'
-      }`}>
+      <nav className={`transition-colors duration-200 ${isXvideosMode
+        ? 'bg-white border-b border-gray-200'
+        : 'bg-white dark:bg-gray-800 shadow-md border-b-2 border-gray-300 dark:border-gray-700'
+        }`}>
         <div className={`${isXvideosMode || isSovietMode || isPatriotaMode ? 'px-4 sm:px-6 lg:px-8' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'}`}>
           <div className={`flex items-center ${isXvideosMode || isSovietMode || isPatriotaMode ? 'space-x-6' : 'space-x-1'} ${isXvideosMode || isSovietMode || isPatriotaMode ? 'h-10' : 'py-2'}`}>
             <div className="flex flex-1">
@@ -873,28 +862,24 @@ export const HubLayout: React.FC = () => {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={isXvideosMode ? (
-                    `px-1 py-0 font-medium text-sm transition-all duration-200 ${
-                      activeTab === tab.id
-                        ? 'text-orange-600 font-bold border-b-2 border-orange-500'
-                        : 'text-gray-600 hover:text-orange-500'
+                    `px-1 py-0 font-medium text-sm transition-all duration-200 ${activeTab === tab.id
+                      ? 'text-orange-600 font-bold border-b-2 border-orange-500'
+                      : 'text-gray-600 hover:text-orange-500'
                     }`
                   ) : isSovietMode ? (
-                    `soviet-nav-item px-2 py-1 ${
-                      activeTab === tab.id
-                        ? 'text-yellow-500 font-black border-b-2 border-yellow-500'
-                        : ''
+                    `soviet-nav-item px-2 py-1 ${activeTab === tab.id
+                      ? 'text-yellow-500 font-black border-b-2 border-yellow-500'
+                      : ''
                     }`
                   ) : isPatriotaMode ? (
-                    `patriota-nav-item px-2 py-1 ${
-                      activeTab === tab.id
-                        ? 'text-yellow-500 font-black border-b-2 border-yellow-500'
-                        : ''
+                    `patriota-nav-item px-2 py-1 ${activeTab === tab.id
+                      ? 'text-yellow-500 font-black border-b-2 border-yellow-500'
+                      : ''
                     }`
                   ) : (
-                    `px-6 py-3 rounded-lg font-bold text-sm transition-all duration-200 ${
-                      activeTab === tab.id
-                        ? 'bg-red-600 dark:bg-red-700 text-white shadow-lg transform scale-105 border-2 border-black dark:border-gray-600'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-500'
+                    `px-6 py-3 rounded-lg font-bold text-sm transition-all duration-200 ${activeTab === tab.id
+                      ? 'bg-red-600 dark:bg-red-700 text-white shadow-lg transform scale-105 border-2 border-black dark:border-gray-600'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-500'
                     }`
                   )}
                 >
@@ -937,7 +922,7 @@ export const HubLayout: React.FC = () => {
 
       {showProfileModal && (
         <div className="fixed inset-0 bg-black/70 dark:bg-black/80 flex items-center justify-center z-50 px-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-lg w-full border-4 border-black dark:border-gray-600 shadow-2xl transition-colors duration-200">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-2xl w-full border-4 border-black dark:border-gray-600 shadow-2xl transition-colors duration-200">
             <ProfileEditForm
               onSuccess={() => setShowProfileModal(false)}
               onCancel={() => setShowProfileModal(false)}
