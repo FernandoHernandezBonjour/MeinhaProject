@@ -3,8 +3,8 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 type ThemeMode = 'light' | 'dark';
-type LayoutMode = 'normal' | 'xvideos' | 'soviet' | 'patriota';
-type Theme = ThemeMode | 'xvideos-light' | 'xvideos-dark' | 'soviet-light' | 'soviet-dark' | 'patriota-light' | 'patriota-dark';
+type LayoutMode = 'clean' | 'normal' | 'xvideos' | 'soviet' | 'patriota';
+type Theme = ThemeMode | 'clean-light' | 'clean-dark' | 'xvideos-light' | 'xvideos-dark' | 'soviet-light' | 'soviet-dark' | 'patriota-light' | 'patriota-dark';
 
 interface ThemeContextType {
   theme: ThemeMode;
@@ -18,6 +18,7 @@ interface ThemeContextType {
   isXvideosMode: boolean;
   isSovietMode: boolean;
   isPatriotaMode: boolean;
+  isCleanMode: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -36,7 +37,7 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [theme, setTheme] = useState<ThemeMode>('light');
-  const [layoutMode, setLayoutMode] = useState<LayoutMode>('normal');
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>('clean');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -45,10 +46,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     const savedTheme = localStorage.getItem('theme') as ThemeMode | null;
     const savedLayoutMode = localStorage.getItem('layoutMode') as LayoutMode | null;
     const systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    
+
+    // Default to clean mode if nothing is saved
     const initialTheme = savedTheme || systemPreference;
-    const initialLayoutMode = savedLayoutMode || 'normal';
-    
+    const initialLayoutMode = savedLayoutMode || 'clean';
+
     setTheme(initialTheme);
     setLayoutMode(initialLayoutMode);
     applyTheme(initialTheme, initialLayoutMode);
@@ -57,8 +59,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const applyTheme = (newTheme: ThemeMode, newLayoutMode: LayoutMode) => {
     const root = window.document.documentElement;
     // Remover todas as classes de tema
-    root.classList.remove('light', 'dark', 'xvideos-light', 'xvideos-dark', 'soviet-light', 'soviet-dark', 'patriota-light', 'patriota-dark', 'xvideos-mode', 'soviet-mode', 'patriota-mode', 'normal-mode');
-    
+    root.classList.remove('light', 'dark', 'clean-light', 'clean-dark', 'xvideos-light', 'xvideos-dark', 'soviet-light', 'soviet-dark', 'patriota-light', 'patriota-dark', 'clean-mode', 'xvideos-mode', 'soviet-mode', 'patriota-mode', 'normal-mode');
+
     if (newLayoutMode === 'xvideos') {
       // No modo XVIDEOS, usar tema específico
       const xvideosTheme = newTheme === 'dark' ? 'xvideos-dark' : 'xvideos-light';
@@ -71,10 +73,14 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       // No modo PATRIOTA, usar tema específico
       const patriotaTheme = newTheme === 'dark' ? 'patriota-dark' : 'patriota-light';
       root.classList.add(patriotaTheme, 'patriota-mode');
+    } else if (newLayoutMode === 'clean') {
+      const cleanTheme = newTheme === 'dark' ? 'clean-dark' : 'clean-light';
+      root.classList.add(cleanTheme, 'clean-mode');
     } else {
+      // Normal / Legacy mode
       root.classList.add(newTheme, 'normal-mode');
     }
-    
+
     localStorage.setItem('theme', newTheme);
     localStorage.setItem('layoutMode', newLayoutMode);
   };
@@ -96,48 +102,36 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   };
 
   const toggleXvideosMode = () => {
-    // Se estiver em modo soviet, desativar e ir para normal
-    // Se estiver em normal, ativar xvideos
-    // Se estiver em xvideos, voltar para normal
+    // Se estiver em modo soviet, desativar e ir para clean (padrao)
+    // Se estiver em clean/normal, ativar xvideos
+    // Se estiver em xvideos, voltar para clean
     let newLayoutMode: LayoutMode;
-    if (layoutMode === 'soviet') {
-      newLayoutMode = 'normal';
-    } else if (layoutMode === 'normal') {
-      newLayoutMode = 'xvideos';
+    if (layoutMode === 'xvideos') {
+      newLayoutMode = 'clean';
     } else {
-      newLayoutMode = 'normal';
+      newLayoutMode = 'xvideos';
     }
     setLayoutMode(newLayoutMode);
     applyTheme(theme, newLayoutMode);
   };
 
   const toggleSovietMode = () => {
-    // Se estiver em modo xvideos ou patriota, desativar e ir para normal
-    // Se estiver em normal, ativar soviet
-    // Se estiver em soviet, voltar para normal
     let newLayoutMode: LayoutMode;
-    if (layoutMode === 'xvideos' || layoutMode === 'patriota') {
-      newLayoutMode = 'normal';
-    } else if (layoutMode === 'normal') {
-      newLayoutMode = 'soviet';
+    if (layoutMode === 'soviet') {
+      newLayoutMode = 'clean';
     } else {
-      newLayoutMode = 'normal';
+      newLayoutMode = 'soviet';
     }
     setLayoutMode(newLayoutMode);
     applyTheme(theme, newLayoutMode);
   };
 
   const togglePatriotaMode = () => {
-    // Se estiver em modo xvideos ou soviet, desativar e ir para normal
-    // Se estiver em normal, ativar patriota
-    // Se estiver em patriota, voltar para normal
     let newLayoutMode: LayoutMode;
-    if (layoutMode === 'xvideos' || layoutMode === 'soviet') {
-      newLayoutMode = 'normal';
-    } else if (layoutMode === 'normal') {
-      newLayoutMode = 'patriota';
+    if (layoutMode === 'patriota') {
+      newLayoutMode = 'clean';
     } else {
-      newLayoutMode = 'normal';
+      newLayoutMode = 'patriota';
     }
     setLayoutMode(newLayoutMode);
     applyTheme(theme, newLayoutMode);
@@ -149,8 +143,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   }
 
   return (
-    <ThemeContext.Provider value={{ 
-      theme, 
+    <ThemeContext.Provider value={{
+      theme,
       layoutMode,
       toggleTheme,
       setTheme: handleSetTheme,
@@ -158,6 +152,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       toggleXvideosMode,
       toggleSovietMode,
       togglePatriotaMode,
+      isCleanMode: layoutMode === 'clean',
       isXvideosMode: layoutMode === 'xvideos',
       isSovietMode: layoutMode === 'soviet',
       isPatriotaMode: layoutMode === 'patriota'

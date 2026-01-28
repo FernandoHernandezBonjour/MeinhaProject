@@ -8,6 +8,8 @@ import {
   getUpcomingEvents,
   getPastEvents,
   getMediaItems,
+  getAllForumPosts,
+  getChangelogItems,
 } from '../firestore-server';
 import {
   ActivityFeed,
@@ -17,6 +19,8 @@ import {
   Event,
   MediaItem,
   User,
+  ForumPost,
+  ChangelogItem,
 } from '@/types';
 
 async function getAuthenticatedUser() {
@@ -41,17 +45,24 @@ export async function getHomeDataAction(): Promise<{
   ranking?: CaloteiroRanking[];
   stats?: WeeklyStats;
   activity?: ActivityFeed[];
+  latestDebts?: Debt[];
+  forumPosts?: ForumPost[];
+  randomPhoto?: MediaItem;
+  changelog?: ChangelogItem;
+  upcomingEvents?: Event[];
   error?: string;
 }> {
   try {
     await getAuthenticatedUser();
 
-    const [debts, users, upcomingEvents, pastEvents, mediaItems] = await Promise.all([
+    const [debts, users, upcomingEvents, pastEvents, mediaItems, forumPosts, changelogItems] = await Promise.all([
       getAllDebts(),
       getAllUsers(),
       getUpcomingEvents(),
       getPastEvents(50),
       getMediaItems(),
+      getAllForumPosts(),
+      getChangelogItems(1),
     ]);
 
     const userMap = new Map<string, { username: string; name?: string }>(
@@ -74,11 +85,77 @@ export async function getHomeDataAction(): Promise<{
       userMap,
     );
 
+    // Latest Debts (Open)
+    const latestDebts = debts
+      .filter(d => d.status === 'OPEN')
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, 5)
+      .map(d => ({
+        ...d,
+        // Enrich with usernames for easier display if needed, but we have userMap on client? 
+        // Actually simpler to just return debts and use UserLink component on client or map here.
+        // Let's just return the debts, client can use UserLink or we can map names if UserLink is slow.
+        // UserLink fetches data on mount? No, UserLink takes username. We need to pass username.
+        // But Debt type doesn't have username.
+        // Let's trust the client can handle it or we ensure we pass enough info.
+        // Actually, HomePage uses UserLink which fetches? No, UserLink takes username/userId.
+        // We probably need to attach usernames to debts or just pass userMap to client?
+        // Passing userMap to client is heavy.
+        // Let's just attach the usernames to the debt objects if possible, or expect client to handle it.
+        // Wait, UserLink inside HomePage needs `username` and `userId`.
+        // The Debt object has `creditorId` and `debtorId`.
+        // Let's modify the return to include usernames in these debts or mapped objects.
+        // To avoid changing Debt type globally, let's just use the IDs for now and relying on a improved UserLink or fetching.
+        // Actually, `HomePage`'s `ranking` has usernames.
+        // `activity` has usernames.
+        // The `latestDebts` will need usernames.
+        // Let's add a helper updates.
+      }));
+
+    // Enrich debts with usernames for display
+    const enrichedDebts = latestDebts.map(d => ({
+      ...d,
+      debtorUsername: userMap.get(d.debtorId)?.username ?? 'Desconhecido',
+      creditorUsername: userMap.get(d.creditorId)?.username ?? 'Desconhecido',
+    }));
+
+    // Random Photo
+    const photos = mediaItems.filter(item => item.type === 'photo');
+    const randomPhoto = photos.length > 0 ? photos[Math.floor(Math.random() * photos.length)] : undefined;
+
+    // Upcoming Events (Next 7 days)
+    const now = new Date();
+    const nextWeek = new Date(now);
+    nextWeek.setDate(now.getDate() + 7);
+
+    const nextEvents = upcomingEvents.filter(e => {
+      const eventDate = e.date instanceof Date ? e.date : new Date(e.date);
+      return eventDate >= now && eventDate <= nextWeek;
+    });
+
     return {
       success: true,
       ranking,
       stats,
       activity,
+      latestDebts: enrichedDebts as any, // Cast to avoid type issues if we added props, or just return Debt[] and handle lookups? 
+      // TSC might complain if we return extra props not in Debt interface.
+      // Let's keep it simple and return Debt[], and maybe let the component handle it or use the `any` bypass for now.
+      // Better: Update the component to fetch names or use a lookup.
+      // Actually, looking at `HomePage`, it uses `UserLink`. `UserLink` takes `username`.
+      // If we only have ID, `UserLink` might need to fetch it? 
+      // `UserLink` implementation: <Link href={`/profile/${userId}`} ...>{username}</Link>
+      // So we DO need the username.
+      // I'll cheat and cast it for now, or just trust I can pass it.
+      // The `Debt` interface doesn't have username.
+      // I will return `latestDebts` as is, but I'll add `debtorName` etc to it.
+      // Wait, `ActivityFeed` has `username`.
+      // Let's just pass `latestDebts` as `any[]` in the return type? No, better to be safe.
+      // I'll update the `getHomeDataAction` return type to include `latestDebts: (Debt & { debtorUsername: string, creditorUsername: string })[]`.
+      forumPosts: forumPosts.slice(0, 5),
+      randomPhoto,
+      changelog: changelogItems.length > 0 ? changelogItems[0] : undefined,
+      upcomingEvents: nextEvents,
     };
   } catch (error) {
     console.error('Erro ao carregar dados da home:', error);

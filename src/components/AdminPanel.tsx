@@ -4,8 +4,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { User } from '@/types';
 import { getUsersAction, resetUserPasswordAction, updateUserByAdminAction } from '@/lib/actions/users';
 import { UserRegistration } from './UserRegistration';
+import { ScoreConfigForm } from './ScoreConfigForm';
 
-interface ManagedUser extends Pick<User, 'id' | 'username' | 'role' | 'email' | 'name' | 'pixKey' | 'phone' | 'steamProfile' | 'passwordChanged' | 'forcePasswordReset' | 'skipCurrentPassword' | 'updatedAt'> {}
+interface ManagedUser extends Pick<User, 'id' | 'username' | 'role' | 'email' | 'name' | 'pixKey' | 'phone' | 'steamProfile' | 'passwordChanged' | 'forcePasswordReset' | 'skipCurrentPassword' | 'updatedAt'> { }
 
 interface ResetResult {
   username: string;
@@ -13,6 +14,7 @@ interface ResetResult {
 }
 
 export const AdminPanel: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'users' | 'score'>('users');
   const [users, setUsers] = useState<ManagedUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
@@ -154,171 +156,198 @@ export const AdminPanel: React.FC = () => {
 
   return (
     <div className="space-y-8">
+
       <div className="bg-white rounded-2xl border-4 border-black shadow-2xl p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
           <div>
             <h2 className="text-3xl font-black text-red-600 flex items-center space-x-2">
               <span>🛡️ Painel do Administrador</span>
             </h2>
             <p className="text-sm text-gray-600 font-bold mt-2">
-              Gerencie usuários, redefina senhas e mantenha o caos sob controle.
+              Gerencie usuários, regras do sistema e mantenha a ordem.
             </p>
           </div>
-          <div className="flex items-center space-x-3">
+
+          <div className="flex bg-gray-100 p-1 rounded-lg">
             <button
-              onClick={() => setShowRegistration((prev) => !prev)}
-              className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-800 text-white font-black rounded-lg border-2 border-black shadow-lg hover:from-green-700 hover:to-green-900 transition-colors"
+              onClick={() => setActiveTab('users')}
+              className={`px-4 py-2 rounded-md font-bold text-sm transition-colors ${activeTab === 'users' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
             >
-              {showRegistration ? 'Fechar cadastro' : 'Adicionar usuário'}
+              Usuários
             </button>
             <button
-              onClick={fetchUsers}
-              className="px-4 py-2 bg-white text-red-600 font-black rounded-lg border-2 border-black hover:bg-red-100 transition-colors"
+              onClick={() => setActiveTab('score')}
+              className={`px-4 py-2 rounded-md font-bold text-sm transition-colors ${activeTab === 'score' ? 'bg-white shadow text-purple-700' : 'text-gray-500 hover:text-purple-700'}`}
             >
-              Atualizar lista
+              MeinhaScore
             </button>
           </div>
+
+          {activeTab === 'users' && (
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => setShowRegistration((prev) => !prev)}
+                className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-800 text-white font-black rounded-lg border-2 border-black shadow-lg hover:from-green-700 hover:to-green-900 transition-colors"
+              >
+                {showRegistration ? 'Fechar cadastro' : 'Adicionar usuário'}
+              </button>
+              <button
+                onClick={fetchUsers}
+                className="px-4 py-2 bg-white text-red-600 font-black rounded-lg border-2 border-black hover:bg-red-100 transition-colors"
+              >
+                Atualizar lista
+              </button>
+            </div>
+          )}
         </div>
 
-        {showRegistration && (
-          <div className="mb-8">
-            <UserRegistration onSuccess={handleRegistrationSuccess} onCancel={() => setShowRegistration(false)} />
-          </div>
-        )}
+        {activeTab === 'score' ? (
+          <ScoreConfigForm />
+        ) : (
+          <>
+            {/* Users List Content */}
 
-        {resetResult && (
-          <div className="mb-6 p-4 bg-gradient-to-r from-yellow-100 to-orange-100 border-2 border-yellow-400 rounded-xl">
-            <h3 className="text-xl font-black text-yellow-800 mb-2">Senha temporária gerada!</h3>
-            <p className="text-sm font-bold text-gray-700">
-              Usuário: <span className="text-red-600">{resetResult.username}</span>
-            </p>
-            <p className="text-lg font-black text-gray-900 mt-2">
-              Nova senha: <span className="bg-white px-2 py-1 rounded border border-gray-300">{resetResult.temporaryPassword}</span>
-            </p>
-            <p className="text-xs text-gray-600 font-semibold mt-2">
-              Compartilhe essa senha com o usuário. No próximo login ele será obrigado a trocar e não precisará informar a senha antiga.
-            </p>
-          </div>
-        )}
 
-        {error && (
-          <div className="mb-6 p-4 bg-red-100 border-2 border-red-400 rounded-xl">
-            <p className="text-red-800 font-bold text-center">❌ {error}</p>
-          </div>
-        )}
+            {showRegistration && (
+              <div className="mb-8">
+                <UserRegistration onSuccess={handleRegistrationSuccess} onCancel={() => setShowRegistration(false)} />
+              </div>
+            )}
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 bg-white rounded-xl overflow-hidden border-2 border-gray-300">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-black text-gray-700 tracking-wider">Usuário</th>
-                <th className="px-4 py-3 text-left text-sm font-black text-gray-700 tracking-wider">Nome Completo</th>
-                <th className="px-4 py-3 text-left text-sm font-black text-gray-700 tracking-wider hidden lg:table-cell">E-mail</th>
-                <th className="px-4 py-3 text-left text-sm font-black text-gray-700 tracking-wider hidden lg:table-cell">Chave PIX</th>
-                <th className="px-4 py-3 text-left text-sm font-black text-gray-700 tracking-wider">Função</th>
-                <th className="px-4 py-3 text-left text-sm font-black text-gray-700 tracking-wider">Status da Senha</th>
-                <th className="px-4 py-3 text-left text-sm font-black text-gray-700 tracking-wider hidden md:table-cell">Atualizado em</th>
-                <th className="px-4 py-3 text-right text-sm font-black text-gray-700 tracking-wider">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {loading ? (
-                <tr>
-                  <td colSpan={9} className="px-4 py-6 text-center text-gray-500 font-bold">
-                    Carregando usuários...
-                  </td>
-                </tr>
-              ) : sortedUsers.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="px-4 py-6 text-center text-gray-500 font-bold">
-                    Nenhum usuário cadastrado ainda.
-                  </td>
-                </tr>
-              ) : (
-                sortedUsers.map((managedUser) => {
-                  const needsReset = !managedUser.passwordChanged || managedUser.forcePasswordReset;
-                  return (
-                    <tr key={managedUser.id}>
-                      <td className="px-4 py-3 whitespace-nowrap font-bold text-gray-800">
-                        <div className="flex items-center gap-2">
-                          <span>{managedUser.username}</span>
-                          <button
-                            onClick={() => handleEditUser(managedUser)}
-                            className="text-blue-600 hover:text-blue-800 transition-colors"
-                            title="Editar usuário"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-5 w-5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth={2}
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-gray-700">
-                        {managedUser.name || '—'}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-700 hidden lg:table-cell">
-                        {managedUser.email || '—'}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-700 hidden lg:table-cell">
-                        {managedUser.phone || '—'}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-700 hidden lg:table-cell">
-                        {managedUser.pixKey || '—'}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span
-                          className={`px-2 py-1 inline-flex text-xs leading-5 font-black rounded-full border-2 border-black ${
-                            managedUser.role === 'admin'
-                              ? 'bg-yellow-300 text-red-700'
-                              : 'bg-gray-200 text-gray-700'
-                          }`}
-                        >
-                          {managedUser.role === 'admin' ? 'Admin' : 'Usuário'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-700">
-                        {needsReset ? (
-                          <span className="font-bold text-red-600">
-                            Senha precisa ser trocada
-                          </span>
-                        ) : (
-                          <span className="font-semibold text-green-600">
-                            Senha atualizada
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">
-                        {managedUser.updatedAt
-                          ? new Date(managedUser.updatedAt).toLocaleString('pt-BR')
-                          : '—'}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                          onClick={() => handleResetPassword(managedUser.id)}
-                          disabled={resettingUserId === managedUser.id}
-                          className="px-3 py-2 bg-gradient-to-r from-purple-600 to-purple-800 text-white font-black rounded-lg border-2 border-black shadow-lg hover:from-purple-700 hover:to-purple-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          {resettingUserId === managedUser.id ? 'Reiniciando...' : 'Reiniciar senha'}
-                        </button>
+            {resetResult && (
+              <div className="mb-6 p-4 bg-gradient-to-r from-yellow-100 to-orange-100 border-2 border-yellow-400 rounded-xl">
+                <h3 className="text-xl font-black text-yellow-800 mb-2">Senha temporária gerada!</h3>
+                <p className="text-sm font-bold text-gray-700">
+                  Usuário: <span className="text-red-600">{resetResult.username}</span>
+                </p>
+                <p className="text-lg font-black text-gray-900 mt-2">
+                  Nova senha: <span className="bg-white px-2 py-1 rounded border border-gray-300">{resetResult.temporaryPassword}</span>
+                </p>
+                <p className="text-xs text-gray-600 font-semibold mt-2">
+                  Compartilhe essa senha com o usuário. No próximo login ele será obrigado a trocar e não precisará informar a senha antiga.
+                </p>
+              </div>
+            )}
+
+            {error && (
+              <div className="mb-6 p-4 bg-red-100 border-2 border-red-400 rounded-xl">
+                <p className="text-red-800 font-bold text-center">❌ {error}</p>
+              </div>
+            )}
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 bg-white rounded-xl overflow-hidden border-2 border-gray-300">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-sm font-black text-gray-700 tracking-wider">Usuário</th>
+                    <th className="px-4 py-3 text-left text-sm font-black text-gray-700 tracking-wider">Nome Completo</th>
+                    <th className="px-4 py-3 text-left text-sm font-black text-gray-700 tracking-wider hidden lg:table-cell">E-mail</th>
+                    <th className="px-4 py-3 text-left text-sm font-black text-gray-700 tracking-wider hidden lg:table-cell">Chave PIX</th>
+                    <th className="px-4 py-3 text-left text-sm font-black text-gray-700 tracking-wider">Função</th>
+                    <th className="px-4 py-3 text-left text-sm font-black text-gray-700 tracking-wider">Status da Senha</th>
+                    <th className="px-4 py-3 text-left text-sm font-black text-gray-700 tracking-wider hidden md:table-cell">Atualizado em</th>
+                    <th className="px-4 py-3 text-right text-sm font-black text-gray-700 tracking-wider">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {loading ? (
+                    <tr>
+                      <td colSpan={9} className="px-4 py-6 text-center text-gray-500 font-bold">
+                        Carregando usuários...
                       </td>
                     </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                  ) : sortedUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="px-4 py-6 text-center text-gray-500 font-bold">
+                        Nenhum usuário cadastrado ainda.
+                      </td>
+                    </tr>
+                  ) : (
+                    sortedUsers.map((managedUser) => {
+                      const needsReset = !managedUser.passwordChanged || managedUser.forcePasswordReset;
+                      return (
+                        <tr key={managedUser.id}>
+                          <td className="px-4 py-3 whitespace-nowrap font-bold text-gray-800">
+                            <div className="flex items-center gap-2">
+                              <span>{managedUser.username}</span>
+                              <button
+                                onClick={() => handleEditUser(managedUser)}
+                                className="text-blue-600 hover:text-blue-800 transition-colors"
+                                title="Editar usuário"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-5 w-5"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth={2}
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-gray-700">
+                            {managedUser.name || '—'}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-700 hidden lg:table-cell">
+                            {managedUser.email || '—'}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-700 hidden lg:table-cell">
+                            {managedUser.phone || '—'}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-700 hidden lg:table-cell">
+                            {managedUser.pixKey || '—'}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <span
+                              className={`px-2 py-1 inline-flex text-xs leading-5 font-black rounded-full border-2 border-black ${managedUser.role === 'admin'
+                                ? 'bg-yellow-300 text-red-700'
+                                : 'bg-gray-200 text-gray-700'
+                                }`}
+                            >
+                              {managedUser.role === 'admin' ? 'Admin' : 'Usuário'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-700">
+                            {needsReset ? (
+                              <span className="font-bold text-red-600">
+                                Senha precisa ser trocada
+                              </span>
+                            ) : (
+                              <span className="font-semibold text-green-600">
+                                Senha atualizada
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">
+                            {managedUser.updatedAt
+                              ? new Date(managedUser.updatedAt).toLocaleString('pt-BR')
+                              : '—'}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                            <button
+                              onClick={() => handleResetPassword(managedUser.id)}
+                              disabled={resettingUserId === managedUser.id}
+                              className="px-3 py-2 bg-gradient-to-r from-purple-600 to-purple-800 text-white font-black rounded-lg border-2 border-black shadow-lg hover:from-purple-700 hover:to-purple-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                              {resettingUserId === managedUser.id ? 'Reiniciando...' : 'Reiniciar senha'}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Modal de edição de usuário */}

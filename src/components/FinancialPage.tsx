@@ -8,10 +8,11 @@ import { DebtCard } from './DebtCard';
 import { DebtFormServer } from './DebtFormServer';
 import { DashboardCharts } from './DashboardCharts';
 import { PersonalFinanceModule } from './PersonalFinanceModule';
+import { MeinhaScoreDashboard } from './MeinhaScoreDashboard';
 
 export const FinancialPage: React.FC = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'group' | 'personal'>('group');
+  const [activeTab, setActiveTab] = useState<'group' | 'personal' | 'score'>('group');
   const [debts, setDebts] = useState<Debt[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [paidDebts, setPaidDebts] = useState<Debt[]>([]);
@@ -25,7 +26,7 @@ export const FinancialPage: React.FC = () => {
       try {
         setLoading(true);
         const response = await getDebtsAction();
-        
+
         if (response.success) {
           setDebts(response.debts);
           setUsers(response.users);
@@ -42,12 +43,14 @@ export const FinancialPage: React.FC = () => {
     fetchData();
   }, []);
 
-  // Carregar dívidas pagas quando o modal abrir
+  // Carregar dívidas pagas quando o modal abrir - OU para o score (precisamos do histórico completo)
+  // O score precisa de todas as dívidas (abertas E pagas) para calcular corretamente.
+  // Vamos carregar pagas se a tab for score também.
   useEffect(() => {
-    if (showPaidDebts && paidDebts.length === 0) {
+    if ((showPaidDebts || activeTab === 'score') && paidDebts.length === 0) {
       loadPaidDebts();
     }
-  }, [showPaidDebts]);
+  }, [showPaidDebts, activeTab]);
 
   const handleDebtCreated = async () => {
     setShowDebtForm(false);
@@ -113,22 +116,34 @@ export const FinancialPage: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Tabs de Alternância */}
-      <div className="flex bg-gray-200 dark:bg-gray-800 p-1 rounded-2xl border-4 border-black max-w-md mx-auto">
+      <div className="flex bg-gray-200 dark:bg-gray-800 p-1 rounded-2xl border-4 border-black max-w-2xl mx-auto">
         <button
           onClick={() => setActiveTab('group')}
           className={`flex-1 py-3 rounded-xl font-black transition-all ${activeTab === 'group' ? 'bg-red-600 text-white shadow-lg' : 'text-gray-500 dark:text-gray-400'}`}
         >
-          👥 Grupo (Meinha)
+          👥 Grupo
         </button>
         <button
           onClick={() => setActiveTab('personal')}
           className={`flex-1 py-3 rounded-xl font-black transition-all ${activeTab === 'personal' ? 'bg-blue-600 text-white shadow-lg' : 'text-gray-500 dark:text-gray-400'}`}
         >
-          👤 Pessoal (Meu Bolso)
+          👤 Pessoal
+        </button>
+        <button
+          onClick={() => setActiveTab('score')}
+          className={`flex-1 py-3 rounded-xl font-black transition-all ${activeTab === 'score' ? 'bg-purple-600 text-white shadow-lg' : 'text-gray-500 dark:text-gray-400'}`}
+        >
+          ⭐ MeinhaScore
         </button>
       </div>
 
-      {activeTab === 'group' ? (
+      {activeTab === 'score' ? (
+        <MeinhaScoreDashboard
+          debts={[...debts, ...paidDebts]} // Passa TODAS as dívidas para o calculo
+          users={users}
+        />
+      ) : activeTab === 'group' ? (
+
         <>
           {/* Header da seção financeira */}
           <div className="bg-gradient-to-r from-red-600 to-orange-600 dark:from-red-800 dark:to-orange-800 rounded-2xl p-8 text-white shadow-2xl border-4 border-black dark:border-gray-700 transition-colors duration-200">
@@ -157,10 +172,10 @@ export const FinancialPage: React.FC = () => {
 
           {/* Sirene do Calote */}
           {(() => {
-            const overdueDebts = debts.filter(debt => 
+            const overdueDebts = debts.filter(debt =>
               debt.status === 'OPEN' && new Date(debt.dueDate) < new Date()
             );
-            
+
             if (overdueDebts.length > 0) {
               return (
                 <div className="bg-red-600 text-white rounded-2xl p-6 shadow-2xl border-4 border-black animate-pulse">
@@ -202,7 +217,7 @@ export const FinancialPage: React.FC = () => {
                 Relatório completo da situação financeira do grupo
               </p>
             </div>
-            
+
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div className="text-center bg-red-100 p-4 rounded-xl border-2 border-red-300">
@@ -213,7 +228,7 @@ export const FinancialPage: React.FC = () => {
                     Dívidas Ativas
                   </div>
                 </div>
-                
+
                 <div className="text-center bg-blue-100 p-4 rounded-xl border-2 border-blue-300">
                   <div className="text-3xl font-black text-blue-600">
                     {users.length}
@@ -222,7 +237,7 @@ export const FinancialPage: React.FC = () => {
                     Total de Usuários
                   </div>
                 </div>
-                
+
                 <div className="text-center bg-green-100 p-4 rounded-xl border-2 border-green-300">
                   <div className="text-3xl font-black text-green-600">
                     {formatCurrency(debts.reduce((sum, debt) => sum + debt.amount, 0))}
@@ -231,10 +246,10 @@ export const FinancialPage: React.FC = () => {
                     Valor Total
                   </div>
                 </div>
-                
+
                 <div className="text-center bg-orange-100 p-4 rounded-xl border-2 border-orange-300">
                   <div className="text-3xl font-black text-orange-600">
-                    {debts.filter(debt => 
+                    {debts.filter(debt =>
                       debt.status === 'OPEN' && new Date(debt.dueDate) < new Date()
                     ).length}
                   </div>
@@ -308,12 +323,12 @@ export const FinancialPage: React.FC = () => {
                 Suas dívidas pessoais separadas por categoria
               </p>
             </div>
-            
+
             <div className="p-6">
               {(() => {
                 const myDebtsAsCreditor = debts.filter(debt => debt.creditorId === user?.id);
                 const myDebtsAsDebtor = debts.filter(debt => debt.debtorId === user?.id);
-                
+
                 if (myDebtsAsCreditor.length === 0 && myDebtsAsDebtor.length === 0) {
                   return (
                     <div className="text-center py-8">
@@ -323,7 +338,7 @@ export const FinancialPage: React.FC = () => {
                     </div>
                   );
                 }
-                
+
                 return (
                   <div className="space-y-8">
                     {/* Dívidas que me devem */}
@@ -339,7 +354,7 @@ export const FinancialPage: React.FC = () => {
                           {myDebtsAsCreditor.map(debt => {
                             const debtor = users.find(u => u.id === debt.debtorId);
                             if (!debtor) return null;
-                            
+
                             return (
                               <DebtCard
                                 key={debt.id}
@@ -354,7 +369,7 @@ export const FinancialPage: React.FC = () => {
                         </div>
                       </div>
                     )}
-                    
+
                     {/* Dívidas que devo */}
                     {myDebtsAsDebtor.length > 0 && (
                       <div>
@@ -368,7 +383,7 @@ export const FinancialPage: React.FC = () => {
                           {myDebtsAsDebtor.map(debt => {
                             const creditor = users.find(u => u.id === debt.creditorId);
                             if (!creditor) return null;
-                            
+
                             return (
                               <DebtCard
                                 key={debt.id}
@@ -399,16 +414,16 @@ export const FinancialPage: React.FC = () => {
                 Ordenadas do mais caloteiro pro menos caloteiro (mais antigas primeiro)
               </p>
             </div>
-            
+
             <div className="p-6">
               {debts.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {debts.map(debt => {
                     const creditor = users.find(u => u.id === debt.creditorId);
                     const debtor = users.find(u => u.id === debt.debtorId);
-                    
+
                     if (!creditor || !debtor) return null;
-                    
+
                     return (
                       <DebtCard
                         key={debt.id}
@@ -430,7 +445,7 @@ export const FinancialPage: React.FC = () => {
                     Ninguém está devendo!
                   </h4>
                   <p className="mt-2 text-xl text-gray-700 dark:text-gray-300 font-bold">
-                    Que milagre! Todos pagaram suas contas! 
+                    Que milagre! Todos pagaram suas contas!
                   </p>
                   <p className="mt-1 text-lg text-gray-600 dark:text-gray-400">
                     Mas se quiser criar uma nova dívida pra alguém, é só clicar aí embaixo 👇
@@ -484,13 +499,13 @@ export const FinancialPage: React.FC = () => {
                   Suas dívidas pagas (que você criou ou que criaram para você)
                 </p>
               </div>
-              
+
               <div className="p-6 overflow-y-auto max-h-[70vh]">
                 {(() => {
-                  const myPaidDebts = paidDebts.filter(debt => 
+                  const myPaidDebts = paidDebts.filter(debt =>
                     debt.creditorId === user?.id || debt.debtorId === user?.id
                   );
-                  
+
                   if (loadingPaidDebts) {
                     return (
                       <div className="text-center py-12">
@@ -509,14 +524,14 @@ export const FinancialPage: React.FC = () => {
                       </div>
                     );
                   }
-                  
+
                   const totalReceived = myPaidDebts
                     .filter(debt => debt.creditorId === user?.id)
                     .reduce((sum, debt) => sum + debt.amount, 0);
                   const totalPaid = myPaidDebts
                     .filter(debt => debt.debtorId === user?.id)
                     .reduce((sum, debt) => sum + debt.amount, 0);
-                  
+
                   return (
                     <div>
                       <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -537,90 +552,83 @@ export const FinancialPage: React.FC = () => {
                           </p>
                         </div>
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {myPaidDebts.map(debt => {
                           const debtor = users.find(u => u.id === debt.debtorId);
                           const creditor = users.find(u => u.id === debt.creditorId);
                           if (!debtor || !creditor) return null;
-                          
+
                           const isUserCreditor = debt.creditorId === user?.id;
                           const isUserDebtor = debt.debtorId === user?.id;
-                          
+
                           return (
-                            <div key={debt.id} className={`backdrop-blur-sm rounded-xl shadow-lg p-4 border-2 ${
-                              isUserCreditor ? 'bg-green-50/80 border-green-300' : 'bg-blue-50/80 border-blue-300'
-                            }`}>
+                            <div key={debt.id} className={`backdrop-blur-sm rounded-xl shadow-lg p-4 border-2 ${isUserCreditor ? 'bg-green-50/80 border-green-300' : 'bg-blue-50/80 border-blue-300'
+                              }`}>
                               <div className="flex justify-between items-start mb-3">
-                                <h4 className={`text-xl font-black ${
-                                  isUserCreditor ? 'text-green-700' : 'text-blue-700'
-                                }`}>
+                                <h4 className={`text-xl font-black ${isUserCreditor ? 'text-green-700' : 'text-blue-700'
+                                  }`}>
                                   {formatCurrency(debt.amount)}
                                 </h4>
                                 <div className="flex flex-col items-end space-y-1">
                                   <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
                                     ✅ PAGA
                                   </span>
-                                  <span className={`text-xs font-bold px-2 py-1 rounded ${
-                                    isUserCreditor 
-                                      ? 'bg-green-200 text-green-800' 
-                                      : 'bg-blue-200 text-blue-800'
-                                  }`}>
+                                  <span className={`text-xs font-bold px-2 py-1 rounded ${isUserCreditor
+                                    ? 'bg-green-200 text-green-800'
+                                    : 'bg-blue-200 text-blue-800'
+                                    }`}>
                                     {isUserCreditor ? '💰 RECEBI' : '💸 PAGUEI'}
                                   </span>
                                 </div>
                               </div>
-                              
+
                               <div className="flex items-center space-x-3 mb-3">
                                 <div className="flex flex-col items-center">
                                   {debtor.photoURL ? (
-                                    <img 
-                                      src={debtor.photoURL} 
+                                    <img
+                                      src={debtor.photoURL}
                                       alt={`Foto de ${debtor.name || debtor.username}`}
-                                      className={`w-10 h-10 rounded-full border-2 shadow-lg object-cover ${
-                                        isUserDebtor ? 'border-blue-500' : 'border-green-500'
-                                      }`}
+                                      className={`w-10 h-10 rounded-full border-2 shadow-lg object-cover ${isUserDebtor ? 'border-blue-500' : 'border-green-500'
+                                        }`}
                                     />
                                   ) : (
                                     <div className="w-10 h-10 rounded-full border-2 border-gray-400 shadow-lg bg-gray-200 flex items-center justify-center">
                                       <span className="text-xs font-bold text-gray-600 dark:text-gray-400">👤</span>
                                     </div>
                                   )}
-                                  <span className={`text-sm font-bold text-center mt-1 ${
-                                    isUserDebtor ? 'text-blue-600' : 'text-green-600'
-                                  }`}>
+                                  <span className={`text-sm font-bold text-center mt-1 ${isUserDebtor ? 'text-blue-600' : 'text-green-600'
+                                    }`}>
                                     {debtor.name || debtor.username}
                                   </span>
                                 </div>
-                                
+
                                 <div className="text-center">
                                   <span className="text-sm text-gray-600 dark:text-gray-300 font-bold">
                                     {isUserCreditor ? 'pagou para' : 'recebeu de'}
                                   </span>
                                 </div>
-                                
+
                                 <div className="flex flex-col items-center">
                                   {creditor.photoURL ? (
-                                    <img 
-                                      src={creditor.photoURL} 
+                                    <img
+                                      src={creditor.photoURL}
                                       alt={`Foto de ${creditor.name || creditor.username}`}
-                                      className={`w-10 h-10 rounded-full border-2 shadow-lg object-cover ${
-                                        isUserCreditor ? 'border-blue-500' : 'border-green-500'
-                                      }`}
+                                      className={`w-10 h-10 rounded-full border-2 shadow-lg object-cover ${isUserCreditor ? 'border-blue-500' : 'border-green-500'
+                                        }`}
                                     />
                                   ) : (
                                     <div className="w-10 h-10 rounded-full border-2 border-gray-400 shadow-lg bg-gray-200 flex items-center justify-center">
                                       <span className="text-xs font-bold text-gray-600 dark:text-gray-400">👤</span>
                                     </div>
                                   )}
-                                  <span className={`text-sm font-bold text-center mt-1 ${
-                                    isUserCreditor ? 'text-blue-600' : 'text-green-600'
-                                  }`}>
+                                  <span className={`text-sm font-bold text-center mt-1 ${isUserCreditor ? 'text-blue-600' : 'text-green-600'
+                                    }`}>
                                     {creditor.name || creditor.username}
                                   </span>
                                 </div>
                               </div>
-                              
+
                               <div className="space-y-2 text-sm">
                                 <div className="flex justify-between bg-gray-100 p-2 rounded-lg">
                                   <span className="font-bold">📅 Vencimento:</span>
@@ -632,7 +640,7 @@ export const FinancialPage: React.FC = () => {
                                     }).format(new Date(debt.dueDate))}
                                   </span>
                                 </div>
-                                
+
                                 <div className="flex justify-between bg-gray-100 p-2 rounded-lg">
                                   <span className="font-bold">📝 Criada:</span>
                                   <span className="font-bold">
@@ -644,7 +652,7 @@ export const FinancialPage: React.FC = () => {
                                   </span>
                                 </div>
                               </div>
-                              
+
                               {debt.description && (
                                 <div className="mt-3 p-3 bg-yellow-50 rounded-lg border border-yellow-300">
                                   <p className="text-sm text-gray-800 dark:text-gray-200 font-bold">📝 {debt.description}</p>

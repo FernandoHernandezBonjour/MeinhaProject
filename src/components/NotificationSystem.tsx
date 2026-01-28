@@ -8,7 +8,11 @@ import {
   markAllNotificationsReadAction,
 } from '@/lib/actions/notifications';
 
-export const NotificationSystem: React.FC = () => {
+interface NotificationSystemProps {
+  placement?: 'default' | 'sidebar';
+}
+
+export const NotificationSystem: React.FC<NotificationSystemProps> = ({ placement = 'default' }) => {
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -98,16 +102,21 @@ export const NotificationSystem: React.FC = () => {
     }
   };
 
+  const placementClasses = {
+    default: 'right-0 top-16',
+    sidebar: 'left-full bottom-0 ml-4 mb-0',
+  };
+
   return (
     <div className="relative">
       {/* Botão de Notificações */}
       <button
         onClick={() => setShowNotifications(!showNotifications)}
-        className="relative p-3 bg-white rounded-xl border-2 border-black shadow-lg hover:shadow-xl transition-all"
+        className="relative p-3 bg-white hover:bg-gray-50 rounded-xl border-2 border-black shadow-lg hover:shadow-xl transition-all"
       >
         <span className="text-2xl">🔔</span>
         {unreadCount > 0 && (
-          <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center border-2 border-white">
+          <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center border-2 border-white animate-pulse">
             {unreadCount}
           </span>
         )}
@@ -115,7 +124,7 @@ export const NotificationSystem: React.FC = () => {
 
       {/* Dropdown de Notificações */}
       {showNotifications && (
-        <div className="absolute right-0 top-16 w-80 bg-white rounded-2xl shadow-2xl border-4 border-black z-50">
+        <div className={`absolute w-80 bg-white rounded-2xl shadow-2xl border-4 border-black z-50 ${placementClasses[placement]}`}>
           <div className="p-4 border-b-2 border-gray-300">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-bold text-gray-800">Notificações</h3>
@@ -146,20 +155,18 @@ export const NotificationSystem: React.FC = () => {
                   <div
                     key={n.id}
                     onClick={() => markAsRead(n.id)}
-                    className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                      n.read 
-                        ? 'bg-gray-50 hover:bg-gray-100' 
+                    className={`p-3 rounded-lg cursor-pointer transition-colors ${n.read
+                        ? 'bg-gray-50 hover:bg-gray-100'
                         : 'bg-blue-50 hover:bg-blue-100 border-l-4 border-blue-500'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-start space-x-3">
                       <span className="text-2xl">
                         {getNotificationIcon(n.type)}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <p className={`font-bold text-sm ${
-                          n.read ? 'text-gray-600' : 'text-gray-800'
-                        }`}>
+                        <p className={`font-bold text-sm ${n.read ? 'text-gray-600' : 'text-gray-800'
+                          }`}>
                           {n.title}
                         </p>
                         <p className="text-sm text-gray-600 mt-1">
