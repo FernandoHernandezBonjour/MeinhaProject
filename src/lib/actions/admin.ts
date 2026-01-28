@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { verifyToken } from '../auth-server';
 import { db } from '../firebase-server';
-import { getUser, getPaidDebts, getAllUsers, getDebt, updateDebt } from '../firestore-server';
+import { getUser, getPaidDebts, getAllUsers, getDebt, updateDebt, getAllDebts, deleteDebt as deleteDebtFirestore } from '../firestore-server';
 import { Debt, User } from '@/types';
 
 async function getAuthenticatedUser() {
@@ -194,5 +194,66 @@ export async function clearAllOverridesAction() {
         console.error('[ClearOverrides] Erro ao limpar overrides:', error);
         const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
         return { error: `Erro ao limpar overrides: ${errorMessage}` };
+    }
+}
+
+export async function getAllDebtsAdminAction() {
+    try {
+        const auth = await getAuthenticatedUser();
+        const user = await getUser(auth.userId);
+
+        if (user?.role !== 'admin') {
+            return { error: 'Apenas administradores podem gerenciar dívidas' };
+        }
+
+        const allDebts = await getAllDebts();
+        const allUsers = await getAllUsers();
+
+        // Serialize dates
+        const serializedDebts = allDebts.map((debt: Debt) => ({
+            ...debt,
+            dueDate: debt.dueDate.toISOString(),
+            createdAt: debt.createdAt.toISOString(),
+            updatedAt: debt.updatedAt.toISOString()
+        }));
+
+        const serializedUsers = allUsers.map((user: User) => ({
+            ...user,
+            createdAt: user.createdAt instanceof Date ? user.createdAt.toISOString() : user.createdAt,
+            updatedAt: user.updatedAt instanceof Date ? user.updatedAt.toISOString() : user.updatedAt
+        }));
+
+        return {
+            success: true,
+            debts: JSON.parse(JSON.stringify(serializedDebts)),
+            users: JSON.parse(JSON.stringify(serializedUsers))
+        };
+    } catch (error) {
+        console.error('Erro ao buscar todas as dívidas:', error);
+        return { error: 'Erro ao carregar lista de dívidas' };
+    }
+}
+
+export async function deleteDebtAdminAction(debtId: string) {
+    try {
+        const auth = await getAuthenticatedUser();
+        const user = await getUser(auth.userId);
+
+        if (user?.role !== 'admin') {
+            return { error: 'Apenas administradores podem excluir dívidas' };
+        }
+
+        await deleteDebtFirestore(debtId);
+
+        revalidatePath('/');
+        revalidatePath('/financeiro');
+
+        return {
+            success: true,
+            message: 'Dívida excluída com sucesso'
+        };
+    } catch (error) {
+        console.error('Erro ao excluir dívida:', error);
+        return { error: 'Erro ao excluir dívida' };
     }
 }

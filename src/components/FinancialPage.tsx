@@ -9,10 +9,11 @@ import { DebtFormServer } from './DebtFormServer';
 import { DashboardCharts } from './DashboardCharts';
 import { PersonalFinanceModule } from './PersonalFinanceModule';
 import { MeinhaScoreDashboard } from './MeinhaScoreDashboard';
+import { ScoreReportDashboard } from './ScoreReportDashboard';
 
 export const FinancialPage: React.FC = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'group' | 'personal' | 'score'>('group');
+  const [activeTab, setActiveTab] = useState<'group' | 'personal' | 'score' | 'report'>('group');
   const [debts, setDebts] = useState<Debt[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [paidDebts, setPaidDebts] = useState<Debt[]>([]);
@@ -47,7 +48,7 @@ export const FinancialPage: React.FC = () => {
   // O score precisa de todas as dívidas (abertas E pagas) para calcular corretamente.
   // Vamos carregar pagas se a tab for score também.
   useEffect(() => {
-    if ((showPaidDebts || activeTab === 'score') && paidDebts.length === 0) {
+    if ((showPaidDebts || activeTab === 'score' || activeTab === 'report') && paidDebts.length === 0) {
       loadPaidDebts();
     }
   }, [showPaidDebts, activeTab]);
@@ -133,13 +134,24 @@ export const FinancialPage: React.FC = () => {
           onClick={() => setActiveTab('score')}
           className={`flex-1 py-3 rounded-xl font-black transition-all ${activeTab === 'score' ? 'bg-purple-600 text-white shadow-lg' : 'text-gray-500 dark:text-gray-400'}`}
         >
-          ⭐ MeinhaScore
+          ⭐ Score
+        </button>
+        <button
+          onClick={() => setActiveTab('report')}
+          className={`flex-1 py-3 rounded-xl font-black transition-all ${activeTab === 'report' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-500 dark:text-gray-400'}`}
+        >
+          📊 Relatório
         </button>
       </div>
 
       {activeTab === 'score' ? (
         <MeinhaScoreDashboard
           debts={[...debts, ...paidDebts]} // Passa TODAS as dívidas para o calculo
+          users={users}
+        />
+      ) : activeTab === 'report' ? (
+        <ScoreReportDashboard
+          debts={[...debts, ...paidDebts]}
           users={users}
         />
       ) : activeTab === 'group' ? (
