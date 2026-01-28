@@ -16,9 +16,9 @@ interface ChartData {
 
 export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }) => {
   // Calcular maiores credores (quem mais tem para receber)
-  const creditorTotals = debts.reduce((acc, debt) => {
+  const creditorTotals = debts.reduce((acc: Record<string, number>, debt: Debt) => {
     if (debt.status === 'OPEN') {
-      const creditor = users.find(u => u.id === debt.creditorId);
+      const creditor = users.find((u: User) => u.id === debt.creditorId);
       if (creditor) {
         const key = creditor.name || creditor.username;
         acc[key] = (acc[key] || 0) + debt.amount;
@@ -33,9 +33,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
     .slice(0, 5);
 
   // Calcular maiores caloteiros (quem tem dívidas VENCIDAS)
-  const overdueDebtorTotals = debts.reduce((acc, debt) => {
+  const overdueDebtorTotals = debts.reduce((acc: Record<string, number>, debt: Debt) => {
     if (debt.status === 'OPEN' && new Date(debt.dueDate) < new Date()) {
-      const debtor = users.find(u => u.id === debt.debtorId);
+      const debtor = users.find((u: User) => u.id === debt.debtorId);
       if (debtor) {
         const key = debtor.name || debtor.username;
         acc[key] = (acc[key] || 0) + debt.amount;
@@ -50,9 +50,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
     .slice(0, 5);
 
   // Calcular futuros possíveis caloteiros (quem tem dívidas em aberto mas não vencidas)
-  const futureDebtorTotals = debts.reduce((acc, debt) => {
+  const futureDebtorTotals = debts.reduce((acc: Record<string, number>, debt: Debt) => {
     if (debt.status === 'OPEN' && new Date(debt.dueDate) >= new Date()) {
-      const debtor = users.find(u => u.id === debt.debtorId);
+      const debtor = users.find((u: User) => u.id === debt.debtorId);
       if (debtor) {
         const key = debtor.name || debtor.username;
         acc[key] = (acc[key] || 0) + debt.amount;
@@ -67,9 +67,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
     .slice(0, 5);
 
   // Calcular totais
-  const totalToReceive = Object.values(creditorTotals).reduce((sum, value) => sum + value, 0);
-  const totalOverdue = Object.values(overdueDebtorTotals).reduce((sum, value) => sum + value, 0);
-  const totalFuture = Object.values(futureDebtorTotals).reduce((sum, value) => sum + value, 0);
+  const totalToReceive = Object.values(creditorTotals).reduce((sum: number, value: number) => sum + value, 0);
+  const totalOverdue = Object.values(overdueDebtorTotals).reduce((sum: number, value: number) => sum + value, 0);
+  const totalFuture = Object.values(futureDebtorTotals).reduce((sum: number, value: number) => sum + value, 0);
 
   const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('pt-BR', {
@@ -87,7 +87,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
         <h3 className="text-2xl font-black text-green-600 mb-6 text-center">
           💰 MAIORES CREDORES - QUEM TEM DINHEIRO 💰
         </h3>
-        
+
         {topCreditors.length > 0 ? (
           <div>
             <div className="mb-6 text-center bg-green-100 p-4 rounded-xl border-2 border-green-300">
@@ -96,22 +96,22 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
               </p>
               <p className="text-lg font-bold text-green-600">Total pra receber</p>
             </div>
-            
+
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={topCreditors}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="name" 
+                <XAxis
+                  dataKey="name"
                   tick={{ fontSize: 12 }}
                   angle={-45}
                   textAnchor="end"
                   height={80}
                 />
-                <YAxis 
+                <YAxis
                   tick={{ fontSize: 12 }}
                   tickFormatter={formatCurrency}
                 />
-                <Tooltip 
+                <Tooltip
                   formatter={(value: number) => [formatCurrency(value), 'Valor']}
                 />
                 <Bar dataKey="value" fill="#10B981" />
@@ -131,7 +131,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
         <h3 className="text-2xl font-black text-red-600 mb-6 text-center">
           💀 MAIORES CALOTEIROS - QUEM NÃO PAGA 💀
         </h3>
-        
+
         {topOverdueDebtors.length > 0 ? (
           <div>
             <div className="mb-6 text-center bg-red-100 p-4 rounded-xl border-2 border-red-300">
@@ -140,22 +140,22 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
               </p>
               <p className="text-lg font-bold text-red-600">Total em atraso</p>
             </div>
-            
+
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={topOverdueDebtors}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="name" 
+                <XAxis
+                  dataKey="name"
                   tick={{ fontSize: 12 }}
                   angle={-45}
                   textAnchor="end"
                   height={80}
                 />
-                <YAxis 
+                <YAxis
                   tick={{ fontSize: 12 }}
                   tickFormatter={formatCurrency}
                 />
-                <Tooltip 
+                <Tooltip
                   formatter={(value: number) => [formatCurrency(value), 'Valor']}
                 />
                 <Bar dataKey="value" fill="#EF4444" />
@@ -175,7 +175,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
         <h3 className="text-2xl font-black text-orange-600 mb-6 text-center">
           ⚠️ FUTUROS POSSÍVEIS CALOTEIROS ⚠️
         </h3>
-        
+
         {topFutureDebtors.length > 0 ? (
           <div>
             <div className="mb-6 text-center bg-orange-100 p-4 rounded-xl border-2 border-orange-300">
@@ -184,22 +184,22 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
               </p>
               <p className="text-lg font-bold text-orange-600">Total em aberto</p>
             </div>
-            
+
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={topFutureDebtors}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="name" 
+                <XAxis
+                  dataKey="name"
                   tick={{ fontSize: 12 }}
                   angle={-45}
                   textAnchor="end"
                   height={80}
                 />
-                <YAxis 
+                <YAxis
                   tick={{ fontSize: 12 }}
                   tickFormatter={formatCurrency}
                 />
-                <Tooltip 
+                <Tooltip
                   formatter={(value: number) => [formatCurrency(value), 'Valor']}
                 />
                 <Bar dataKey="value" fill="#F59E0B" />
@@ -219,7 +219,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
         <h3 className="text-2xl font-black text-purple-600 mb-6 text-center">
           📊 RESUMO GERAL - A SITUAÇÃO TÁ ASSIM 📊
         </h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center p-6 bg-gradient-to-br from-green-100 to-green-200 rounded-xl border-2 border-green-400">
             <div className="text-4xl mb-2">💸</div>
@@ -228,7 +228,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
             </p>
             <p className="text-lg font-bold text-green-600">Dívidas em Aberto</p>
           </div>
-          
+
           <div className="text-center p-6 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl border-2 border-blue-400">
             <div className="text-4xl mb-2">✅</div>
             <p className="text-3xl font-black text-blue-700">
@@ -236,7 +236,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ debts, users }
             </p>
             <p className="text-lg font-bold text-blue-600">Dívidas Pagas</p>
           </div>
-          
+
           <div className="text-center p-6 bg-gradient-to-br from-red-100 to-red-200 rounded-xl border-2 border-red-400">
             <div className="text-4xl mb-2">💀</div>
             <p className="text-3xl font-black text-red-700">

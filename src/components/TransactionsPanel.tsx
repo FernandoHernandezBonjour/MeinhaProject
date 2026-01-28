@@ -30,7 +30,7 @@ export const TransactionsPanel: React.FC = () => {
         setLoading(false);
     };
 
-    const getUserById = (id: string) => users.find(u => u.id === id);
+    const getUserById = (id: string) => users.find((u: User) => u.id === id);
 
     const getPaymentStatus = (debt: Debt) => {
         if (debt.paymentOverride) {
@@ -157,7 +157,7 @@ export const TransactionsPanel: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                {payments.map(debt => {
+                                {payments.map((debt: Debt) => {
                                     const creditor = getUserById(debt.creditorId);
                                     const debtor = getUserById(debt.debtorId);
                                     const status = getPaymentStatus(debt);

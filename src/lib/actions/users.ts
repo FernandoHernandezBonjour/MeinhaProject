@@ -85,7 +85,7 @@ export async function getUsersAction() {
 
     return JSON.parse(JSON.stringify({
       success: true,
-      users: users.map((user) => ({
+      users: users.map((user: User) => ({
         id: user.id,
         username: user.username,
         role: user.role,
@@ -113,7 +113,7 @@ export async function getPublicUserListAction() {
 
     return JSON.parse(JSON.stringify({
       success: true,
-      users: users.map((user) => ({
+      users: users.map((user: User) => ({
         id: user.id,
         username: user.username,
         name: user.name,
@@ -453,7 +453,7 @@ export async function updateUserByAdminAction(formData: FormData) {
       // Se está removendo privilégios de admin, verificar se não é o último admin
       if (user.role === 'admin' && role === 'user') {
         const allUsers = await getAllUsers();
-        const adminCount = allUsers.filter(u => u.role === 'admin' && u.id !== userId).length;
+        const adminCount = allUsers.filter((u: User) => u.role === 'admin' && u.id !== userId).length;
 
         if (adminCount === 0) {
           return { error: 'Não é possível remover os privilégios do último administrador. Deve haver pelo menos um administrador no sistema.' };

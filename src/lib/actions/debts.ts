@@ -301,9 +301,9 @@ export async function updateDebtAction(debtId: string, formData: FormData) {
     await updateDebt(debtId, updateData);
 
     const updatedAmount = typeof updateData.amount === 'number' ? updateData.amount : debt.amount;
-    const recipients = [debt.creditorId, debt.debtorId].filter((id) => id !== user.userId);
+    const recipients = [debt.creditorId, debt.debtorId].filter((id: string) => id !== user.userId);
     await Promise.all(
-      recipients.map(async (recipientId) => {
+      recipients.map(async (recipientId: string) => {
         const recipient = await getUser(recipientId);
         if (!recipient) return;
         await createNotification({
@@ -510,9 +510,9 @@ export async function deleteDebtAction(debtId: string) {
 
     await deleteDebt(debtId);
 
-    const recipients = [debt.creditorId, debt.debtorId].filter((id) => id !== user.userId);
+    const recipients = [debt.creditorId, debt.debtorId].filter((id: string) => id !== user.userId);
     await Promise.all(
-      recipients.map(async (recipientId) => {
+      recipients.map(async (recipientId: string) => {
         const recipient = await getUser(recipientId);
         if (!recipient) return;
         await createNotification({

@@ -89,7 +89,7 @@ export function calculateMeinhaScore(userId: string, allDebts: Debt[], rules: Me
     // Filtrar dívidas relevantes para o usuário (credor ou devedor)
     // Ignorar pagamentos parciais (wasPartialPayment: true) conforme regra
     const userDebts = allDebts.filter(
-        (d) => (d.creditorId === userId || d.debtorId === userId) && !d.wasPartialPayment
+        (d: Debt) => (d.creditorId === userId || d.debtorId === userId) && !d.wasPartialPayment
     );
 
     // Agrupamento para regra de repetição (mesmo par no mesmo mês)

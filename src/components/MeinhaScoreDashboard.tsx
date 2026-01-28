@@ -27,7 +27,7 @@ export const MeinhaScoreDashboard: React.FC<MeinhaScoreDashboardProps> = ({ debt
 
     const userScores = useMemo(() => {
         return users
-            .filter(user => {
+            .filter((user: User) => {
                 const username = (user.username || '').toLowerCase();
                 const name = (user.name || '').toLowerCase();
 
@@ -38,18 +38,18 @@ export const MeinhaScoreDashboard: React.FC<MeinhaScoreDashboardProps> = ({ debt
 
                 return true;
             })
-            .map(user => {
+            .map((user: User) => {
                 const scoreData = calculateMeinhaScore(user.id, debts, rules);
                 // Calcular totais financeiros
                 const totalDebt = debts
-                    .filter(d => d.debtorId === user.id && d.status === 'OPEN')
-                    .reduce((sum, d) => sum + d.amount, 0);
+                    .filter((d: Debt) => d.debtorId === user.id && d.status === 'OPEN')
+                    .reduce((sum: number, d: Debt) => sum + d.amount, 0);
 
                 const totalCredit = debts
-                    .filter(d => d.creditorId === user.id && d.status === 'OPEN')
-                    .reduce((sum, d) => sum + d.amount, 0);
+                    .filter((d: Debt) => d.creditorId === user.id && d.status === 'OPEN')
+                    .reduce((sum: number, d: Debt) => sum + d.amount, 0);
 
-                const overdueCount = debts.filter(d =>
+                const overdueCount = debts.filter((d: Debt) =>
                     d.debtorId === user.id && d.status === 'OPEN' && new Date(d.dueDate) < new Date()
                 ).length;
 
@@ -60,10 +60,10 @@ export const MeinhaScoreDashboard: React.FC<MeinhaScoreDashboardProps> = ({ debt
                     totalCredit,
                     overdueCount
                 };
-            }).sort((a, b) => b.score - a.score); // Ordenar por score decrescente
+            }).sort((a: any, b: any) => b.score - a.score); // Ordenar por score decrescente
     }, [debts, users, rules]);
 
-    const currentScore = userScores.find(u => u.user.id === currentUser?.id);
+    const currentScore = userScores.find((u: any) => u.user.id === currentUser?.id);
 
     const getScoreColor = (classification: ScoreDetails['classification']) => {
         switch (classification) {

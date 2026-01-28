@@ -31,7 +31,7 @@ export const Dashboard: React.FC = () => {
       try {
         setLoading(true);
         const response = await getDebtsAction();
-        
+
         if (response.success) {
           setDebts(response.debts);
           setUsers(response.users);
@@ -123,9 +123,9 @@ export const Dashboard: React.FC = () => {
         setPaidDebts(response.debts);
         // Atualizar usuários se necessário
         if (response.users.length > 0) {
-          setUsers(prev => {
-            const existingIds = new Set(prev.map(u => u.id));
-            const newUsers = response.users.filter(u => !existingIds.has(u.id));
+          setUsers((prev: User[]) => {
+            const existingIds = new Set(prev.map((u: User) => u.id));
+            const newUsers = response.users.filter((u: User) => !existingIds.has(u.id));
             return [...prev, ...newUsers];
           });
         }
@@ -139,7 +139,7 @@ export const Dashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div 
+      <div
         className="min-h-screen flex items-center justify-center bg-cover bg-center bg-fixed"
         style={{
           backgroundImage: 'url(/images/back.jpg)',
@@ -175,9 +175,9 @@ export const Dashboard: React.FC = () => {
               {/* Foto do usuário com dropdown */}
               <div className="relative group z-[10000]">
                 {user?.photoURL ? (
-                  <img 
-                    src={user.photoURL} 
-                    alt="Foto do usuário" 
+                  <img
+                    src={user.photoURL}
+                    alt="Foto do usuário"
                     className="w-12 h-12 rounded-full border-2 border-white shadow-lg object-cover cursor-pointer hover:border-yellow-300 transition-colors"
                   />
                 ) : (
@@ -185,7 +185,7 @@ export const Dashboard: React.FC = () => {
                     <span className="text-2xl">👤</span>
                   </div>
                 )}
-                
+
                 {/* Dropdown do perfil */}
                 <div className="absolute right-0 top-14 bg-white/90 backdrop-blur-sm rounded-xl shadow-2xl border-2 border-black opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[30000] min-w-48">
                   <div className="py-2">
@@ -196,7 +196,7 @@ export const Dashboard: React.FC = () => {
                       <span className="text-xl">👤</span>
                       <span>Editar Perfil</span>
                     </button>
-                    
+
                     <button
                       onClick={() => setShowPasswordForm(true)}
                       className="w-full px-4 py-3 text-left hover:bg-green-100 transition-colors font-bold text-gray-800 flex items-center space-x-3"
@@ -204,7 +204,7 @@ export const Dashboard: React.FC = () => {
                       <span className="text-xl">🔒</span>
                       <span>Alterar Senha</span>
                     </button>
-                    
+
                     <button
                       onClick={() => setShowPaidDebts(true)}
                       className="w-full px-4 py-3 text-left hover:bg-purple-100 transition-colors font-bold text-gray-800 flex items-center space-x-3"
@@ -212,9 +212,9 @@ export const Dashboard: React.FC = () => {
                       <span className="text-xl">✅</span>
                       <span>Minhas Dívidas Pagas</span>
                     </button>
-                    
+
                     <div className="border-t border-gray-300 my-1"></div>
-                    
+
                     <button
                       onClick={logout}
                       className="w-full px-4 py-3 text-left hover:bg-red-100 transition-colors font-bold text-gray-800 flex items-center space-x-3"
@@ -225,7 +225,7 @@ export const Dashboard: React.FC = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <h1 className="text-2xl md:text-4xl font-black text-white drop-shadow-lg">
                   🚨 CALOTEIROS DO GRUPO
@@ -235,7 +235,7 @@ export const Dashboard: React.FC = () => {
                 </p>
               </div>
             </div>
-            
+
             {/* Menu Mobile Button */}
             <div className="md:hidden">
               <button
@@ -247,7 +247,7 @@ export const Dashboard: React.FC = () => {
                 </svg>
               </button>
             </div>
-            
+
             {/* Menu Desktop */}
             <nav className="hidden md:flex items-center space-x-2">
               {user?.role === 'admin' && (
@@ -258,7 +258,7 @@ export const Dashboard: React.FC = () => {
                   👤 CADASTRAR VÍTIMA
                 </button>
               )}
-              
+
               <button
                 onClick={() => setShowDebtForm(true)}
                 className="bg-red-700 text-white px-4 py-2 rounded-lg hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 font-bold text-sm shadow-lg border-2 border-black"
@@ -267,7 +267,7 @@ export const Dashboard: React.FC = () => {
               </button>
             </nav>
           </div>
-          
+
           {/* Menu Mobile */}
           {isMobileMenuOpen && (
             <div className="md:hidden mt-4 pb-4">
@@ -281,7 +281,7 @@ export const Dashboard: React.FC = () => {
                 >
                   👤 MEU PERFIL
                 </button>
-                
+
                 <button
                   onClick={() => {
                     setShowPasswordForm(true);
@@ -291,7 +291,7 @@ export const Dashboard: React.FC = () => {
                 >
                   🔒 ALTERAR SENHA
                 </button>
-                
+
                 <button
                   onClick={() => {
                     setShowPaidDebts(true);
@@ -301,7 +301,7 @@ export const Dashboard: React.FC = () => {
                 >
                   ✅ MINHAS DÍVIDAS PAGAS
                 </button>
-                
+
                 {user?.role === 'admin' && (
                   <button
                     onClick={() => {
@@ -313,7 +313,7 @@ export const Dashboard: React.FC = () => {
                     👤 CADASTRAR VÍTIMA
                   </button>
                 )}
-                
+
                 <button
                   onClick={() => {
                     setShowDebtForm(true);
@@ -323,7 +323,7 @@ export const Dashboard: React.FC = () => {
                 >
                   💸 NOVA DÍVIDA
                 </button>
-                
+
                 <button
                   onClick={() => {
                     logout();
@@ -343,10 +343,10 @@ export const Dashboard: React.FC = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Sirene do Calote */}
         {(() => {
-          const overdueDebts = debts.filter(debt => 
+          const overdueDebts = debts.filter((debt: Debt) =>
             debt.status === 'OPEN' && new Date(debt.dueDate) < new Date()
           );
-          
+
           if (overdueDebts.length > 0) {
             return (
               <div className="bg-red-600 text-white rounded-2xl p-6 shadow-2xl border-4 border-black mb-8 animate-pulse">
@@ -389,7 +389,7 @@ export const Dashboard: React.FC = () => {
               Relatório completo da situação financeira do grupo
             </p>
           </div>
-          
+
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <div className="text-center bg-red-100 p-4 rounded-xl border-2 border-red-300">
@@ -400,7 +400,7 @@ export const Dashboard: React.FC = () => {
                   Dívidas Ativas
                 </div>
               </div>
-              
+
               <div className="text-center bg-blue-100 p-4 rounded-xl border-2 border-blue-300">
                 <div className="text-3xl font-black text-blue-600">
                   {users.length}
@@ -409,19 +409,19 @@ export const Dashboard: React.FC = () => {
                   Total de Usuários
                 </div>
               </div>
-              
+
               <div className="text-center bg-green-100 p-4 rounded-xl border-2 border-green-300">
                 <div className="text-3xl font-black text-green-600">
-                  {formatCurrency(debts.reduce((sum, debt) => sum + debt.amount, 0))}
+                  {formatCurrency(debts.reduce((sum: number, debt: Debt) => sum + debt.amount, 0))}
                 </div>
                 <div className="text-sm font-bold text-green-800">
                   Valor Total
                 </div>
               </div>
-              
+
               <div className="text-center bg-orange-100 p-4 rounded-xl border-2 border-orange-300">
                 <div className="text-3xl font-black text-orange-600">
-                  {debts.filter(debt => 
+                  {debts.filter((debt: Debt) =>
                     debt.status === 'OPEN' && new Date(debt.dueDate) < new Date()
                   ).length}
                 </div>
@@ -438,7 +438,7 @@ export const Dashboard: React.FC = () => {
               </h3>
               <div className="space-y-2">
                 {(() => {
-                  const debtorTotals = debts.reduce((acc, debt) => {
+                  const debtorTotals = debts.reduce((acc: Record<string, number>, debt: Debt) => {
                     if (debt.status === 'OPEN') {
                       acc[debt.debtorId] = (acc[debt.debtorId] || 0) + debt.amount;
                     }
@@ -447,14 +447,14 @@ export const Dashboard: React.FC = () => {
 
                   const sortedDebtors = Object.entries(debtorTotals)
                     .map(([userId, total]) => {
-                      const user = users.find(u => u.id === userId);
+                      const user = users.find((u: User) => u.id === userId);
                       return { user, total };
                     })
-                    .filter(item => item.user)
-                    .sort((a: { user: User | undefined; total: number }, b: { user: User | undefined; total: number }) => b.total - a.total)
+                    .filter((item: any) => item.user)
+                    .sort((a: any, b: any) => b.total - a.total)
                     .slice(0, 5);
 
-                  return sortedDebtors.map((item, index) => (
+                  return sortedDebtors.map((item: any, index: number) => (
                     <div
                       key={item.user!.id}
                       className="flex justify-between items-center p-3 bg-gray-100 rounded-lg border-2 border-gray-300"
@@ -495,12 +495,12 @@ export const Dashboard: React.FC = () => {
               Suas dívidas pessoais separadas por categoria
             </p>
           </div>
-          
+
           <div className="p-6">
             {(() => {
-              const myDebtsAsCreditor = debts.filter(debt => debt.creditorId === user?.id);
-              const myDebtsAsDebtor = debts.filter(debt => debt.debtorId === user?.id);
-              
+              const myDebtsAsCreditor = debts.filter((debt: Debt) => debt.creditorId === user?.id);
+              const myDebtsAsDebtor = debts.filter((debt: Debt) => debt.debtorId === user?.id);
+
               if (myDebtsAsCreditor.length === 0 && myDebtsAsDebtor.length === 0) {
                 return (
                   <div className="text-center py-8">
@@ -510,7 +510,7 @@ export const Dashboard: React.FC = () => {
                   </div>
                 );
               }
-              
+
               return (
                 <div className="space-y-8">
                   {/* Dívidas que me devem */}
@@ -519,14 +519,14 @@ export const Dashboard: React.FC = () => {
                       <h3 className="text-xl font-black text-green-600 mb-4 flex items-center">
                         💰 ME DEVEM ({myDebtsAsCreditor.length})
                         <span className="ml-2 text-sm bg-green-100 px-3 py-1 rounded-full">
-                          {formatCurrency(myDebtsAsCreditor.reduce((sum, debt) => sum + debt.amount, 0))}
+                          {formatCurrency(myDebtsAsCreditor.reduce((sum: number, debt: Debt) => sum + debt.amount, 0))}
                         </span>
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {myDebtsAsCreditor.map(debt => {
-                          const debtor = users.find(u => u.id === debt.debtorId);
+                        {myDebtsAsCreditor.map((debt: Debt) => {
+                          const debtor = users.find((u: User) => u.id === debt.debtorId);
                           if (!debtor) return null;
-                          
+
                           return (
                             <DebtCard
                               key={debt.id}
@@ -541,21 +541,21 @@ export const Dashboard: React.FC = () => {
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Dívidas que devo */}
                   {myDebtsAsDebtor.length > 0 && (
                     <div>
                       <h3 className="text-xl font-black text-red-600 mb-4 flex items-center">
                         💸 EU DEVO ({myDebtsAsDebtor.length})
                         <span className="ml-2 text-sm bg-red-100 px-3 py-1 rounded-full">
-                          {formatCurrency(myDebtsAsDebtor.reduce((sum, debt) => sum + debt.amount, 0))}
+                          {formatCurrency(myDebtsAsDebtor.reduce((sum: number, debt: Debt) => sum + debt.amount, 0))}
                         </span>
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {myDebtsAsDebtor.map(debt => {
-                          const creditor = users.find(u => u.id === debt.creditorId);
+                        {myDebtsAsDebtor.map((debt: Debt) => {
+                          const creditor = users.find((u: User) => u.id === debt.creditorId);
                           if (!creditor) return null;
-                          
+
                           return (
                             <DebtCard
                               key={debt.id}
@@ -586,16 +586,16 @@ export const Dashboard: React.FC = () => {
               Ordenadas do mais caloteiro pro menos caloteiro (mais antigas primeiro)
             </p>
           </div>
-          
+
           <div className="p-6">
             {debts.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {debts.map(debt => {
-                  const creditor = users.find(u => u.id === debt.creditorId);
-                  const debtor = users.find(u => u.id === debt.debtorId);
-                  
+                {debts.map((debt: Debt) => {
+                  const creditor = users.find((u: User) => u.id === debt.creditorId);
+                  const debtor = users.find((u: User) => u.id === debt.debtorId);
+
                   if (!creditor || !debtor) return null;
-                  
+
                   return (
                     <DebtCard
                       key={debt.id}
@@ -617,7 +617,7 @@ export const Dashboard: React.FC = () => {
                   NINGUÉM ESTÁ DEVENDO!
                 </h3>
                 <p className="mt-2 text-xl text-gray-700 font-bold">
-                  Que milagre! Todos pagaram suas contas! 
+                  Que milagre! Todos pagaram suas contas!
                 </p>
                 <p className="mt-1 text-lg text-gray-600">
                   Mas se quiser criar uma nova dívida pra alguém, é só clicar aí embaixo 👇
@@ -704,13 +704,13 @@ export const Dashboard: React.FC = () => {
                   Suas dívidas pagas (que você criou ou que criaram para você)
                 </p>
               </div>
-              
+
               <div className="p-6">
                 {(() => {
-                  const myPaidDebts = paidDebts.filter(debt => 
+                  const myPaidDebts = paidDebts.filter((debt: Debt) =>
                     debt.creditorId === user?.id || debt.debtorId === user?.id
                   );
-                  
+
                   if (loadingPaidDebts) {
                     return (
                       <div className="text-center py-12">
@@ -729,14 +729,14 @@ export const Dashboard: React.FC = () => {
                       </div>
                     );
                   }
-                  
+
                   const totalReceived = myPaidDebts
-                    .filter(debt => debt.creditorId === user?.id)
-                    .reduce((sum, debt) => sum + debt.amount, 0);
+                    .filter((debt: Debt) => debt.creditorId === user?.id)
+                    .reduce((sum: number, debt: Debt) => sum + debt.amount, 0);
                   const totalPaid = myPaidDebts
-                    .filter(debt => debt.debtorId === user?.id)
-                    .reduce((sum, debt) => sum + debt.amount, 0);
-                  
+                    .filter((debt: Debt) => debt.debtorId === user?.id)
+                    .reduce((sum: number, debt: Debt) => sum + debt.amount, 0);
+
                   return (
                     <div>
                       <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -745,7 +745,7 @@ export const Dashboard: React.FC = () => {
                             {formatCurrency(totalReceived)}
                           </p>
                           <p className="text-sm font-bold text-green-600">
-                            Recebido ({myPaidDebts.filter(d => d.creditorId === user?.id).length} dívidas)
+                            Recebido ({myPaidDebts.filter((d: Debt) => d.creditorId === user?.id).length} dívidas)
                           </p>
                         </div>
                         <div className="text-center bg-blue-100 p-4 rounded-xl border-2 border-blue-300">
@@ -753,94 +753,87 @@ export const Dashboard: React.FC = () => {
                             {formatCurrency(totalPaid)}
                           </p>
                           <p className="text-sm font-bold text-blue-600">
-                            Pago ({myPaidDebts.filter(d => d.debtorId === user?.id).length} dívidas)
+                            Pago ({myPaidDebts.filter((d: Debt) => d.debtorId === user?.id).length} dívidas)
                           </p>
                         </div>
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {myPaidDebts.map(debt => {
-                          const debtor = users.find(u => u.id === debt.debtorId);
-                          const creditor = users.find(u => u.id === debt.creditorId);
+                        {myPaidDebts.map((debt: Debt) => {
+                          const debtor = users.find((u: User) => u.id === debt.debtorId);
+                          const creditor = users.find((u: User) => u.id === debt.creditorId);
                           if (!debtor || !creditor) return null;
-                          
+
                           const isUserCreditor = debt.creditorId === user?.id;
                           const isUserDebtor = debt.debtorId === user?.id;
-                          
+
                           return (
-                            <div key={debt.id} className={`backdrop-blur-sm rounded-xl shadow-lg p-4 border-2 ${
-                              isUserCreditor ? 'bg-green-50/80 border-green-300' : 'bg-blue-50/80 border-blue-300'
-                            }`}>
+                            <div key={debt.id} className={`backdrop-blur-sm rounded-xl shadow-lg p-4 border-2 ${isUserCreditor ? 'bg-green-50/80 border-green-300' : 'bg-blue-50/80 border-blue-300'
+                              }`}>
                               <div className="flex justify-between items-start mb-3">
-                                <h3 className={`text-xl font-black ${
-                                  isUserCreditor ? 'text-green-700' : 'text-blue-700'
-                                }`}>
+                                <h3 className={`text-xl font-black ${isUserCreditor ? 'text-green-700' : 'text-blue-700'
+                                  }`}>
                                   {formatCurrency(debt.amount)}
                                 </h3>
                                 <div className="flex flex-col items-end space-y-1">
                                   <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
                                     ✅ PAGA
                                   </span>
-                                  <span className={`text-xs font-bold px-2 py-1 rounded ${
-                                    isUserCreditor 
-                                      ? 'bg-green-200 text-green-800' 
-                                      : 'bg-blue-200 text-blue-800'
-                                  }`}>
+                                  <span className={`text-xs font-bold px-2 py-1 rounded ${isUserCreditor
+                                    ? 'bg-green-200 text-green-800'
+                                    : 'bg-blue-200 text-blue-800'
+                                    }`}>
                                     {isUserCreditor ? '💰 RECEBI' : '💸 PAGUEI'}
                                   </span>
                                 </div>
                               </div>
-                              
+
                               <div className="flex items-center space-x-3 mb-3">
                                 <div className="flex flex-col items-center">
                                   {debtor.photoURL ? (
-                                    <img 
-                                      src={debtor.photoURL} 
+                                    <img
+                                      src={debtor.photoURL}
                                       alt={`Foto de ${debtor.name || debtor.username}`}
-                                      className={`w-10 h-10 rounded-full border-2 shadow-lg object-cover ${
-                                        isUserDebtor ? 'border-blue-500' : 'border-green-500'
-                                      }`}
+                                      className={`w-10 h-10 rounded-full border-2 shadow-lg object-cover ${isUserDebtor ? 'border-blue-500' : 'border-green-500'
+                                        }`}
                                     />
                                   ) : (
                                     <div className="w-10 h-10 rounded-full border-2 border-gray-400 shadow-lg bg-gray-200 flex items-center justify-center">
                                       <span className="text-xs font-bold text-gray-600">👤</span>
                                     </div>
                                   )}
-                                  <span className={`text-sm font-bold text-center mt-1 ${
-                                    isUserDebtor ? 'text-blue-600' : 'text-green-600'
-                                  }`}>
+                                  <span className={`text-sm font-bold text-center mt-1 ${isUserDebtor ? 'text-blue-600' : 'text-green-600'
+                                    }`}>
                                     {debtor.name || debtor.username}
                                   </span>
                                 </div>
-                                
+
                                 <div className="text-center">
                                   <span className="text-sm text-gray-600 font-bold">
                                     {isUserCreditor ? 'pagou para' : 'recebeu de'}
                                   </span>
                                 </div>
-                                
+
                                 <div className="flex flex-col items-center">
                                   {creditor.photoURL ? (
-                                    <img 
-                                      src={creditor.photoURL} 
+                                    <img
+                                      src={creditor.photoURL}
                                       alt={`Foto de ${creditor.name || creditor.username}`}
-                                      className={`w-10 h-10 rounded-full border-2 shadow-lg object-cover ${
-                                        isUserCreditor ? 'border-blue-500' : 'border-green-500'
-                                      }`}
+                                      className={`w-10 h-10 rounded-full border-2 shadow-lg object-cover ${isUserCreditor ? 'border-blue-500' : 'border-green-500'
+                                        }`}
                                     />
                                   ) : (
                                     <div className="w-10 h-10 rounded-full border-2 border-gray-400 shadow-lg bg-gray-200 flex items-center justify-center">
                                       <span className="text-xs font-bold text-gray-600">👤</span>
                                     </div>
                                   )}
-                                  <span className={`text-sm font-bold text-center mt-1 ${
-                                    isUserCreditor ? 'text-blue-600' : 'text-green-600'
-                                  }`}>
+                                  <span className={`text-sm font-bold text-center mt-1 ${isUserCreditor ? 'text-blue-600' : 'text-green-600'
+                                    }`}>
                                     {creditor.name || creditor.username}
                                   </span>
                                 </div>
                               </div>
-                              
+
                               <div className="space-y-2 text-sm">
                                 <div className="flex justify-between bg-gray-100 p-2 rounded-lg">
                                   <span className="font-bold">📅 Vencimento:</span>
@@ -852,7 +845,7 @@ export const Dashboard: React.FC = () => {
                                     }).format(new Date(debt.dueDate))}
                                   </span>
                                 </div>
-                                
+
                                 <div className="flex justify-between bg-gray-100 p-2 rounded-lg">
                                   <span className="font-bold">📝 Criada:</span>
                                   <span className="font-bold">
@@ -864,7 +857,7 @@ export const Dashboard: React.FC = () => {
                                   </span>
                                 </div>
                               </div>
-                              
+
                               {debt.description && (
                                 <div className="mt-3 p-3 bg-yellow-50 rounded-lg border border-yellow-300">
                                   <p className="text-sm text-gray-800 font-bold">📝 {debt.description}</p>

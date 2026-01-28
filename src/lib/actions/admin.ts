@@ -38,7 +38,7 @@ export async function getRecentPaymentsAction() {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        const recentPayments = allPaidDebts.filter(debt => {
+        const recentPayments = allPaidDebts.filter((debt: Debt) => {
             const updatedAt = new Date(debt.updatedAt);
             return updatedAt >= thirtyDaysAgo;
         });
@@ -47,7 +47,7 @@ export async function getRecentPaymentsAction() {
         const users = await getAllUsers();
 
         // Serialize dates to strings for client components
-        const serializedPayments = recentPayments.map(debt => {
+        const serializedPayments = recentPayments.map((debt: Debt) => {
             const serialized: any = {
                 ...debt,
                 dueDate: debt.dueDate.toISOString(),
@@ -69,7 +69,7 @@ export async function getRecentPaymentsAction() {
         });
 
         // Also serialize user dates
-        const serializedUsers = users.map(user => ({
+        const serializedUsers = users.map((user: User) => ({
             ...user,
             createdAt: user.createdAt instanceof Date ? user.createdAt.toISOString() : user.createdAt,
             updatedAt: user.updatedAt instanceof Date ? user.updatedAt.toISOString() : user.updatedAt
@@ -168,7 +168,7 @@ export async function clearAllOverridesAction() {
         const allPaidDebts = await getPaidDebts();
 
         // Filter only those with overrides
-        const debtsWithOverrides = allPaidDebts.filter(debt => debt.paymentOverride);
+        const debtsWithOverrides = allPaidDebts.filter((debt: Debt) => debt.paymentOverride);
 
         console.log('[ClearOverrides] Found', debtsWithOverrides.length, 'debts with overrides');
 
