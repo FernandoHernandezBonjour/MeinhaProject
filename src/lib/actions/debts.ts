@@ -98,11 +98,11 @@ export async function getDebtsAction() {
       getAllUsers()
     ]);
 
-    return {
+    return JSON.parse(JSON.stringify({
       success: true,
       debts,
       users,
-    };
+    }));
   } catch (error) {
     console.error('Erro ao buscar dívidas:', error);
     return {
@@ -123,11 +123,11 @@ export async function getPaidDebtsAction() {
       getAllUsers()
     ]);
 
-    return {
+    return JSON.parse(JSON.stringify({
       success: true,
       debts,
       users,
-    };
+    }));
   } catch (error) {
     console.error('Erro ao buscar dívidas pagas:', error);
     return {
@@ -145,10 +145,10 @@ export async function getUsersAction() {
 
     const users = await getAllUsers();
 
-    return {
+    return JSON.parse(JSON.stringify({
       success: true,
       users,
-    };
+    }));
   } catch (error) {
     console.error('Erro ao buscar usuários:', error);
     return {
@@ -220,13 +220,13 @@ export async function createDebtAction(formData: FormData) {
       try {
         const uploadFormData = new FormData();
         uploadFormData.append('photo', attachment);
-        
+
         const uploadResult = await uploadPhotoAction(uploadFormData);
-        
+
         if (uploadResult.error) {
           return { error: uploadResult.error };
         }
-        
+
         if (uploadResult.success && uploadResult.photoURL) {
           debtData.attachment = uploadResult.photoURL;
         }

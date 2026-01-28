@@ -5,6 +5,7 @@ import { User } from '@/types';
 import { getUsersAction, resetUserPasswordAction, updateUserByAdminAction } from '@/lib/actions/users';
 import { UserRegistration } from './UserRegistration';
 import { ScoreConfigForm } from './ScoreConfigForm';
+import { TransactionsPanel } from './TransactionsPanel';
 
 interface ManagedUser extends Pick<User, 'id' | 'username' | 'role' | 'email' | 'name' | 'pixKey' | 'phone' | 'steamProfile' | 'passwordChanged' | 'forcePasswordReset' | 'skipCurrentPassword' | 'updatedAt'> { }
 
@@ -14,7 +15,7 @@ interface ResetResult {
 }
 
 export const AdminPanel: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'users' | 'score'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'score' | 'transactions'>('users');
   const [users, setUsers] = useState<ManagedUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
@@ -181,6 +182,12 @@ export const AdminPanel: React.FC = () => {
             >
               MeinhaScore
             </button>
+            <button
+              onClick={() => setActiveTab('transactions')}
+              className={`px-4 py-2 rounded-md font-bold text-sm transition-colors ${activeTab === 'transactions' ? 'bg-white shadow text-blue-700' : 'text-gray-500 hover:text-blue-700'}`}
+            >
+              Transações
+            </button>
           </div>
 
           {activeTab === 'users' && (
@@ -203,6 +210,8 @@ export const AdminPanel: React.FC = () => {
 
         {activeTab === 'score' ? (
           <ScoreConfigForm />
+        ) : activeTab === 'transactions' ? (
+          <TransactionsPanel />
         ) : (
           <>
             {/* Users List Content */}

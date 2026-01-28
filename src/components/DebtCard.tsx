@@ -32,37 +32,39 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
   );
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
-  const getTimeAgo = (date: Date): string => {
+  const getTimeAgo = (dateInput: Date | string): string => {
+    const date = new Date(dateInput);
     const now = new Date();
     const diffInMs = now.getTime() - date.getTime();
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-    
+
     if (diffInDays === 0) return 'Hoje';
     if (diffInDays === 1) return '1 dia atrás';
     if (diffInDays < 30) return `${diffInDays} dias atrás`;
-    
+
     const diffInMonths = Math.floor(diffInDays / 30);
     if (diffInMonths === 1) return '1 mês atrás';
     if (diffInMonths < 12) return `${diffInMonths} meses atrás`;
-    
+
     const diffInYears = Math.floor(diffInDays / 365);
     if (diffInYears === 1) return '1 ano atrás';
     return `${diffInYears} anos atrás`;
   };
 
-  const getOverdueTime = (date: Date): string => {
+  const getOverdueTime = (dateInput: Date | string): string => {
+    const date = new Date(dateInput);
     const now = new Date();
     const diffInMs = now.getTime() - date.getTime();
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-    
+
     if (diffInDays === 0) return 'VENCE HOJE, CALOTEIRO!';
     if (diffInDays === 1) return 'VENCIDA HÁ 1 DIA - PAGA ESSA MERDA!';
     if (diffInDays < 30) return `VENCIDA HÁ ${diffInDays} DIAS - QUE VERGONHA!`;
-    
+
     const diffInMonths = Math.floor(diffInDays / 30);
     if (diffInMonths === 1) return 'VENCIDA HÁ 1 MÊS - TÁ DE BRINCADEIRA?';
     if (diffInMonths < 12) return `VENCIDA HÁ ${diffInMonths} MESES - SEM VERGONHA!`;
-    
+
     const diffInYears = Math.floor(diffInDays / 365);
     if (diffInYears === 1) return 'VENCIDA HÁ 1 ANO - PAGOU NÃO, PAGÃO!';
     return `VENCIDA HÁ ${diffInYears} ANOS - CALOTEIRO PROFISSIONAL!`;
@@ -124,7 +126,7 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
 
   const handleDelete = async () => {
     if (!canDelete) return;
-    
+
     if (!confirm('Tem certeza que quer excluir essa dívida? Essa ação não pode ser desfeita!')) {
       return;
     }
@@ -151,7 +153,8 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
     }).format(value);
   };
 
-  const formatDate = (date: Date): string => {
+  const formatDate = (dateInput: Date | string): string => {
+    const date = new Date(dateInput);
     return new Intl.DateTimeFormat('pt-BR', {
       day: '2-digit',
       month: '2-digit',
@@ -160,15 +163,14 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
   };
 
   return (
-    <div className={`bg-white/60 backdrop-blur-sm rounded-xl shadow-2xl p-6 border-4 transform hover:scale-105 transition-transform ${
-      isOverdue ? 'border-red-600 bg-gradient-to-br from-red-50/60 to-orange-50/60' : 'border-green-600 bg-gradient-to-br from-green-50/60 to-emerald-50/60'
-    }`}>
+    <div className={`bg-white/60 backdrop-blur-sm rounded-xl shadow-2xl p-6 border-4 transform hover:scale-105 transition-transform ${isOverdue ? 'border-red-600 bg-gradient-to-br from-red-50/60 to-orange-50/60' : 'border-green-600 bg-gradient-to-br from-green-50/60 to-emerald-50/60'
+      }`}>
       {isOverdue && (
         <div className="bg-gradient-to-r from-red-600 to-red-800 text-white px-6 py-3 rounded-xl text-xl font-black mb-4 inline-block border-2 border-black shadow-lg">
           💀 CALOTEIRO! 💀
         </div>
       )}
-      
+
       <div className="flex justify-between items-start mb-4">
         <div>
           <h3 className="text-3xl font-black text-red-600 mb-2">
@@ -183,34 +185,34 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
             {/* Devedor */}
             <div className="flex flex-col items-center space-y-1">
               {debtor.photoURL ? (
-                <img 
-                  src={debtor.photoURL} 
+                <img
+                  src={debtor.photoURL}
                   alt={`Foto de ${debtor.name || debtor.username}`}
                   className="w-12 h-12 rounded-full border-2 border-red-500 shadow-lg object-cover"
                 />
               ) : (
                 <div className="w-12 h-12 rounded-full border-2 border-gray-400 shadow-lg bg-gray-200 flex items-center justify-center">
-                  <span className="text-xs font-bold text-gray-600 text-center leading-tight">corno<br/>sem foto</span>
+                  <span className="text-xs font-bold text-gray-600 text-center leading-tight">corno<br />sem foto</span>
                 </div>
               )}
               <span className="text-sm text-red-600 font-bold text-center">
                 💸 {debtor.name || debtor.username}
               </span>
             </div>
-            
+
             <span className="text-lg text-gray-600 font-bold">deve para</span>
-            
+
             {/* Credor */}
             <div className="flex flex-col items-center space-y-1">
               {creditor.photoURL ? (
-                <img 
-                  src={creditor.photoURL} 
+                <img
+                  src={creditor.photoURL}
                   alt={`Foto de ${creditor.name || creditor.username}`}
                   className="w-12 h-12 rounded-full border-2 border-green-500 shadow-lg object-cover"
                 />
               ) : (
                 <div className="w-12 h-12 rounded-full border-2 border-gray-400 shadow-lg bg-gray-200 flex items-center justify-center">
-                  <span className="text-xs font-bold text-gray-600 text-center leading-tight">corno<br/>sem foto</span>
+                  <span className="text-xs font-bold text-gray-600 text-center leading-tight">corno<br />sem foto</span>
                 </div>
               )}
               <span className="text-sm text-green-600 font-bold text-center">
@@ -219,7 +221,7 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
             </div>
           </div>
         </div>
-        
+
         {debt.status === 'PAID' && (
           <span className="bg-gradient-to-r from-green-500 to-green-700 text-white px-4 py-2 rounded-xl text-lg font-black border-2 border-black shadow-lg">
             ✅ PAGA
@@ -234,7 +236,7 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
             {formatDate(debt.dueDate)}
           </span>
         </div>
-        
+
         <div className="flex justify-between bg-gray-100 p-2 rounded-lg">
           <span className="font-bold">📝 Criada:</span>
           <span className="font-bold">{getTimeAgo(debt.createdAt)}</span>
@@ -254,23 +256,23 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
           </div>
         )}
 
-      {hasPartialHistory && (
-        <div className="mt-4 p-4 bg-purple-50 rounded-lg border-2 border-purple-300 text-sm text-purple-900 font-bold space-y-2">
-          <p className="text-base">🪓 Pagamento picado dessa dívida</p>
-          <div className="flex justify-between">
-            <span>Valor original:</span>
-            <span>{formatCurrency(originalAmount)}</span>
+        {hasPartialHistory && (
+          <div className="mt-4 p-4 bg-purple-50 rounded-lg border-2 border-purple-300 text-sm text-purple-900 font-bold space-y-2">
+            <p className="text-base">🪓 Pagamento picado dessa dívida</p>
+            <div className="flex justify-between">
+              <span>Valor original:</span>
+              <span>{formatCurrency(originalAmount)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Já pago:</span>
+              <span>{formatCurrency(alreadyPaid)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Restando:</span>
+              <span>{formatCurrency(chainRemainingAmount)}</span>
+            </div>
           </div>
-          <div className="flex justify-between">
-            <span>Já pago:</span>
-            <span>{formatCurrency(alreadyPaid)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Restando:</span>
-            <span>{formatCurrency(chainRemainingAmount)}</span>
-          </div>
-        </div>
-      )}
+        )}
       </div>
 
       {debt.description && (
@@ -282,9 +284,9 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
       {debt.attachment && (
         <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-300">
           <p className="text-base text-blue-800 font-bold mb-3">📎 Anexo:</p>
-          <img 
-            src={debt.attachment} 
-            alt="Anexo da dívida" 
+          <img
+            src={debt.attachment}
+            alt="Anexo da dívida"
             className="max-w-full h-auto rounded-lg shadow-lg border-2 border-blue-400 cursor-pointer hover:scale-105 transition-transform"
             onClick={() => window.open(debt.attachment, '_blank')}
           />
@@ -394,7 +396,7 @@ export const DebtCard: React.FC<DebtCardProps> = ({ debt, creditor, debtor, curr
       {isOverdue && (
         <div className="mt-4 p-4 bg-gradient-to-r from-red-100 to-orange-100 border-4 border-red-500 rounded-xl">
           <p className="text-lg text-red-800 font-black text-center">
-            🔥 ESTA DÍVIDA TÁ VENCIDA, CALOTEIRO! 🔥<br/>
+            🔥 ESTA DÍVIDA TÁ VENCIDA, CALOTEIRO! 🔥<br />
             <span className="text-base">Paga logo essa merda que tá fazendo {getOverdueTime(debt.dueDate).toLowerCase()}!</span>
           </p>
         </div>

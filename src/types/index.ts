@@ -33,6 +33,12 @@ export interface Debt {
   status: 'OPEN' | 'PAID';
   attachment?: string; // URL do anexo
   description?: string;
+  paymentOverride?: {
+    wasOnTime: boolean;
+    overriddenBy: string;
+    overriddenAt: Date;
+    reason?: string;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -201,19 +207,19 @@ export interface AppNotification {
   id: string;
   userId: string;
   type:
-    | 'debt_created'
-    | 'debt_updated'
-    | 'debt_paid'
-    | 'debt_deleted'
-    | 'event_created'
-    | 'event_reaction'
-    | 'event_comment'
-    | 'media_uploaded'
-    | 'media_comment'
-    | 'media_reaction'
-    | 'forum_post'
-    | 'changelog_added'
-    | 'debt_overdue';
+  | 'debt_created'
+  | 'debt_updated'
+  | 'debt_paid'
+  | 'debt_deleted'
+  | 'event_created'
+  | 'event_reaction'
+  | 'event_comment'
+  | 'media_uploaded'
+  | 'media_comment'
+  | 'media_reaction'
+  | 'forum_post'
+  | 'changelog_added'
+  | 'debt_overdue';
   title: string;
   message: string;
   read: boolean;

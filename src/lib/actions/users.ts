@@ -83,7 +83,7 @@ export async function getUsersAction() {
 
     const users = await getAllUsers();
 
-    return {
+    return JSON.parse(JSON.stringify({
       success: true,
       users: users.map((user) => ({
         id: user.id,
@@ -100,7 +100,7 @@ export async function getUsersAction() {
         skipCurrentPassword: user.skipCurrentPassword ?? false,
         updatedAt: user.updatedAt,
       })),
-    };
+    }));
   } catch (error) {
     console.error('Erro ao buscar usuários:', error);
     return { error: 'Erro interno do servidor' };
@@ -111,7 +111,7 @@ export async function getPublicUserListAction() {
   try {
     const users = await getAllUsers();
 
-    return {
+    return JSON.parse(JSON.stringify({
       success: true,
       users: users.map((user) => ({
         id: user.id,
@@ -120,7 +120,7 @@ export async function getPublicUserListAction() {
         photoURL: user.photoURL,
         birthDate: user.birthDate,
       })),
-    };
+    }));
   } catch (error) {
     console.error('Erro ao buscar lista pública de usuários:', error);
     return { error: 'Erro interno do servidor' };

@@ -73,6 +73,15 @@ export interface ScoreDetails {
 }
 
 export function calculateMeinhaScore(userId: string, allDebts: Debt[], rules: MeinhaScoreRules = DEFAULT_RULES): ScoreDetails {
+    // Debug log to track which rules are being used
+    if (userId === 'matheus_id_here') { // Replace with actual Matheus ID for testing
+        console.log('[Score Debug] Calculating score for Matheus with rules:', {
+            creditorCreation: rules.creditorCreation,
+            debtorBonusOnTime: rules.debtorBonus.onTime,
+            paymentBonusOnTime: rules.paymentBonus.onTime
+        });
+    }
+
     let score = rules.initialScore;
     let earned = 0;
     let lost = 0;
@@ -114,16 +123,27 @@ export function calculateMeinhaScore(userId: string, allDebts: Debt[], rules: Me
             debtPoints += creationPoints;
 
             if (debt.status === 'PAID' && debt.updatedAt) {
-                const payDate = new Date(debt.updatedAt);
-                const dueDate = new Date(debt.dueDate);
-                const normPay = normalizeDate(payDate);
-                const normDue = normalizeDate(dueDate);
-                const dayDiff = Math.floor((normPay.getTime() - normDue.getTime()) / (1000 * 3600 * 24));
-
                 let paymentBonus = 0;
-                if (dayDiff < 0) paymentBonus = rules.paymentBonus.early;
-                else if (dayDiff === 0) paymentBonus = rules.paymentBonus.onTime;
-                else if (dayDiff <= 2) paymentBonus = rules.paymentBonus.lateTolerance;
+
+                // Check for manual override first
+                if (debt.paymentOverride) {
+                    // Use override flag instead of calculating from dates
+                    if (debt.paymentOverride.wasOnTime) {
+                        paymentBonus = rules.paymentBonus.onTime;
+                    }
+                    // If marked as late, creditor gets no bonus (0 points)
+                } else {
+                    // Normal calculation based on actual dates
+                    const payDate = new Date(debt.updatedAt);
+                    const dueDate = new Date(debt.dueDate);
+                    const normPay = normalizeDate(payDate);
+                    const normDue = normalizeDate(dueDate);
+                    const dayDiff = Math.floor((normPay.getTime() - normDue.getTime()) / (1000 * 3600 * 24));
+
+                    if (dayDiff < 0) paymentBonus = rules.paymentBonus.early;
+                    else if (dayDiff === 0) paymentBonus = rules.paymentBonus.onTime;
+                    else if (dayDiff <= 2) paymentBonus = rules.paymentBonus.lateTolerance;
+                }
 
                 if (isSpam) paymentBonus *= 0.5;
                 paymentBonus = applyValueWeight(paymentBonus, debt.originalAmount || debt.amount);
@@ -137,22 +157,31 @@ export function calculateMeinhaScore(userId: string, allDebts: Debt[], rules: Me
             const amount = debt.originalAmount || debt.amount;
 
             if (debt.status === 'PAID' && debt.updatedAt) {
-                const payDate = new Date(debt.updatedAt);
-                const dueDate = new Date(debt.dueDate);
-                const normPay = normalizeDate(payDate);
-                const normDue = normalizeDate(dueDate);
-                const dayDiff = Math.floor((normPay.getTime() - normDue.getTime()) / (1000 * 3600 * 24));
-
                 let flowPoints = 0;
 
-                // Quitação (Positivo) - Usando valores da config
-                if (dayDiff < 0) flowPoints = rules.debtorBonus.early;
-                else if (dayDiff === 0) flowPoints = rules.debtorBonus.onTime;
-                else if (dayDiff <= 2) flowPoints = rules.debtorBonus.lateTolerance;
+                // Check for manual override first
+                if (debt.paymentOverride) {
+                    // Use override flag instead of calculating from dates
+                    if (debt.paymentOverride.wasOnTime) {
+                        flowPoints = rules.debtorBonus.onTime;
+                    } else {
+                        // If marked as late by override, apply maximum penalty
+                        flowPoints = rules.penalties.late30plus;
+                    }
+                } else {
+                    // Normal calculation based on actual dates
+                    const payDate = new Date(debt.updatedAt);
+                    const dueDate = new Date(debt.dueDate);
+                    const normPay = normalizeDate(payDate);
+                    const normDue = normalizeDate(dueDate);
+                    const dayDiff = Math.floor((normPay.getTime() - normDue.getTime()) / (1000 * 3600 * 24));
 
-                // Atraso (Negativo)
-                else {
-                    if (dayDiff >= 1 && dayDiff <= 2) flowPoints = rules.penalties.late1to2;
+                    // Quitação (Positivo) - Usando valores da config
+                    if (dayDiff < 0) flowPoints = rules.debtorBonus.early;
+                    else if (dayDiff === 0) flowPoints = rules.debtorBonus.onTime;
+
+                    // Atraso (Negativo)
+                    else if (dayDiff >= 1 && dayDiff <= 2) flowPoints = rules.penalties.late1to2;
                     else if (dayDiff <= 7) flowPoints = rules.penalties.late3to7;
                     else if (dayDiff <= 30) flowPoints = rules.penalties.late8to30;
                     else flowPoints = rules.penalties.late30plus;
