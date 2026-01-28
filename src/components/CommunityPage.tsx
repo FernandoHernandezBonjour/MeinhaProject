@@ -37,7 +37,7 @@ export const CommunityPage: React.FC = () => {
         <div className="container mx-auto px-4 py-6">
             <div className="mb-6 overflow-x-auto">
                 <div className="flex space-x-2 border-b border-gray-200 dark:border-gray-700 pb-2">
-                    {tabs.map((tab) => (
+                    {tabs.map((tab: { id: CommunityTab; label: string; icon: string }) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}

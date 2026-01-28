@@ -103,23 +103,23 @@ export const EventsPage: React.FC = () => {
         date: event.date instanceof Date ? event.date : new Date(event.date),
         createdAt: event.createdAt instanceof Date ? event.createdAt : new Date(event.createdAt),
         updatedAt: event.updatedAt instanceof Date ? event.updatedAt : new Date(event.updatedAt),
-        comments: event.comments.map((comment) => ({
+        comments: event.comments.map((comment: any) => ({
           ...comment,
           createdAt:
             comment.createdAt instanceof Date ? comment.createdAt : new Date(comment.createdAt),
         })),
-        reactions: event.reactions.map((reaction) => ({
+        reactions: event.reactions.map((reaction: any) => ({
           ...reaction,
           createdAt:
             reaction.createdAt instanceof Date ? reaction.createdAt : new Date(reaction.createdAt),
         })),
       });
 
-      setUpcomingEvents((eventsResponse.upcoming ?? []).map(parseEvent));
-      setFlashbacks((eventsResponse.flashbacks ?? []).map(parseEvent));
+      setUpcomingEvents((eventsResponse.upcoming ?? []).map((event: HubEvent) => parseEvent(event)));
+      setFlashbacks((eventsResponse.flashbacks ?? []).map((event: HubEvent) => parseEvent(event)));
 
       if (mediaResponse.success && mediaResponse.media) {
-        const map = mediaResponse.media.reduce<Record<string, MediaItem[]>>((acc, media) => {
+        const map = mediaResponse.media.reduce<Record<string, MediaItem[]>>((acc: Record<string, MediaItem[]>, media: MediaItem) => {
           if (!media.eventId) return acc;
           if (!acc[media.eventId]) acc[media.eventId] = [];
           acc[media.eventId].push(media);
@@ -206,8 +206,8 @@ export const EventsPage: React.FC = () => {
 
   const reactionSummary = useMemo(() => {
     const summary: Record<string, Record<string, number>> = {};
-    upcomingEvents.forEach((event) => {
-      summary[event.id] = event.reactions.reduce((acc, item) => {
+    upcomingEvents.forEach((event: HubEvent) => {
+      summary[event.id] = event.reactions.reduce((acc: Record<string, number>, item: any) => {
         acc[item.reaction] = (acc[item.reaction] ?? 0) + 1;
         return acc;
       }, {} as Record<string, number>);
@@ -219,7 +219,7 @@ export const EventsPage: React.FC = () => {
 
   const getRandomPhotoUrl = (eventId: string): string | null => {
     const mediaItems = eventMediaMap[eventId] ?? [];
-    const photoItems = mediaItems.filter((m) => m.type === 'photo');
+    const photoItems = mediaItems.filter((m: MediaItem) => m.type === 'photo');
     if (photoItems.length === 0) return null;
     const index = Math.floor(Math.random() * photoItems.length);
     return photoItems[index].url;
@@ -236,7 +236,7 @@ export const EventsPage: React.FC = () => {
     return (
       <div className="mt-2 overflow-x-auto">
         <div className="flex gap-2 pr-1">
-          {mediaItems.map((mediaItem) => (
+          {mediaItems.map((mediaItem: MediaItem) => (
             <button
               key={mediaItem.id}
               onClick={() => setPreviewMedia(mediaItem)}
@@ -301,10 +301,10 @@ export const EventsPage: React.FC = () => {
           const userReactions = event.reactions.filter((reaction) => reaction.userId === user?.id);
           const pick = (obj: any, keys: string[]) => keys.map((k) => obj?.[k]).filter((v) => v != null);
           const creatorKeys = [
-            'createdBy','created_by','createdById','created_by_id','creatorId','creator_id','ownerId','owner_id',
-            'userId','user_id','authorId','author_id','createdByUsername','created_by_username','creatorUsername','creator_username'
+            'createdBy', 'created_by', 'createdById', 'created_by_id', 'creatorId', 'creator_id', 'ownerId', 'owner_id',
+            'userId', 'user_id', 'authorId', 'author_id', 'createdByUsername', 'created_by_username', 'creatorUsername', 'creator_username'
           ];
-          const userKeys = ['id','username','name','email'];
+          const userKeys = ['id', 'username', 'name', 'email'];
           const creatorValues = pick(event as any, creatorKeys);
           const userValues = pick(user as any, userKeys);
           const norm = (v: any) => String(v).trim().toLowerCase();
@@ -315,7 +315,7 @@ export const EventsPage: React.FC = () => {
           return (
             <div
               key={event.id}
-              className={isXvideosMode ? 
+              className={isXvideosMode ?
                 'xvideos-card transition-all duration-200 hover:opacity-90' :
                 'bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border-4 border-black dark:border-gray-700 hover:shadow-xl transition-all duration-200'
               }
@@ -378,7 +378,7 @@ export const EventsPage: React.FC = () => {
                     <div className="grid grid-cols-3 gap-2">
                       {eventMediaMap[event.id]
                         .slice(0, 6)
-                        .map((mediaItem) => (
+                        .map((mediaItem: MediaItem) => (
                           <div
                             key={mediaItem.id}
                             className="relative group"
@@ -457,20 +457,19 @@ export const EventsPage: React.FC = () => {
                     Reações
                   </h5>
                   <div className="flex flex-wrap gap-2">
-                    {reactionOptions.map((reaction) => {
+                    {reactionOptions.map((reaction: string) => {
                       const count = eventReactionSummary[reaction] ?? 0;
-                      const isActive = userReactions.some((item) => item.reaction === reaction);
+                      const isActive = userReactions.some((item: any) => item.reaction === reaction);
                       return (
                         <button
                           key={reaction}
                           onClick={() => handleToggleReaction(event.id, reaction)}
-                          className={`px-3 py-1 rounded-full border-2 font-bold text-sm transition-colors ${
-                            isActive
+                          className={`px-3 py-1 rounded-full border-2 font-bold text-sm transition-colors ${isActive
                               ? 'bg-red-600 dark:bg-red-700 text-white border-black dark:border-gray-600'
                               : isXvideosMode
-                              ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-300 dark:hover:bg-gray-600'
-                              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
-                          }`}
+                                ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-300 dark:hover:bg-gray-600'
+                                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
+                            }`}
                         >
                           {reaction} {count > 0 && <span className="ml-1">({count})</span>}
                         </button>
@@ -489,14 +488,13 @@ export const EventsPage: React.FC = () => {
                         Ninguém comentou ainda. Comece o deboche!
                       </p>
                     )}
-                    {event.comments.map((comment) => (
+                    {event.comments.map((comment: any) => (
                       <div
                         key={comment.id}
-                        className={`p-3 rounded-lg border text-sm transition-colors duration-200 ${
-                          isXvideosMode
+                        className={`p-3 rounded-lg border text-sm transition-colors duration-200 ${isXvideosMode
                             ? 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                             : 'bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600'
-                        }`}
+                          }`}
                       >
                         <p className={`font-bold ${isXvideosMode ? 'text-orange-600 dark:text-orange-400' : 'text-blue-600 dark:text-blue-400'}`}>
                           <UserLink username={comment.username ?? comment.userId} userId={comment.userId} />
@@ -517,19 +515,17 @@ export const EventsPage: React.FC = () => {
                       placeholder="Solta o flashback desse rolê..."
                       value={commentInputs[event.id] ?? ''}
                       onChange={(e) => handleCommentChange(event.id, e.target.value)}
-                      className={`flex-1 min-w-0 px-3 py-2 border-2 rounded-lg focus:outline-none transition-colors duration-200 ${
-                        isXvideosMode
+                      className={`flex-1 min-w-0 px-3 py-2 border-2 rounded-lg focus:outline-none transition-colors duration-200 ${isXvideosMode
                           ? 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 focus:border-orange-500 dark:focus:border-orange-600'
                           : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:border-red-500 dark:focus:border-red-600'
-                      }`}
+                        }`}
                     />
                     <button
                       onClick={() => handleAddComment(event.id)}
-                      className={`shrink-0 px-4 py-2 text-white font-bold rounded-lg border-2 transition-colors duration-200 whitespace-nowrap ${
-                        isXvideosMode
+                      className={`shrink-0 px-4 py-2 text-white font-bold rounded-lg border-2 transition-colors duration-200 whitespace-nowrap ${isXvideosMode
                           ? 'bg-orange-600 dark:bg-orange-700 border-gray-600 dark:border-gray-700 hover:bg-orange-700 dark:hover:bg-orange-600'
                           : 'bg-blue-600 dark:bg-blue-700 border-black dark:border-gray-600 hover:bg-blue-700 dark:hover:bg-blue-600'
-                      }`}
+                        }`}
                     >
                       Enviar
                     </button>
@@ -548,11 +544,10 @@ export const EventsPage: React.FC = () => {
                 {canDeleteEvent && (
                   <button
                     onClick={() => handleDeleteEvent(event.id)}
-                    className={`w-full bg-red-600 dark:bg-red-700 text-white py-2 rounded-lg font-black border-2 transition-colors duration-200 ${
-                      isXvideosMode
+                    className={`w-full bg-red-600 dark:bg-red-700 text-white py-2 rounded-lg font-black border-2 transition-colors duration-200 ${isXvideosMode
                         ? 'border-gray-600 dark:border-gray-700 hover:bg-red-700 dark:hover:bg-red-600 mt-2'
                         : 'border-black dark:border-gray-600 hover:bg-red-700 dark:hover:bg-red-600 mt-4'
-                    }`}
+                      }`}
                   >
                     🗑️ Apagar rolê
                   </button>
@@ -563,8 +558,8 @@ export const EventsPage: React.FC = () => {
         })}
       </div>
 
-      <div className={isXvideosMode ? 
-        'mt-8' : 
+      <div className={isXvideosMode ?
+        'mt-8' :
         'bg-gradient-to-r from-yellow-400 to-orange-400 dark:from-yellow-600 dark:to-orange-600 rounded-2xl p-6 shadow-lg border-4 border-black dark:border-gray-700 space-y-4 transition-colors duration-200'
       }>
         <h3 className={`${isXvideosMode ? 'xvideos-text-primary text-2xl mb-4' : 'text-2xl font-black text-yellow-900 dark:text-yellow-100'}`}>
@@ -576,7 +571,7 @@ export const EventsPage: React.FC = () => {
           </p>
         ) : (
           <div className={isXvideosMode ? 'xvideos-grid' : 'grid grid-cols-1 md:grid-cols-2 gap-4'}>
-            {flashbacks.slice(0, 6).map((event) => (
+            {flashbacks.slice(0, 6).map((event: HubEvent) => (
               <div
                 key={event.id}
                 className={isXvideosMode ?
@@ -588,10 +583,10 @@ export const EventsPage: React.FC = () => {
                   // permission check same as upcoming events
                   const pick = (obj: any, keys: string[]) => keys.map((k) => obj?.[k]).filter((v) => v != null);
                   const creatorKeys = [
-                    'createdBy','created_by','createdById','created_by_id','creatorId','creator_id','ownerId','owner_id',
-                    'userId','user_id','authorId','author_id','createdByUsername','created_by_username','creatorUsername','creator_username'
+                    'createdBy', 'created_by', 'createdById', 'created_by_id', 'creatorId', 'creator_id', 'ownerId', 'owner_id',
+                    'userId', 'user_id', 'authorId', 'author_id', 'createdByUsername', 'created_by_username', 'creatorUsername', 'creator_username'
                   ];
-                  const userKeys = ['id','username','name','email'];
+                  const userKeys = ['id', 'username', 'name', 'email'];
                   const creatorValues = pick(event as any, creatorKeys);
                   const userValues = pick(user as any, userKeys);
                   const norm = (v: any) => String(v).trim().toLowerCase();
@@ -648,7 +643,7 @@ export const EventsPage: React.FC = () => {
                   (eventMediaMap[event.id] ?? []).length > 0 && (
                     <div className="mb-3">
                       <div className="grid grid-cols-3 gap-2">
-                        {eventMediaMap[event.id].slice(0, 3).map((mediaItem) => (
+                        {eventMediaMap[event.id].slice(0, 3).map((mediaItem: MediaItem) => (
                           <div key={mediaItem.id} className="relative group cursor-pointer" onClick={() => setPreviewMedia(mediaItem)}>
                             {mediaItem.type === 'photo' ? (
                               <img src={mediaItem.url} alt="Mídia do evento" className="w-full h-20 object-cover rounded-lg border border-yellow-400/60 group-hover:opacity-90" />

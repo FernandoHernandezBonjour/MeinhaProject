@@ -54,7 +54,7 @@ export const BirthdaysPage: React.FC = () => {
         today.setHours(0, 0, 0, 0);
         const currentYear = today.getFullYear();
 
-        const withBirthdays = rawUsers.filter(u => u.birthDate).map(user => {
+        const withBirthdays = rawUsers.filter((u: PublicUser) => u.birthDate).map((user: PublicUser) => {
             // Parse birthdate (assuming YYYY-MM-DD)
             const [bYear, bMonth, bDay] = (user.birthDate || '').split('-').map(Number);
 
@@ -119,7 +119,7 @@ export const BirthdaysPage: React.FC = () => {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {users.map((user) => (
+                {users.map((user: BirthdayDisplay) => (
                     <div
                         key={user.id}
                         className={`

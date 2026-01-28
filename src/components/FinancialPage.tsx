@@ -92,8 +92,8 @@ export const FinancialPage: React.FC = () => {
         setPaidDebts(response.debts);
         if (response.users.length > 0) {
           setUsers(prev => {
-            const existingIds = new Set(prev.map(u => u.id));
-            const newUsers = response.users.filter(u => !existingIds.has(u.id));
+            const existingIds = new Set(prev.map((u: User) => u.id));
+            const newUsers = response.users.filter((u: User) => !existingIds.has(u.id));
             return [...prev, ...newUsers];
           });
         }
@@ -172,7 +172,7 @@ export const FinancialPage: React.FC = () => {
 
           {/* Sirene do Calote */}
           {(() => {
-            const overdueDebts = debts.filter(debt =>
+            const overdueDebts = debts.filter((debt: Debt) =>
               debt.status === 'OPEN' && new Date(debt.dueDate) < new Date()
             );
 
@@ -240,7 +240,7 @@ export const FinancialPage: React.FC = () => {
 
                 <div className="text-center bg-green-100 p-4 rounded-xl border-2 border-green-300">
                   <div className="text-3xl font-black text-green-600">
-                    {formatCurrency(debts.reduce((sum, debt) => sum + debt.amount, 0))}
+                    {formatCurrency(debts.reduce((sum: number, debt: Debt) => sum + debt.amount, 0))}
                   </div>
                   <div className="text-sm font-bold text-green-800">
                     Valor Total
@@ -249,7 +249,7 @@ export const FinancialPage: React.FC = () => {
 
                 <div className="text-center bg-orange-100 p-4 rounded-xl border-2 border-orange-300">
                   <div className="text-3xl font-black text-orange-600">
-                    {debts.filter(debt =>
+                    {debts.filter((debt: Debt) =>
                       debt.status === 'OPEN' && new Date(debt.dueDate) < new Date()
                     ).length}
                   </div>
@@ -266,7 +266,7 @@ export const FinancialPage: React.FC = () => {
                 </h4>
                 <div className="space-y-2">
                   {(() => {
-                    const debtorTotals = debts.reduce((acc, debt) => {
+                    const debtorTotals = debts.reduce((acc: Record<string, number>, debt: Debt) => {
                       if (debt.status === 'OPEN') {
                         acc[debt.debtorId] = (acc[debt.debtorId] || 0) + debt.amount;
                       }
@@ -275,14 +275,14 @@ export const FinancialPage: React.FC = () => {
 
                     const sortedDebtors = Object.entries(debtorTotals)
                       .map(([userId, total]) => {
-                        const user = users.find(u => u.id === userId);
+                        const user = users.find((u: User) => u.id === userId);
                         return { user, total };
                       })
-                      .filter(item => item.user)
+                      .filter((item: any) => item.user)
                       .sort((a: { user: User | undefined; total: number }, b: { user: User | undefined; total: number }) => b.total - a.total)
                       .slice(0, 5);
 
-                    return sortedDebtors.map((item, index) => (
+                    return sortedDebtors.map((item: any, index: number) => (
                       <div
                         key={item.user!.id}
                         className="flex justify-between items-center p-3 bg-gray-100 dark:bg-gray-700 rounded-lg border-2 border-gray-300 dark:border-gray-600 transition-colors duration-200"
@@ -326,8 +326,8 @@ export const FinancialPage: React.FC = () => {
 
             <div className="p-6">
               {(() => {
-                const myDebtsAsCreditor = debts.filter(debt => debt.creditorId === user?.id);
-                const myDebtsAsDebtor = debts.filter(debt => debt.debtorId === user?.id);
+                const myDebtsAsCreditor = debts.filter((debt: Debt) => debt.creditorId === user?.id);
+                const myDebtsAsDebtor = debts.filter((debt: Debt) => debt.debtorId === user?.id);
 
                 if (myDebtsAsCreditor.length === 0 && myDebtsAsDebtor.length === 0) {
                   return (
@@ -347,12 +347,12 @@ export const FinancialPage: React.FC = () => {
                         <h4 className="text-xl font-black text-green-600 mb-4 flex items-center">
                           💰 Me Devem ({myDebtsAsCreditor.length})
                           <span className="ml-2 text-sm bg-green-100 px-3 py-1 rounded-full">
-                            {formatCurrency(myDebtsAsCreditor.reduce((sum, debt) => sum + debt.amount, 0))}
+                            {formatCurrency(myDebtsAsCreditor.reduce((sum: number, debt: Debt) => sum + debt.amount, 0))}
                           </span>
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {myDebtsAsCreditor.map(debt => {
-                            const debtor = users.find(u => u.id === debt.debtorId);
+                          {myDebtsAsCreditor.map((debt: Debt) => {
+                            const debtor = users.find((u: User) => u.id === debt.debtorId);
                             if (!debtor) return null;
 
                             return (
@@ -376,12 +376,12 @@ export const FinancialPage: React.FC = () => {
                         <h4 className="text-xl font-black text-red-600 mb-4 flex items-center">
                           💸 Eu Devo ({myDebtsAsDebtor.length})
                           <span className="ml-2 text-sm bg-red-100 px-3 py-1 rounded-full">
-                            {formatCurrency(myDebtsAsDebtor.reduce((sum, debt) => sum + debt.amount, 0))}
+                            {formatCurrency(myDebtsAsDebtor.reduce((sum: number, debt: Debt) => sum + debt.amount, 0))}
                           </span>
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {myDebtsAsDebtor.map(debt => {
-                            const creditor = users.find(u => u.id === debt.creditorId);
+                          {myDebtsAsDebtor.map((debt: Debt) => {
+                            const creditor = users.find((u: User) => u.id === debt.creditorId);
                             if (!creditor) return null;
 
                             return (
@@ -418,9 +418,9 @@ export const FinancialPage: React.FC = () => {
             <div className="p-6">
               {debts.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {debts.map(debt => {
-                    const creditor = users.find(u => u.id === debt.creditorId);
-                    const debtor = users.find(u => u.id === debt.debtorId);
+                  {debts.map((debt: Debt) => {
+                    const creditor = users.find((u: User) => u.id === debt.creditorId);
+                    const debtor = users.find((u: User) => u.id === debt.debtorId);
 
                     if (!creditor || !debtor) return null;
 
@@ -502,7 +502,7 @@ export const FinancialPage: React.FC = () => {
 
               <div className="p-6 overflow-y-auto max-h-[70vh]">
                 {(() => {
-                  const myPaidDebts = paidDebts.filter(debt =>
+                  const myPaidDebts = paidDebts.filter((debt: Debt) =>
                     debt.creditorId === user?.id || debt.debtorId === user?.id
                   );
 
@@ -526,11 +526,11 @@ export const FinancialPage: React.FC = () => {
                   }
 
                   const totalReceived = myPaidDebts
-                    .filter(debt => debt.creditorId === user?.id)
-                    .reduce((sum, debt) => sum + debt.amount, 0);
+                    .filter((debt: Debt) => debt.creditorId === user?.id)
+                    .reduce((sum: number, debt: Debt) => sum + debt.amount, 0);
                   const totalPaid = myPaidDebts
-                    .filter(debt => debt.debtorId === user?.id)
-                    .reduce((sum, debt) => sum + debt.amount, 0);
+                    .filter((debt: Debt) => debt.debtorId === user?.id)
+                    .reduce((sum: number, debt: Debt) => sum + debt.amount, 0);
 
                   return (
                     <div>
@@ -540,7 +540,7 @@ export const FinancialPage: React.FC = () => {
                             {formatCurrency(totalReceived)}
                           </p>
                           <p className="text-sm font-bold text-green-600">
-                            Recebido ({myPaidDebts.filter(d => d.creditorId === user?.id).length} dívidas)
+                            Recebido ({myPaidDebts.filter((d: Debt) => d.creditorId === user?.id).length} dívidas)
                           </p>
                         </div>
                         <div className="text-center bg-blue-100 p-4 rounded-xl border-2 border-blue-300">
@@ -548,15 +548,15 @@ export const FinancialPage: React.FC = () => {
                             {formatCurrency(totalPaid)}
                           </p>
                           <p className="text-sm font-bold text-blue-600">
-                            Pago ({myPaidDebts.filter(d => d.debtorId === user?.id).length} dívidas)
+                            Pago ({myPaidDebts.filter((d: Debt) => d.debtorId === user?.id).length} dívidas)
                           </p>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {myPaidDebts.map(debt => {
-                          const debtor = users.find(u => u.id === debt.debtorId);
-                          const creditor = users.find(u => u.id === debt.creditorId);
+                        {myPaidDebts.map((debt: Debt) => {
+                          const debtor = users.find((u: User) => u.id === debt.debtorId);
+                          const creditor = users.find((u: User) => u.id === debt.creditorId);
                           if (!debtor || !creditor) return null;
 
                           const isUserCreditor = debt.creditorId === user?.id;

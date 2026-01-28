@@ -1,20 +1,20 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  BankAccount, 
-  CreditCard, 
-  Transaction, 
+import {
+  BankAccount,
+  CreditCard,
+  Transaction,
   Invoice,
   TransactionType,
   TransactionStatus
 } from '@/types/financial';
-import { 
-  getBankAccountsAction, 
+import {
+  getBankAccountsAction,
   getCreditCardsAction,
   getTransactionsAction,
   getInvoicesAction,
-  deleteTransactionAction 
+  deleteTransactionAction
 } from '@/lib/actions/financial';
 import { BankAccountManager } from './BankAccountManager';
 import { CreditCardManager } from './CreditCardManager';
@@ -53,7 +53,7 @@ export const PersonalFinanceModule: React.FC = () => {
         getTransactionsAction(),
         getInvoicesAction()
       ]);
-      
+
       if (accountsRes.success) setAccounts(accountsRes.accounts || []);
       if (cardsRes.success) setCards(cardsRes.cards || []);
       if (transactionsRes.success) setTransactions(transactionsRes.transactions || []);
@@ -66,23 +66,23 @@ export const PersonalFinanceModule: React.FC = () => {
   };
 
   // Cálculo de Saldo Projetado (Dinâmico conforme o mês selecionado)
-  const projectedAccounts = accounts.map(acc => {
+  const projectedAccounts = accounts.map((acc: BankAccount) => {
     const endOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0, 23, 59, 59);
-    
+
     // Filtramos todas as transações daquela conta até o fim do mês selecionado
-    const accountTransactions = transactions.filter(t => 
-      t.bankAccountId === acc.id && 
+    const accountTransactions = transactions.filter((t: Transaction) =>
+      t.bankAccountId === acc.id &&
       new Date(t.date) <= endOfMonth
     );
-    
+
     const income = accountTransactions
-      .filter(t => t.type === 'INCOME')
-      .reduce((sum, t) => sum + t.amount, 0);
-      
+      .filter((t: Transaction) => t.type === 'INCOME')
+      .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
+
     const expense = accountTransactions
-      .filter(t => t.type === 'EXPENSE')
-      .reduce((sum, t) => sum + t.amount, 0);
-      
+      .filter((t: Transaction) => t.type === 'EXPENSE')
+      .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
+
     return {
       ...acc,
       currentBalance: acc.initialBalance + income - expense
@@ -90,7 +90,7 @@ export const PersonalFinanceModule: React.FC = () => {
   });
 
   const handleDeleteTransaction = async (id: string) => {
-    const transaction = transactions.find(t => t.id === id);
+    const transaction = transactions.find((t: Transaction) => t.id === id);
     if (!transaction) return;
 
     if (transaction.groupId) {
@@ -109,7 +109,7 @@ export const PersonalFinanceModule: React.FC = () => {
 
   const confirmDelete = async (deleteAll: boolean) => {
     if (!transactionToDelete) return;
-    
+
     const res = await deleteTransactionAction(transactionToDelete.id, deleteAll);
     if (res.success) {
       setTransactionToDelete(null);
@@ -136,7 +136,7 @@ export const PersonalFinanceModule: React.FC = () => {
       {/* Header e Navegação de Mês */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-gray-800 p-6 rounded-2xl border-4 border-black shadow-lg">
         <div className="flex items-center gap-4">
-          <button 
+          <button
             onClick={() => {
               const newDate = new Date(selectedDate);
               newDate.setMonth(selectedDate.getMonth() - 1);
@@ -151,7 +151,7 @@ export const PersonalFinanceModule: React.FC = () => {
               {new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(selectedDate)}
             </h2>
           </div>
-          <button 
+          <button
             onClick={() => {
               const newDate = new Date(selectedDate);
               newDate.setMonth(selectedDate.getMonth() + 1);
@@ -172,15 +172,15 @@ export const PersonalFinanceModule: React.FC = () => {
       </div>
 
       {/* Dashboard Summary */}
-      <PersonalDashboard 
-        accounts={projectedAccounts} 
-        cards={cards} 
+      <PersonalDashboard
+        accounts={projectedAccounts}
+        cards={cards}
         selectedDate={selectedDate}
-        transactions={transactions.filter(t => {
+        transactions={transactions.filter((t: Transaction) => {
           const tDate = new Date(t.date);
           return tDate.getMonth() === selectedDate.getMonth() && tDate.getFullYear() === selectedDate.getFullYear();
-        })} 
-        invoices={invoices} 
+        })}
+        invoices={invoices}
       />
 
       {/* Resumo por Categoria */}
@@ -188,13 +188,13 @@ export const PersonalFinanceModule: React.FC = () => {
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-2xl font-black dark:text-white">📊 Resumo por Categoria</h3>
           <div className="flex bg-gray-100 dark:bg-gray-700 p-1 rounded-lg border-2 border-black">
-            <button 
+            <button
               onClick={() => setSummaryMode('month')}
               className={`px-4 py-1 rounded-md font-bold text-sm transition-all ${summaryMode === 'month' ? 'bg-black text-white' : 'text-gray-500'}`}
             >
               Mês Atual
             </button>
-            <button 
+            <button
               onClick={() => setSummaryMode('total')}
               className={`px-4 py-1 rounded-md font-bold text-sm transition-all ${summaryMode === 'total' ? 'bg-black text-white' : 'text-gray-500'}`}
             >
@@ -210,27 +210,27 @@ export const PersonalFinanceModule: React.FC = () => {
               <span>📈 Receitas</span>
               <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
                 transactions
-                  .filter(t => t.type === 'INCOME' && (summaryMode === 'total' || (new Date(t.date).getMonth() === selectedDate.getMonth() && new Date(t.date).getFullYear() === selectedDate.getFullYear())))
-                  .reduce((sum, t) => sum + t.amount, 0)
+                  .filter((t: Transaction) => t.type === 'INCOME' && (summaryMode === 'total' || (new Date(t.date).getMonth() === selectedDate.getMonth() && new Date(t.date).getFullYear() === selectedDate.getFullYear())))
+                  .reduce((sum: number, t: Transaction) => sum + t.amount, 0)
               )}</span>
             </h4>
             <div className="space-y-2">
               {Object.entries(
                 transactions
-                  .filter(t => t.type === 'INCOME' && (summaryMode === 'total' || (new Date(t.date).getMonth() === selectedDate.getMonth() && new Date(t.date).getFullYear() === selectedDate.getFullYear())))
-                  .reduce((acc, t) => {
+                  .filter((t: Transaction) => t.type === 'INCOME' && (summaryMode === 'total' || (new Date(t.date).getMonth() === selectedDate.getMonth() && new Date(t.date).getFullYear() === selectedDate.getFullYear())))
+                  .reduce((acc: Record<string, number>, t: Transaction) => {
                     acc[t.category] = (acc[t.category] || 0) + t.amount;
                     return acc;
                   }, {} as Record<string, number>)
               )
-              .sort((a: [string, number], b: [string, number]) => b[1] - a[1])
-              .map(([category, amount]) => (
-                <div key={category} className="flex justify-between items-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <span className="font-bold text-gray-700 dark:text-gray-300">{category}</span>
-                  <span className="font-black text-green-600">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount)}</span>
-                </div>
-              ))}
-              {transactions.filter(t => t.type === 'INCOME' && (summaryMode === 'total' || (new Date(t.date).getMonth() === selectedDate.getMonth() && new Date(t.date).getFullYear() === selectedDate.getFullYear()))).length === 0 && (
+                .sort((a: [string, number], b: [string, number]) => b[1] - a[1])
+                .map(([category, amount]) => (
+                  <div key={category} className="flex justify-between items-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <span className="font-bold text-gray-700 dark:text-gray-300">{category}</span>
+                    <span className="font-black text-green-600">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount)}</span>
+                  </div>
+                ))}
+              {transactions.filter((t: Transaction) => t.type === 'INCOME' && (summaryMode === 'total' || (new Date(t.date).getMonth() === selectedDate.getMonth() && new Date(t.date).getFullYear() === selectedDate.getFullYear()))).length === 0 && (
                 <p className="text-sm text-gray-400 italic">Nenhuma receita no período.</p>
               )}
             </div>
@@ -242,27 +242,27 @@ export const PersonalFinanceModule: React.FC = () => {
               <span>📉 Gastos</span>
               <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
                 transactions
-                  .filter(t => t.type === 'EXPENSE' && (summaryMode === 'total' || (new Date(t.date).getMonth() === selectedDate.getMonth() && new Date(t.date).getFullYear() === selectedDate.getFullYear())))
-                  .reduce((sum, t) => sum + t.amount, 0)
+                  .filter((t: Transaction) => t.type === 'EXPENSE' && (summaryMode === 'total' || (new Date(t.date).getMonth() === selectedDate.getMonth() && new Date(t.date).getFullYear() === selectedDate.getFullYear())))
+                  .reduce((sum: number, t: Transaction) => sum + t.amount, 0)
               )}</span>
             </h4>
             <div className="space-y-2">
               {Object.entries(
                 transactions
-                  .filter(t => t.type === 'EXPENSE' && (summaryMode === 'total' || (new Date(t.date).getMonth() === selectedDate.getMonth() && new Date(t.date).getFullYear() === selectedDate.getFullYear())))
-                  .reduce((acc, t) => {
+                  .filter((t: Transaction) => t.type === 'EXPENSE' && (summaryMode === 'total' || (new Date(t.date).getMonth() === selectedDate.getMonth() && new Date(t.date).getFullYear() === selectedDate.getFullYear())))
+                  .reduce((acc: Record<string, number>, t: Transaction) => {
                     acc[t.category] = (acc[t.category] || 0) + t.amount;
                     return acc;
                   }, {} as Record<string, number>)
               )
-              .sort((a: [string, number], b: [string, number]) => b[1] - a[1])
-              .map(([category, amount]) => (
-                <div key={category} className="flex justify-between items-center p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                  <span className="font-bold text-gray-700 dark:text-gray-300">{category}</span>
-                  <span className="font-black text-red-600">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount)}</span>
-                </div>
-              ))}
-              {transactions.filter(t => t.type === 'EXPENSE' && (summaryMode === 'total' || (new Date(t.date).getMonth() === selectedDate.getMonth() && new Date(t.date).getFullYear() === selectedDate.getFullYear()))).length === 0 && (
+                .sort((a: [string, number], b: [string, number]) => b[1] - a[1])
+                .map(([category, amount]) => (
+                  <div key={category} className="flex justify-between items-center p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                    <span className="font-bold text-gray-700 dark:text-gray-300">{category}</span>
+                    <span className="font-black text-red-600">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount)}</span>
+                  </div>
+                ))}
+              {transactions.filter((t: Transaction) => t.type === 'EXPENSE' && (summaryMode === 'total' || (new Date(t.date).getMonth() === selectedDate.getMonth() && new Date(t.date).getFullYear() === selectedDate.getFullYear()))).length === 0 && (
                 <p className="text-sm text-gray-400 italic">Nenhum gasto no período.</p>
               )}
             </div>
@@ -279,11 +279,11 @@ export const PersonalFinanceModule: React.FC = () => {
 
         {/* Faturas */}
         <div>
-          <InvoiceManager 
-            cards={cards} 
-            invoices={invoices} 
-            accounts={accounts} 
-            onUpdate={fetchData} 
+          <InvoiceManager
+            cards={cards}
+            invoices={invoices}
+            accounts={accounts}
+            onUpdate={fetchData}
           />
         </div>
       </div>
@@ -292,7 +292,7 @@ export const PersonalFinanceModule: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border-4 border-black transition-colors duration-200">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
           <h3 className="text-2xl font-black dark:text-white">📑 Últimos Lançamentos</h3>
-          
+
           <div className="flex flex-wrap gap-2">
             <input
               type="text"
@@ -335,7 +335,7 @@ export const PersonalFinanceModule: React.FC = () => {
             </thead>
             <tbody>
               {transactions
-                .filter(t => {
+                .filter((t: Transaction) => {
                   const tDate = new Date(t.date);
                   if (tDate.getMonth() !== selectedDate.getMonth() || tDate.getFullYear() !== selectedDate.getFullYear()) return false;
                   if (filterType !== 'ALL' && t.type !== filterType) return false;
@@ -343,7 +343,7 @@ export const PersonalFinanceModule: React.FC = () => {
                   if (searchTerm && !t.description.toLowerCase().includes(searchTerm.toLowerCase())) return false;
                   return true;
                 })
-                .map((t) => (
+                .map((t: Transaction) => (
                   <tr key={t.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 group">
                     <td className="py-3 px-2 text-sm dark:text-gray-300">{new Date(t.date).toLocaleDateString('pt-BR')}</td>
                     <td className="py-3 px-2 font-bold dark:text-white">{t.description}</td>
@@ -378,11 +378,11 @@ export const PersonalFinanceModule: React.FC = () => {
       {/* Modal de Transação */}
       {showTransactionForm && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[70] px-4 overflow-y-auto">
-          <TransactionForm 
-            accounts={accounts} 
-            cards={cards} 
-            onSuccess={() => { setShowTransactionForm(false); fetchData(); }} 
-            onCancel={() => setShowTransactionForm(false)} 
+          <TransactionForm
+            accounts={accounts}
+            cards={cards}
+            onSuccess={() => { setShowTransactionForm(false); fetchData(); }}
+            onCancel={() => setShowTransactionForm(false)}
           />
         </div>
       )}

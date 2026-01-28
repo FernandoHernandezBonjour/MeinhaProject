@@ -33,7 +33,7 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
         const response = await getUsersAction();
         if (response.success) {
           // Filtrar o usuário atual da lista
-          const otherUsers = response.users.filter(u => u.id !== user?.id);
+          const otherUsers = response.users.filter((u: User) => u.id !== user?.id);
           setUsers(otherUsers);
           console.log('Usuários carregados:', otherUsers.length);
         } else {
@@ -56,9 +56,9 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
   const handleDebtorToggle = (userId: string) => {
     setError('');
     if (selectedDebtors.includes(userId)) {
-      const newSelected = selectedDebtors.filter(id => id !== userId);
+      const newSelected = selectedDebtors.filter((id: string) => id !== userId);
       setSelectedDebtors(newSelected);
-      
+
       if (newSelected.length === 0) {
         // Se não há mais devedores, limpa tudo
         setTotalAmount('');
@@ -88,7 +88,7 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
     } else {
       const newSelected = [...selectedDebtors, userId];
       setSelectedDebtors(newSelected);
-      
+
       if (newSelected.length === 1) {
         // Se for o primeiro, não precisa calcular ainda
         setDebtorAmounts({ [userId]: totalAmount || '' });
@@ -118,7 +118,7 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
   const handleTotalAmountChange = (value: string) => {
     setTotalAmount(value);
     setError('');
-    
+
     if (selectedDebtors.length > 1 && value) {
       const total = parseFloat(value);
       if (!isNaN(total) && total > 0) {
@@ -160,12 +160,12 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
 
     const total = parseFloat(totalAmount);
     let sum = 0;
-    
+
     for (const userId of selectedDebtors) {
       const amountStr = debtorAmounts[userId] || '0';
       const amount = parseFloat(amountStr);
       if (isNaN(amount) || amount < 0) {
-        setError(`Valor inválido para ${users.find(u => u.id === userId)?.name || users.find(u => u.id === userId)?.username || 'usuário'}`);
+        setError(`Valor inválido para ${users.find((u: User) => u.id === userId)?.name || users.find((u: User) => u.id === userId)?.username || 'usuário'}`);
         return false;
       }
       sum += amount;
@@ -205,11 +205,11 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
     try {
       // Criar um FormData para cada dívida
       const debtsToCreate: FormData[] = [];
-      
+
       selectedDebtors.forEach(userId => {
         const debtFormData = new FormData();
         debtFormData.append('debtorId', userId);
-        const amount = selectedDebtors.length === 1 
+        const amount = selectedDebtors.length === 1
           ? (debtorAmounts[userId] || totalAmount)
           : debtorAmounts[userId];
         debtFormData.append('amount', amount);
@@ -224,11 +224,11 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
       });
 
       // Criar todas as dívidas
-      const results = await Promise.all(debtsToCreate.map(debtFormData => createDebtAction(debtFormData)));
-      
-      const hasError = results.some(result => result.error);
+      const results = await Promise.all(debtsToCreate.map((debtFormData: FormData) => createDebtAction(debtFormData)));
+
+      const hasError = results.some((result: any) => result.error);
       if (hasError) {
-        const firstError = results.find(result => result.error);
+        const firstError = results.find((result: any) => result.error);
         setError(firstError?.error || 'Erro ao criar dívidas');
       } else {
         const count = results.length;
@@ -247,16 +247,16 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
 
   const isMultipleDebtors = selectedDebtors.length > 1;
   const remainingAmount = isMultipleDebtors && totalAmount
-    ? (parseFloat(totalAmount) - selectedDebtors.reduce((sum, userId) => {
-        const amount = parseFloat(debtorAmounts[userId] || '0');
-        return sum + (isNaN(amount) ? 0 : amount);
-      }, 0)).toFixed(2)
+    ? (parseFloat(totalAmount) - selectedDebtors.reduce((sum: number, userId: string) => {
+      const amount = parseFloat(debtorAmounts[userId] || '0');
+      return sum + (isNaN(amount) ? 0 : amount);
+    }, 0)).toFixed(2)
     : '0.00';
 
   return (
     <div className="bg-white/60 backdrop-blur-sm p-8 rounded-2xl shadow-2xl border-4 border-black">
       <h2 className="text-3xl font-black text-red-600 mb-8 text-center">💸 CRIAR NOVA DÍVIDA 💸</h2>
-      
+
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Coluna Esquerda */}
@@ -272,7 +272,7 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
                 ) : users.length === 0 ? (
                   <div className="text-center py-4 text-gray-600 font-bold">Nenhum usuário disponível</div>
                 ) : (
-                  users.map(userItem => (
+                  users.map((userItem: User) => (
                     <label key={userItem.id} className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded">
                       <input
                         type="checkbox"
@@ -388,11 +388,11 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
                     💸 Ajustar valores individuais (opcional)
                   </h3>
                   <div className="space-y-3">
-                    {selectedDebtors.map(userId => {
-                      const userItem = users.find(u => u.id === userId);
+                    {selectedDebtors.map((userId: string) => {
+                      const userItem = users.find((u: User) => u.id === userId);
                       const displayName = userItem?.name || userItem?.username || 'Usuário';
                       const individualAmount = debtorAmounts[userId] || '0.00';
-                      
+
                       return (
                         <div key={userId}>
                           <label htmlFor={`amount-${userId}`} className="block text-md font-bold text-gray-700 mb-1">
@@ -412,13 +412,13 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
                       );
                     })}
                   </div>
-                  
+
                   {totalAmount && (
                     <div className="mt-4 p-3 rounded-lg bg-white border-2 border-gray-300">
                       <div className="flex justify-between items-center">
                         <span className="text-md font-bold text-gray-700">Soma dos valores:</span>
                         <span className={`text-lg font-black ${Math.abs(parseFloat(remainingAmount)) < 0.01 ? 'text-green-600' : 'text-red-600'}`}>
-                          R$ {selectedDebtors.reduce((sum, userId) => {
+                          R$ {selectedDebtors.reduce((sum: number, userId: string) => {
                             const amount = parseFloat(debtorAmounts[userId] || '0');
                             return sum + (isNaN(amount) ? 0 : amount);
                           }, 0).toFixed(2)}
@@ -461,7 +461,7 @@ export const DebtFormServer: React.FC<DebtFormServerProps> = ({ onSuccess, onCan
           >
             {submitting ? '💸 CRIANDO DÍVIDA...' : '💸 CRIAR DÍVIDA'}
           </button>
-          
+
           {onCancel && (
             <button
               type="button"

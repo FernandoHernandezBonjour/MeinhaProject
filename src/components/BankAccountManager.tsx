@@ -107,7 +107,7 @@ export const BankAccountManager: React.FC<Props> = ({ accounts, onUpdate }) => {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {accounts.map((account) => (
+        {accounts.map((account: BankAccount) => (
           <div
             key={account.id}
             className="p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 shadow-sm relative group"

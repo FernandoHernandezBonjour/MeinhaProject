@@ -272,7 +272,7 @@ export const AdminPanel: React.FC = () => {
                       </td>
                     </tr>
                   ) : (
-                    sortedUsers.map((managedUser) => {
+                    sortedUsers.map((managedUser: ManagedUser) => {
                       const needsReset = !managedUser.passwordChanged || managedUser.forcePasswordReset;
                       return (
                         <tr key={managedUser.id}>

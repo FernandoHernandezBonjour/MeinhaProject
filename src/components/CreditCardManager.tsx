@@ -143,7 +143,7 @@ export const CreditCardManager: React.FC<Props> = ({ cards, onUpdate }) => {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {cards.map((card) => {
+        {cards.map((card: CreditCard) => {
           const usedPercentage = ((card.limit - card.availableLimit) / card.limit) * 100;
           return (
             <div
@@ -174,7 +174,7 @@ export const CreditCardManager: React.FC<Props> = ({ cards, onUpdate }) => {
                 Livre: {formatCurrency(card.availableLimit)}
               </p>
               <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div 
+                <div
                   className={`h-2 rounded-full ${usedPercentage > 90 ? 'bg-red-500' : usedPercentage > 50 ? 'bg-yellow-500' : 'bg-green-500'}`}
                   style={{ width: `${Math.min(usedPercentage, 100)}%` }}
                 ></div>
