@@ -159,7 +159,7 @@ export const ScoreConfigForm: React.FC = () => {
                             <input type="number" value={rules.penalties.overdueMax} onChange={e => handleChange('penalties.overdueMax', e.target.value)} className="w-full p-2 border rounded" />
                         </div>
                         <div>
-                            <label className="text-xs">Calote (>60d)</label>
+                            <label className="text-xs">Calote (&gt;60d)</label>
                             <input type="number" value={rules.penalties.default} onChange={e => handleChange('penalties.default', e.target.value)} className="w-full p-2 border rounded" />
                         </div>
                     </div>
