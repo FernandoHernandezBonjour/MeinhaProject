@@ -2,7 +2,12 @@
 
 import React, { useState } from 'react';
 import { BankAccount } from '@/types/financial';
-import { createBankAccountAction, deleteBankAccountAction } from '@/lib/actions/financial';
+import {
+  createBankAccountAction,
+  deleteBankAccountAction,
+  recalibrateAccountBalanceAction,
+  updateBankAccountAction
+} from '@/lib/actions/financial';
 
 interface Props {
   accounts: BankAccount[];
@@ -13,6 +18,7 @@ export const BankAccountManager: React.FC<Props> = ({ accounts, onUpdate }) => {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -24,23 +30,48 @@ export const BankAccountManager: React.FC<Props> = ({ accounts, onUpdate }) => {
 
     if (result.success) {
       setShowForm(false);
+      if (e.currentTarget) e.currentTarget.reset();
       onUpdate();
     } else {
-      setError(result.error || 'Erro ao criar conta');
+      alert(result.error);
+    }
+    setLoading(false);
+  };
+
+  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editingAccount) return;
+    setLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const result = await updateBankAccountAction(editingAccount.id, formData);
+
+    if (result.success) {
+      setEditingAccount(null);
+      onUpdate();
+    } else {
+      alert(result.error);
     }
     setLoading(false);
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Deseja realmente excluir esta conta? Isso não apagará as transações vinculadas, mas o saldo será perdido.')) {
-      setLoading(true);
-      const result = await deleteBankAccountAction(id);
-      if (result.success) {
+    if (confirm('Tem certeza que deseja excluir esta conta?')) {
+      const res = await deleteBankAccountAction(id);
+      if (res.success) {
         onUpdate();
       } else {
-        alert(result.error);
+        alert(res.error);
       }
-      setLoading(false);
+    }
+  };
+
+  const handleRecalibrate = async (id: string) => {
+    const res = await recalibrateAccountBalanceAction(id);
+    if (res.success) {
+      onUpdate();
+    } else {
+      alert(res.error);
     }
   };
 
@@ -112,13 +143,29 @@ export const BankAccountManager: React.FC<Props> = ({ accounts, onUpdate }) => {
             key={account.id}
             className="p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 shadow-sm relative group"
           >
-            <button
-              onClick={() => handleDelete(account.id)}
-              className="absolute top-2 right-2 text-xs opacity-0 group-hover:opacity-100 bg-red-500 text-white p-1 rounded hover:bg-red-600 transition-opacity"
-              title="Excluir conta"
-            >
-              🗑️
-            </button>
+            <div className="flex gap-2 absolute top-2 right-2">
+              <button
+                onClick={() => handleRecalibrate(account.id)}
+                className="opacity-0 group-hover:opacity-100 p-1 text-blue-500 hover:bg-blue-50 rounded transition-all"
+                title="Recalibrar saldo (Corrigir desvios)"
+              >
+                🔄
+              </button>
+              <button
+                onClick={() => setEditingAccount(account)}
+                className="opacity-0 group-hover:opacity-100 p-1 text-yellow-500 hover:bg-yellow-50 rounded transition-all"
+                title="Editar conta"
+              >
+                ✏️
+              </button>
+              <button
+                onClick={() => handleDelete(account.id)}
+                className="opacity-0 group-hover:opacity-100 p-1 text-red-500 hover:bg-red-50 rounded transition-all"
+                title="Excluir conta"
+              >
+                🗑️
+              </button>
+            </div>
             <p className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase">{account.name}</p>
             <p className={`text-2xl font-black ${account.currentBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {formatCurrency(account.currentBalance)}

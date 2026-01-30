@@ -43,6 +43,7 @@ export const PersonalFinanceModule: React.FC = () => {
 
   // Controle de Deleção de Grupo
   const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -164,7 +165,10 @@ export const PersonalFinanceModule: React.FC = () => {
         </div>
 
         <button
-          onClick={() => setShowTransactionForm(true)}
+          onClick={() => {
+            setEditingTransaction(null);
+            setShowTransactionForm(true);
+          }}
           className="bg-green-600 text-white px-8 py-4 rounded-2xl font-black text-xl border-4 border-black hover:bg-green-700 transition-all shadow-xl hover:scale-105"
         >
           💰 Novo Lançamento
@@ -181,6 +185,7 @@ export const PersonalFinanceModule: React.FC = () => {
           return tDate.getMonth() === selectedDate.getMonth() && tDate.getFullYear() === selectedDate.getFullYear();
         })}
         invoices={invoices}
+        realAccounts={accounts}
       />
 
       {/* Resumo por Categoria */}
@@ -357,6 +362,16 @@ export const PersonalFinanceModule: React.FC = () => {
                           {t.status === 'PAID' ? 'Pago' : 'Pendente'}
                         </span>
                         <button
+                          onClick={() => {
+                            setEditingTransaction(t);
+                            setShowTransactionForm(true);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1 text-blue-500 hover:bg-blue-50 rounded transition-all"
+                          title="Editar lançamento"
+                        >
+                          ✏️
+                        </button>
+                        <button
                           onClick={() => handleDeleteTransaction(t.id)}
                           className="opacity-0 group-hover:opacity-100 p-1 text-red-500 hover:bg-red-50 rounded transition-all"
                           title="Excluir lançamento"
@@ -381,8 +396,9 @@ export const PersonalFinanceModule: React.FC = () => {
           <TransactionForm
             accounts={accounts}
             cards={cards}
-            onSuccess={() => { setShowTransactionForm(false); fetchData(); }}
-            onCancel={() => setShowTransactionForm(false)}
+            initialData={editingTransaction}
+            onSuccess={() => { setShowTransactionForm(false); setEditingTransaction(null); fetchData(); }}
+            onCancel={() => { setShowTransactionForm(false); setEditingTransaction(null); }}
           />
         </div>
       )}

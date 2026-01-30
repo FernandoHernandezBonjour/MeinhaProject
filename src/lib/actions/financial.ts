@@ -24,10 +24,10 @@ import {
   updateTransaction,
   getUser,
 } from '../firestore-server';
-import { 
-  BankAccount, 
-  CreditCard, 
-  Transaction, 
+import {
+  BankAccount,
+  CreditCard,
+  Transaction,
   Invoice,
   TransactionType,
   PaymentMethod,
@@ -113,6 +113,64 @@ export async function deleteBankAccountAction(id: string) {
   }
 }
 
+export async function recalibrateAccountBalanceAction(accountId: string) {
+  try {
+    const user = await getAuthenticatedUser();
+    const account = await getBankAccount(accountId);
+    if (!account) return { success: false, error: 'Conta não encontrada' };
+    if (account.userId !== user.userId) return { success: false, error: 'Não autorizado' };
+
+    const transactions = await getTransactionsByUser(user.userId);
+
+    // Filtra transações dessa conta que estão PAGAS
+    const accountTransactions = transactions.filter(t =>
+      t.bankAccountId === accountId &&
+      t.status === 'PAID' &&
+      t.paymentMethod === 'BANK_ACCOUNT'
+    );
+
+    const totalIncome = accountTransactions
+      .filter(t => t.type === 'INCOME')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const totalExpense = accountTransactions
+      .filter(t => t.type === 'EXPENSE')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const correctBalance = account.initialBalance + totalIncome - totalExpense;
+
+    await updateBankAccount(accountId, { currentBalance: correctBalance });
+    revalidatePath('/financial');
+    return { success: true, newBalance: correctBalance };
+  } catch (error) {
+    console.error('Erro ao recalibrar conta:', error);
+    return { success: false, error: 'Erro ao recalibrar saldo da conta' };
+  }
+}
+
+export async function updateBankAccountAction(id: string, formData: FormData) {
+  try {
+    const user = await getAuthenticatedUser();
+    const name = formData.get('name') as string;
+    const initialBalance = parseFloat(formData.get('initialBalance') as string || '0');
+
+    if (!name) {
+      return { success: false, error: 'Nome da conta é obrigatório.' };
+    }
+
+    await updateBankAccount(id, { name, initialBalance });
+
+    // Auto-recalibrate to ensure consistency with new initial balance
+    await recalibrateAccountBalanceAction(id);
+
+    revalidatePath('/financial');
+    return { success: true };
+  } catch (error) {
+    console.error('Erro ao atualizar conta:', error);
+    return { success: false, error: 'Erro ao atualizar conta bancária' };
+  }
+}
+
 // Credit Cards
 export async function getCreditCardsAction() {
   try {
@@ -141,12 +199,12 @@ export async function getInvoicesAction() {
     const user = await getAuthenticatedUser();
     const cards = await getCreditCardsByUser(user.userId);
     let allInvoices: Invoice[] = [];
-    
+
     for (const card of cards) {
       const cardInvoices = await getInvoicesByCard(card.id);
       allInvoices = [...allInvoices, ...cardInvoices];
     }
-    
+
     return { success: true, invoices: allInvoices };
   } catch (error) {
     console.error('Erro ao buscar faturas:', error);
@@ -212,7 +270,7 @@ export async function recalibrateCreditCardLimitAction(cardId: string) {
     if (!card) return { success: false, error: 'Cartão não encontrado' };
 
     const transactions = await getTransactionsByUser(user.userId);
-    
+
     // O limite usado é a soma de todas as transações de cartão que ainda estão PENDENTES
     // (Pois quando a fatura é paga, as transações mudam para PAID e o limite é liberado)
     const usedAmount = transactions
@@ -234,7 +292,7 @@ export async function recalibrateCreditCardLimitAction(cardId: string) {
 export async function createTransactionAction(formData: FormData) {
   try {
     const user = await getAuthenticatedUser();
-    
+
     const description = formData.get('description') as string;
     const amount = parseFloat(formData.get('amount') as string);
     const dateStr = formData.get('date') as string;
@@ -244,7 +302,7 @@ export async function createTransactionAction(formData: FormData) {
     const bankAccountId = formData.get('bankAccountId') as string;
     const creditCardId = formData.get('creditCardId') as string;
     const status = formData.get('status') as TransactionStatus || (paymentMethod === 'CREDIT_CARD' ? 'PENDING' : 'PAID');
-    
+
     // Novas opções
     const isRecurring = formData.get('isRecurring') === 'true';
     const numInstallments = parseInt(formData.get('installments') as string || '1');
@@ -253,7 +311,9 @@ export async function createTransactionAction(formData: FormData) {
       return { success: false, error: 'Todos os campos obrigatórios devem ser preenchidos.' };
     }
 
-    const baseDate = new Date(dateStr);
+    // Fix Date: Criar data ao meio-dia para evitar problemas de fuso horário
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const baseDate = new Date(y, m - 1, d, 12, 0, 0);
     const groupId = (numInstallments > 1 || isRecurring) ? randomUUID() : undefined;
 
     // Se for fixo (recurring) e não for cartão, podemos criar apenas a primeira 
@@ -264,9 +324,9 @@ export async function createTransactionAction(formData: FormData) {
     for (let i = 0; i < occurrences; i++) {
       const transactionDate = new Date(baseDate);
       transactionDate.setMonth(baseDate.getMonth() + i);
-      
+
       const installmentAmount = numInstallments > 1 ? amount / numInstallments : amount;
-      
+
       const transactionData: Omit<Transaction, 'id'> = {
         userId: user.userId,
         description: numInstallments > 1 ? `${description} (${i + 1}/${numInstallments})` : description,
@@ -293,13 +353,13 @@ export async function createTransactionAction(formData: FormData) {
       if (paymentMethod === 'BANK_ACCOUNT') {
         if (!bankAccountId) return { success: false, error: 'Conta bancária é obrigatória.' };
         transactionData.bankAccountId = bankAccountId;
-        
+
         // Apenas atualiza o saldo da conta se a transação for para a data atual (ou passada) e estiver PAGA
         if (i === 0 && transactionData.status === 'PAID') {
           const account = await getBankAccount(bankAccountId);
           if (account) {
-            const newBalance = type === 'INCOME' 
-              ? account.currentBalance + installmentAmount 
+            const newBalance = type === 'INCOME'
+              ? account.currentBalance + installmentAmount
               : account.currentBalance - installmentAmount;
             await updateBankAccount(bankAccountId, { currentBalance: newBalance });
           }
@@ -307,15 +367,15 @@ export async function createTransactionAction(formData: FormData) {
       } else if (paymentMethod === 'CREDIT_CARD') {
         if (!creditCardId) return { success: false, error: 'Cartão de crédito é obrigatório.' };
         transactionData.creditCardId = creditCardId;
-        
+
         const card = await getCreditCard(creditCardId);
         if (card && type === 'EXPENSE') {
           // Lógica de Fatura para cada parcela
           const { month, year, dueDate, closingDate } = getInvoicePeriod(transactionDate, card.closingDay, card.dueDay);
-          
+
           const invoices = await getInvoicesByCard(creditCardId);
           let invoice = invoices.find(inv => inv.month === month && inv.year === year);
-          
+
           if (!invoice) {
             const invoiceId = await createInvoice({
               userId: user.userId,
@@ -353,15 +413,90 @@ export async function createTransactionAction(formData: FormData) {
   }
 }
 
+export async function updateTransactionAction(id: string, formData: FormData) {
+  try {
+    const user = await getAuthenticatedUser();
+    const transaction = await getTransaction(id);
+
+    if (!transaction) return { success: false, error: 'Transação não encontrada.' };
+    if (transaction.userId !== user.userId) return { success: false, error: 'Não autorizado.' };
+
+    const description = formData.get('description') as string;
+    const amount = parseFloat(formData.get('amount') as string);
+    const dateStr = formData.get('date') as string;
+    const type = formData.get('type') as TransactionType;
+    const category = formData.get('category') as string;
+    const status = formData.get('status') as TransactionStatus;
+
+    // Para simplificar, não vamos permitir mudar conta/cartão na edição por enquanto
+    // pois envolveria estornar saldos antigos e aplicar novos.
+
+    if (!description || !amount || !dateStr || !type || !category || !status) {
+      return { success: false, error: 'Todos os campos obrigatórios devem ser preenchidos.' };
+    }
+
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const newDate = new Date(y, m - 1, d, 12, 0, 0);
+
+    // Se houve mudança de status, precisamos ajustar o saldo (para contas bancárias)
+    // Se era PENDING e virou PAID -> Aplica o valor
+    // Se era PAID e virou PENDING -> Estorna o valor
+    if (transaction.paymentMethod === 'BANK_ACCOUNT' && transaction.bankAccountId) {
+      const account = await getBankAccount(transaction.bankAccountId);
+      if (account) {
+        let balanceChange = 0;
+
+        // Caso 1: Mudou de PENDING para PAID
+        if (transaction.status === 'PENDING' && status === 'PAID') {
+          balanceChange = type === 'INCOME' ? amount : -amount;
+        }
+        // Caso 2: Mudou de PAID para PENDING
+        else if (transaction.status === 'PAID' && status === 'PENDING') {
+          balanceChange = type === 'INCOME' ? -transaction.amount : transaction.amount; // Nota: usa transaction.amount original para estorno exato
+        }
+        // Caso 3: Já era PAID e mudou o valor (amount)
+        else if (transaction.status === 'PAID' && status === 'PAID' && amount !== transaction.amount) {
+          const oldImpact = transaction.type === 'INCOME' ? transaction.amount : -transaction.amount;
+          const newImpact = type === 'INCOME' ? amount : -amount;
+          balanceChange = newImpact - oldImpact;
+        }
+
+        if (balanceChange !== 0) {
+          await updateBankAccount(transaction.bankAccountId, {
+            currentBalance: account.currentBalance + balanceChange
+          });
+        }
+      }
+    }
+
+    // Atualiza a transação
+    await updateTransaction(id, {
+      description,
+      amount,
+      date: newDate,
+      type,
+      category,
+      status,
+      updatedAt: new Date()
+    });
+
+    revalidatePath('/financial');
+    return { success: true };
+  } catch (error) {
+    console.error('Erro ao atualizar transação:', error);
+    return { success: false, error: 'Erro ao atualizar transação' };
+  }
+}
+
 export async function deleteTransactionAction(id: string, deleteAllInGroup: boolean = false) {
   try {
     const user = await getAuthenticatedUser();
     const transaction = await getTransaction(id);
-    
+
     if (!transaction) return { success: false, error: 'Transação não encontrada' };
 
     const transactionsToDelete = [];
-    
+
     if (deleteAllInGroup && transaction.groupId) {
       const allTransactions = await getTransactionsByUser(user.userId);
       transactionsToDelete.push(...allTransactions.filter(t => t.groupId === transaction.groupId));
@@ -374,8 +509,8 @@ export async function deleteTransactionAction(id: string, deleteAllInGroup: bool
       if (t.status === 'PAID' && t.paymentMethod === 'BANK_ACCOUNT' && t.bankAccountId) {
         const account = await getBankAccount(t.bankAccountId);
         if (account) {
-          const newBalance = t.type === 'INCOME' 
-            ? account.currentBalance - t.amount 
+          const newBalance = t.type === 'INCOME'
+            ? account.currentBalance - t.amount
             : account.currentBalance + t.amount;
           await updateBankAccount(t.bankAccountId, { currentBalance: newBalance });
         }
@@ -384,7 +519,7 @@ export async function deleteTransactionAction(id: string, deleteAllInGroup: bool
       // Estornar impacto no cartão se for despesa no cartão
       if (t.paymentMethod === 'CREDIT_CARD' && t.creditCardId) {
         const card = await getCreditCard(t.creditCardId);
-        
+
         let shouldRefundLimit = true;
         if (t.invoiceId) {
           const invoice = await getInvoice(t.invoiceId);
@@ -394,16 +529,16 @@ export async function deleteTransactionAction(id: string, deleteAllInGroup: bool
         }
 
         if (card && shouldRefundLimit) {
-          await updateCreditCard(t.creditCardId, { 
-            availableLimit: Math.min(card.limit, card.availableLimit + t.amount) 
+          await updateCreditCard(t.creditCardId, {
+            availableLimit: Math.min(card.limit, card.availableLimit + t.amount)
           });
         }
-        
+
         if (t.invoiceId && shouldRefundLimit) {
           const invoice = await getInvoice(t.invoiceId);
           if (invoice) {
-            await updateInvoice(t.invoiceId, { 
-              totalAmount: Math.max(0, invoice.totalAmount - t.amount) 
+            await updateInvoice(t.invoiceId, {
+              totalAmount: Math.max(0, invoice.totalAmount - t.amount)
             });
           }
         }
@@ -424,7 +559,7 @@ export async function deleteTransactionAction(id: string, deleteAllInGroup: bool
 export async function payInvoiceAction(invoiceId: string, bankAccountId: string) {
   try {
     const user = await getAuthenticatedUser();
-    
+
     if (!bankAccountId) {
       return { success: false, error: 'Uma conta bancária deve ser selecionada para pagar a fatura.' };
     }
@@ -445,17 +580,17 @@ export async function payInvoiceAction(invoiceId: string, bankAccountId: string)
     }
 
     // 1. Descontar do saldo bancário
-    await updateBankAccount(bankAccountId, { 
-      currentBalance: account.currentBalance - invoice.totalAmount 
+    await updateBankAccount(bankAccountId, {
+      currentBalance: account.currentBalance - invoice.totalAmount
     });
 
     // 2. Liberar limite do cartão
-    await updateCreditCard(card.id, { 
-      availableLimit: card.availableLimit + invoice.totalAmount 
+    await updateCreditCard(card.id, {
+      availableLimit: card.availableLimit + invoice.totalAmount
     });
 
     // 3. Atualizar status da fatura
-    await updateInvoice(invoiceId, { 
+    await updateInvoice(invoiceId, {
       status: 'PAID',
       paidAt: new Date(),
       paidFromBankAccountId: bankAccountId
@@ -464,7 +599,7 @@ export async function payInvoiceAction(invoiceId: string, bankAccountId: string)
     // 4. Atualizar status de todas as transações vinculadas a esta fatura
     const transactions = await getTransactionsByUser(user.userId);
     const invoiceTransactions = transactions.filter(t => t.invoiceId === invoiceId);
-    
+
     for (const t of invoiceTransactions) {
       // Usando uma função interna ou updateTransaction se existir. 
       // Como não criei updateTransaction ainda, vou adicionar no firestore-server
